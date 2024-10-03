@@ -1,0 +1,5 @@
+VBoxManage controlvm Fedora64_Build poweroff
+VBoxManage controlvm Fedora64_Registry poweroff
+VBoxManage controlvm Fedora64_Containers poweroff
+
+# acpipowerbutton instead?

@@ -1,0 +1,3 @@
+VBoxManage startvm Fedora64_Build
+VBoxManage startvm Fedora64_Registry
+VBoxManage startvm Fedora64_Containers
