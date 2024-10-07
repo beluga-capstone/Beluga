@@ -14,7 +14,7 @@ CURRENT_DIR = Path.cwd()
 USER_ID = os.getuid()
 GROUP_ID = os.getgid()
 SHARED_DIR = Path("/shared/")
-BUILD_PATH = Path("./build/")
+ISO_PATH = Path("./iso/")
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -24,17 +24,17 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='Build custom Fedora CoreOS images.')
     parser.add_argument('-v', '--vm_name', type=str, default="beluga-vm", help='Name of the virtual machine')
     parser.add_argument('-i', '--image_name', type=str, default="beluga-image", help='Name of the Docker image')
-    parser.add_argument('-f', '--fcos_template_path', type=str, default="fcos.yml", help='Path to the FCOS template')
+    parser.add_argument('-f', '--fcos_template_path', type=str, default="fcos-template.yml", help='Path to the FCOS template')
     parser.add_argument('-d', '--dockerfile_path', type=str, default="beluga.dockerfile", help='Path to the Dockerfile')
     parser.add_argument('-c', '--config_path', type=str, default="fcos-config.yml", help='Path to the configuration file')
     return parser.parse_args()
 
 def get_output_paths(vm_name):
     """Generate output paths based on the VM name."""
-    custom_fcos_path = BUILD_PATH / f"{vm_name}.yml"
-    custom_iso_path = BUILD_PATH / f"{vm_name}.iso"
-    custom_ign_path = BUILD_PATH / f"{vm_name}.iso.ign"
-    BUILD_PATH.mkdir(exist_ok=True)
+    custom_fcos_path = ISO_PATH / f"{vm_name}.yml"
+    custom_iso_path = ISO_PATH / f"{vm_name}.iso"
+    custom_ign_path = ISO_PATH / f"{vm_name}.iso.ign"
+    ISO_PATH.mkdir(exist_ok=True)
     return custom_fcos_path, custom_iso_path, custom_ign_path
 
 ###########################
@@ -129,17 +129,17 @@ def main():
         docker_manager.build_image(args.image_name, args.dockerfile_path)
     
     # fetch coreos iso if it doesn't exist in build path
-    raw_iso_path = next(BUILD_PATH.glob("*.iso"), None)
+    raw_iso_path = next(ISO_PATH.glob("*.iso"), None)
     if not raw_iso_path:
-        with log_process("fetching the raw coreos iso", str(BUILD_PATH)):
+        with log_process("fetching the raw coreos iso", str(ISO_PATH)):
             docker_manager.run_container_with(args.image_name, f"""
                 coreos-installer download 
                 --stream stable 
                 --platform metal 
                 --format iso 
-                --directory {BUILD_PATH}
+                --directory {ISO_PATH}
             """)
-        raw_iso_path = next(BUILD_PATH.glob("*.iso"))
+        raw_iso_path = next(ISO_PATH.glob("*.iso"))
 
     # create custom fcos config
     with log_process("creating custom fcos config", str(custom_fcos_path)):
