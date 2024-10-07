@@ -22,11 +22,11 @@ logger = logging.getLogger(__name__)
 def parse_arguments():
     """Parses command-line arguments."""
     parser = argparse.ArgumentParser(description='Build custom Fedora CoreOS images.')
-    parser.add_argument('-v', '--vm_name', type=str, default="beluga-vm", help='Name of the virtual machine')
+    parser.add_argument('-v', '--vm_name', type=str, default="Beluga_VM", help='Name of the virtual machine')
     parser.add_argument('-i', '--image_name', type=str, default="beluga-image", help='Name of the Docker image')
-    parser.add_argument('-f', '--fcos_template_path', type=str, default="fcos-template.yml", help='Path to the FCOS template')
+    parser.add_argument('-f', '--fcos_template_path', type=str, default="config/fcos-template.yml", help='Path to the FCOS template')
     parser.add_argument('-d', '--dockerfile_path', type=str, default="beluga.dockerfile", help='Path to the Dockerfile')
-    parser.add_argument('-c', '--config_path', type=str, default="fcos-config.yml", help='Path to the configuration file')
+    parser.add_argument('-c', '--config_path', type=str, default="fcos-config-example.yml", help='Path to the configuration file')
     return parser.parse_args()
 
 def get_output_paths(vm_name):
@@ -44,7 +44,7 @@ class DockerManager:
     def __init__(self):
         self.client = docker.from_env()
 
-    def build_image(self, image_name: str, dockerfile_path: str):
+    def build_image(self, image_name, dockerfile_path):
         """Builds a Docker image"""
         try:
             self.client.images.build(
@@ -131,7 +131,7 @@ def main():
     # fetch coreos iso if it doesn't exist in build path
     raw_iso_path = next(ISO_PATH.glob("*.iso"), None)
     if not raw_iso_path:
-        with log_process("fetching the raw coreos iso", str(ISO_PATH)):
+        with log_process("fetching coreos iso into dir", str(ISO_PATH)):
             docker_manager.run_container_with(args.image_name, f"""
                 coreos-installer download 
                 --stream stable 

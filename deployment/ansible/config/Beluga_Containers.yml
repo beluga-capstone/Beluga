@@ -1,0 +1,8 @@
+yescrypt: '$6$bJNqUZi7gKB4FpFM$ij1fUJSRgyQ1tg0UREDqEXsWvTc3RLiLALkBhB9bnqSYt8weOYGdQhkII0ATD3wIXZAy6CtjK./KEgJI0kG5y0'
+ssh_identity: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBQI94bjdH3VzfRHU14W6s2WDqcPBGoHhhfU40wsse4G dericle77@gmail.com'
+hostname: 'beluga-containers-vm'
+interface: 'enp0s3'
+ip: '192.168.1.102'
+prefix: '24'
+gateway: '192.168.1.1'
+registry_ip: '192.168.1.200'
