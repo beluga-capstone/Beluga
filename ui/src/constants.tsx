@@ -1,6 +1,6 @@
 import { Icon } from '@iconify/react';
 
-import { SideNavItem } from './types';
+import { SideNavItem, Container } from './types';
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
   {
@@ -27,4 +27,7 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
       { title: 'Images', path: '/machines/images' },
     ],
   },
+];
+
+export const DEFAULT_CONTAINERS: Container[] = [
 ];
