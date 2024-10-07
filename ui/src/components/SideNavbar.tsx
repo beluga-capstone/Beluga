@@ -20,7 +20,7 @@ const SideNavbar = () => {
           <span className="h-7 w-7 bg-white-300 rounded-lg">
             <img src="images/beluga.png" alt="The BELUGA logo" className="h-8 w-8" />
           </span>
-          <span className="font-bold text-xl hidden md:flex">B.E.L.U.G.A.</span>
+          <span className="font-bold text-xl hidden md:flex">B E L U G A</span>
         </Link>
 
         <div className="flex flex-col space-y-2  md:px-6 ">
