@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useSelectedLayoutSegment } from 'next/navigation';
 import { Icon } from '@iconify/react';
-import useScroll from '@/hooks/use-scroll';
+import useScroll from '@/hooks/useScroll';
 import { cn } from '@/lib/utils';
 
 import UserSettingsPopup from './UserSettingsPopup';
