@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 
 import UserSettingsPopup from './UserSettingsPopup';
 
-const TopNavbar = () => {
+export default function TopNavbar({role}:{role:string}) {
   const [isMenuOpen, setIsMenuOpen] = useState(false); // Popup state
   const scrolled = useScroll(5);
   const selectedLayout = useSelectedLayoutSegment();
@@ -55,5 +55,3 @@ const TopNavbar = () => {
     </div>
   );
 };
-
-export default TopNavbar;

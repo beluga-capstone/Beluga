@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   title: "BELUGA",
 };
 
+const userRole = "student";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -18,10 +20,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`bg-white`}>
         <div className="flex">
-          <SideNavbar />
+          <SideNavbar role={userRole} />
           <main className="flex-1">
             <MarginWidthWrapper>
-              <TopNavbar />
+              <TopNavbar role={userRole} />
               <PageWrapper>{children}</PageWrapper>
             </MarginWidthWrapper>
           </main>

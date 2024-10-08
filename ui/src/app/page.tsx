@@ -1,4 +1,4 @@
-export default function Home() {
+export default function Dashboard() {
   return (
     <>
       <span className="font-bold text-4xl">Dashboard</span>
