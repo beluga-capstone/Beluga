@@ -48,7 +48,7 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
         <>
           <button
             onClick={toggleSubMenu}
-            className={`flex flex-row items-center p-2 rounded-lg w-full justify-between hover:bg-hover ${
+            className={`flex flex-row items-center p-2 rounded-lg w-full justify-between hover:bg-surface ${
               pathname.includes(item.path) ? '' : ''
             }`}
           >
@@ -83,8 +83,8 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
       ) : (
         <Link
           href={item.path}
-          className={`flex flex-row space-x-4 items-center p-2 rounded-lg hover:bg-hover ${
-            item.path === pathname ? '' : ''
+          className={`flex flex-row space-x-4 items-center p-2 rounded-lg hover:bg-surface ${
+            item.path === pathname ? 'bg-surface' : ''
           }`}
         >
           {item.icon}
