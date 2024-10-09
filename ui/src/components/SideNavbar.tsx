@@ -48,7 +48,7 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
         <>
           <button
             onClick={toggleSubMenu}
-            className={`flex flex-row items-center p-2 rounded-lg w-full justify-between ${
+            className={`flex flex-row items-center p-2 rounded-lg w-full justify-between hover:bg-hover ${
               pathname.includes(item.path) ? '' : ''
             }`}
           >
@@ -83,7 +83,7 @@ const MenuItem = ({ item }: { item: SideNavItem }) => {
       ) : (
         <Link
           href={item.path}
-          className={`flex flex-row space-x-4 items-center p-2 rounded-lg ${
+          className={`flex flex-row space-x-4 items-center p-2 rounded-lg hover:bg-hover ${
             item.path === pathname ? '' : ''
           }`}
         >
