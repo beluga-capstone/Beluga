@@ -21,10 +21,10 @@ const TopNavbar = () => {
   return (
     <div
       className={cn(
-        `sticky inset-x-0 top-0 z-30 w-full transition-all border-b`,
+        `sticky inset-x-0 top-0 z-30 w-full transition-all border-b border-foreground`,
         {
-          'border-b backdrop-blur-lg': scrolled,
-          'border-b': selectedLayout,
+          'backdrop-blur-lg': scrolled,
+          '': selectedLayout,
         }
       )}
     >
