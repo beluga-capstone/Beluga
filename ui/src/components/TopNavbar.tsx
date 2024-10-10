@@ -21,10 +21,10 @@ const TopNavbar = () => {
   return (
     <div
       className={cn(
-        `sticky inset-x-0 top-0 z-30 w-full transition-all border-b border-gray-200`,
+        `sticky inset-x-0 top-0 z-30 w-full transition-all border-b border-foreground`,
         {
-          'border-b border-gray-200 bg-white/75 backdrop-blur-lg': scrolled,
-          'border-b border-gray-200 bg-white': selectedLayout,
+          'backdrop-blur-lg': scrolled,
+          '': selectedLayout,
         }
       )}
     >
@@ -34,7 +34,7 @@ const TopNavbar = () => {
             href="/"
             className="flex flex-row space-x-3 items-center justify-center md:hidden"
           >
-            <span className="h-7 w-7 bg-zinc-300 rounded-lg" />
+            <span className="h-7 w-7 rounded-lg" />
             <span className="font-bold text-xl flex ">Logo</span>
           </Link>
         </div>
