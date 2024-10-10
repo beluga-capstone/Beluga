@@ -38,7 +38,10 @@ const ContainerItem: React.FC<ContainerItemProps> = ({
     </button>
     <div className="flex-grow">
       <h3 className="font-semibold">
-        {container.name} - {container.status}
+        {container.name}{" "}
+        <span className={`px-1 py-0.25 rounded bg-on-surface text-light-surface`}>
+          {container.status}
+        </span>
       </h3>
       <p className="text-sm text-on-surface">
         Launch Time: {container.launchTime}
