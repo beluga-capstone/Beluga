@@ -65,30 +65,9 @@ class Submission(db.Model):
     assignment_id = db.Column(db.Integer, db.ForeignKey('assignment.assignment_id'))
     submission_date = db.Column(db.DateTime, default=datetime.now)
     grade = db.Column(db.Integer)
-    comment_id = db.Column(db.Integer, db.ForeignKey('comment.comment_id'))
     status = db.Column(db.String(50))
     container_id = db.Column(db.Integer, db.ForeignKey('container.container_id'))
     data = db.Column(db.Text)
-
-class Comment(db.Model):
-    __tablename__ = 'comment'
-    comment_id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
-    submission_id = db.Column(db.Integer, db.ForeignKey('submission.submission_id'))
-    create_at = db.Column(db.DateTime, default=datetime.now)
-    update_at = db.Column(db.DateTime, default=datetime.now)
-    text = db.Column(db.Text)
-    reply_id = db.Column(db.Integer, db.ForeignKey('reply.reply_id'))
-    publish = db.Column(db.Boolean, default=False)
-
-class Reply(db.Model):
-    __tablename__ = 'reply'
-    reply_id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
-    comment_id = db.Column(db.Integer, db.ForeignKey('comment.comment_id'))
-    text = db.Column(db.Text)
-    create_at = db.Column(db.DateTime, default=datetime.now)
-    update_at = db.Column(db.DateTime, default=datetime.now)
 
 class Container(db.Model):
     __tablename__ = 'container'
