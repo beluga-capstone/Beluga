@@ -1,14 +1,34 @@
+import React from "react";
+import { LucideProps } from "lucide-react";
+
 interface IconButtonProps {
-  onClick: () => void;
   title: string;
+  onClick: () => void;
   disabled?: boolean;
-  className: string;
-  children: React.ReactNode;
+  className?: string;
+  icon: React.ForwardRefExoticComponent<
+    Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
+  >;
+  iconColor: string;
 }
 
-const IconButton: React.FC<IconButtonProps> = ({ onClick, title, disabled, className, children }) => (
-  <button onClick={onClick} title={title} disabled={disabled} className={`${className} ${disabled ? "" : "hover:bg-hover-on-surface"}`}>
-    {children}
+const IconButton: React.FC<IconButtonProps> = ({
+  title,
+  onClick,
+  disabled,
+  className,
+  icon,
+  iconColor,
+}) => (
+  <button
+    onClick={onClick}
+    title={title}
+    disabled={disabled}
+    className={`p-1 rounded ${disabled ? "" : "hover:bg-hover-on-surface"} ${className}`}
+  >
+    {React.createElement(icon, {
+      className: `text-${iconColor} ${disabled ? "text-opacity-50" : ""}`,
+    })}
   </button>
 );
 

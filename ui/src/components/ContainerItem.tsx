@@ -1,10 +1,10 @@
 // ContainerItem.tsx
 
-import React from 'react';
-import { Trash2, Pause, Play, Square, CheckSquare } from 'lucide-react';
-import ContainerStatus from './ContainerStatus';
-import { Container } from '@/types';
-import IconButton from './IconButton';
+import React from "react";
+import { Trash2, Pause, Play, Square, CheckSquare } from "lucide-react";
+import ContainerStatus from "./ContainerStatus";
+import { Container } from "@/types";
+import IconButton from "./IconButton";
 
 interface ContainerItemProps {
   container: Container;
@@ -26,26 +26,52 @@ const ContainerItem: React.FC<ContainerItemProps> = ({
   isSelected,
 }) => (
   <div className="flex items-center space-x-4 p-4 border rounded-lg mb-4">
-    <button onClick={() => onToggleSelect(container.id)} className="focus:outline-none">
-      {isSelected ? <CheckSquare className="text-blue-500" /> : <Square className="text-gray-400" />}
+    <button
+      onClick={() => onToggleSelect(container.id)}
+      className="focus:outline-none"
+    >
+      {isSelected ? (
+        <CheckSquare className="text-blue-500" />
+      ) : (
+        <Square className="text-gray-400" />
+      )}
     </button>
     <div className="flex-grow">
-      <h3 className="font-semibold">{container.name} - {container.status}</h3>
-      <p className="text-sm text-on-surface">Launch Time: {container.launchTime}</p>
+      <h3 className="font-semibold">
+        {container.name} - {container.status}
+      </h3>
+      <p className="text-sm text-on-surface">
+        Launch Time: {container.launchTime}
+      </p>
     </div>
     <div className="flex items-center space-x-2">
-      <IconButton onClick={() => onPause(container.id)} className="p-1 rounded" title="Pause" disabled={container.status == "paused" || container.status == "stopped"}>
-        <Pause className="text-yellow-500" />
-      </IconButton>
-      <IconButton onClick={() => onRun(container.id)} className="p-1 rounded" title="Play" disabled={container.status == "running"}>
-        <Play className="text-green-500" />
-      </IconButton>
-      <IconButton onClick={() => onStop(container.id)} className="p-1 rounded" title="Stop" disabled={container.status == "stopped"}>
-        <Square className="text-red-500" />
-      </IconButton>
-      <IconButton onClick={() => onDelete(container.id)} className="p-1 rounded" title="Delete">
-        <Trash2 className="text-red-500" />
-      </IconButton>
+      <IconButton
+        title="Pause"
+        onClick={() => onPause(container.id)}
+        disabled={container.status == "paused" || container.status == "stopped"}
+        icon={Pause}
+        iconColor="yellow-500"
+      />
+      <IconButton
+        title="Start"
+        onClick={() => onRun(container.id)}
+        disabled={container.status == "running"}
+        icon={Play}
+        iconColor="green-500"
+      />
+      <IconButton
+        title="Stop"
+        onClick={() => onStop(container.id)}
+        disabled={container.status == "stopped"}
+        icon={Square}
+        iconColor="red-500"
+      />
+      <IconButton
+        title="Delete"
+        onClick={() => onDelete(container.id)}
+        icon={Trash2}
+        iconColor="red-500"
+      />
     </div>
   </div>
 );
