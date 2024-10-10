@@ -4,6 +4,7 @@ import React from 'react';
 import { Trash2, Pause, Play, Square, CheckSquare } from 'lucide-react';
 import ContainerStatus from './ContainerStatus';
 import { Container } from '@/types';
+import IconButton from './IconButton';
 
 interface ContainerItemProps {
   container: Container;
@@ -33,18 +34,18 @@ const ContainerItem: React.FC<ContainerItemProps> = ({
       <p className="text-sm text-on-surface">Launch Time: {container.launchTime}</p>
     </div>
     <div className="flex items-center space-x-2">
-      <button onClick={() => onPause(container.id)} className="p-1 hover:bg-hover-on-surface rounded" title="Pause">
+      <IconButton onClick={() => onPause(container.id)} className="p-1 rounded" title="Pause" disabled={container.status == "paused" || container.status == "stopped"}>
         <Pause className="text-yellow-500" />
-      </button>
-      <button onClick={() => onRun(container.id)} className="p-1 hover:bg-hover-on-surface rounded" title="Run">
+      </IconButton>
+      <IconButton onClick={() => onRun(container.id)} className="p-1 rounded" title="Play" disabled={container.status == "running"}>
         <Play className="text-green-500" />
-      </button>
-      <button onClick={() => onStop(container.id)} className="p-1 hover:bg-hover-on-surface rounded" title="Stop">
+      </IconButton>
+      <IconButton onClick={() => onStop(container.id)} className="p-1 rounded" title="Stop" disabled={container.status == "stopped"}>
         <Square className="text-red-500" />
-      </button>
-      <button onClick={() => onDelete(container.id)} className="p-1 hover:bg-hover-on-surface rounded" title="Delete">
+      </IconButton>
+      <IconButton onClick={() => onDelete(container.id)} className="p-1 rounded" title="Delete">
         <Trash2 className="text-red-500" />
-      </button>
+      </IconButton>
     </div>
   </div>
 );
