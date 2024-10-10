@@ -11,7 +11,9 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        "hover-on-surface": "var(--hover-on-surface)",
         surface: "var(--surface)",
+        "light-surface": "#ededed",
         "on-surface": "var(--on-surface)",
       },
     },
