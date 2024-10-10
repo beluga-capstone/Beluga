@@ -30,19 +30,19 @@ const ContainerItem: React.FC<ContainerItemProps> = ({
     </button>
     <div className="flex-grow">
       <h3 className="font-semibold">{container.name} - {container.status}</h3>
-      <p className="text-sm text-gray-600">Launch Time: {container.launchTime}</p>
+      <p className="text-sm text-on-surface">Launch Time: {container.launchTime}</p>
     </div>
     <div className="flex items-center space-x-2">
-      <button onClick={() => onPause(container.id)} className="p-1 hover:bg-gray-100 rounded" title="Pause">
+      <button onClick={() => onPause(container.id)} className="p-1 hover:bg-hover-on-surface rounded" title="Pause">
         <Pause className="text-yellow-500" />
       </button>
-      <button onClick={() => onRun(container.id)} className="p-1 hover:bg-gray-100 rounded" title="Run">
+      <button onClick={() => onRun(container.id)} className="p-1 hover:bg-hover-on-surface rounded" title="Run">
         <Play className="text-green-500" />
       </button>
-      <button onClick={() => onStop(container.id)} className="p-1 hover:bg-gray-100 rounded" title="Stop">
+      <button onClick={() => onStop(container.id)} className="p-1 hover:bg-hover-on-surface rounded" title="Stop">
         <Square className="text-red-500" />
       </button>
-      <button onClick={() => onDelete(container.id)} className="p-1 hover:bg-gray-100 rounded" title="Delete">
+      <button onClick={() => onDelete(container.id)} className="p-1 hover:bg-hover-on-surface rounded" title="Delete">
         <Trash2 className="text-red-500" />
       </button>
     </div>
