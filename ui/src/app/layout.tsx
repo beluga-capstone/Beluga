@@ -16,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`bg-white`}>
+      <body>
         <div className="flex">
           <SideNavbar />
           <main className="flex-1">
