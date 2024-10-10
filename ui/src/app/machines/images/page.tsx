@@ -17,6 +17,11 @@ export default function Images() {
   const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
 
   const handleCreateImage = (imageName: string) => {
+    const imageExists = images.some((image) => image.title === imageName);
+    if (imageExists) {
+      alert("An image with this name already exists. Please choose a different name.");
+      return; 
+    }
     const newImage = { id: images.length + 1, title: imageName };
     setImages([...images, newImage]);
   };
