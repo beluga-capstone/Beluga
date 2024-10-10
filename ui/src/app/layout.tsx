@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+
 import SideNavbar from "@/components/SideNavbar";
 import TopNavbar from "@/components/TopNavbar";
 import PageWrapper from "@/components/PageWrapper";
@@ -7,6 +8,7 @@ import MarginWidthWrapper from "@/components/MarginWidthWrapper";
 
 export const metadata: Metadata = {
   title: "BELUGA",
+  description: "Bode Raymond, Deric Le, Jeffrey Li, Drew Pusey, Nitesh Duraivel"
 };
 
 export default function RootLayout({
