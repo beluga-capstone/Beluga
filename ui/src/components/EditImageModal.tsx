@@ -1,10 +1,12 @@
+// just a copy of addimagemodal.tsx for now.
+
 "use client";
 import React, {useState} from "react";
 import { Icon } from "@iconify/react";
 import Draggable from "react-draggable";
 
 // Define the type for the props
-interface AddImageModalProps {
+interface EditImageModalProps {
     isOpen: boolean;
     onClose: () => void;
     onCreateImage: (imageName: string) => void;
@@ -12,7 +14,7 @@ interface AddImageModalProps {
     imageId: number | null;
 }
 
-function AddImageModal({ isOpen, onClose, onCreateImage, onDeleteImage, imageId }: AddImageModalProps) {
+function EditImageModal({ isOpen, onClose, onCreateImage, onDeleteImage, imageId }: EditImageModalProps) {
     const [imageName, setImageName] = useState("");
     const [isMinimized, setIsMinimized] = React.useState(false);
     const [isAdvancedDetailsOpen, setIsAdvancedDetailsOpen] = useState(false);
@@ -147,4 +149,4 @@ function AddImageModal({ isOpen, onClose, onCreateImage, onDeleteImage, imageId 
     );
 }
 
-export default AddImageModal;
+export default EditImageModal;
