@@ -29,13 +29,8 @@ const ContainerItem: React.FC<ContainerItemProps> = ({
       {isSelected ? <CheckSquare className="text-blue-500" /> : <Square className="text-gray-400" />}
     </button>
     <div className="flex-grow">
-      <h3 className="font-semibold">{container.name}</h3>
+      <h3 className="font-semibold">{container.name} - {container.status}</h3>
       <p className="text-sm text-gray-600">Launch Time: {container.launchTime}</p>
-    </div>
-    <div className="flex items-center space-x-7">
-      <div className="flex items-center justify-center w-12 h-12 rounded-full border-2 border-gray-300 bg-white">
-        <ContainerStatus status={container.status} />
-      </div>
     </div>
     <div className="flex items-center space-x-2">
       <button onClick={() => onPause(container.id)} className="p-1 hover:bg-gray-100 rounded" title="Pause">
