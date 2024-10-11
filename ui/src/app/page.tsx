@@ -2,8 +2,9 @@
 
 import React from 'react';
 import { Plus } from 'lucide-react';
+import DashboardList from '@/components/DashboardList';
 import CourseItem from '@/components/CourseItem';
-import BulkActions from '@/components/CourseBulkActions';
+import BulkActions from '@/components/DashboardBulkActions';
 import Button from '@/components/Button';
 import { useCourses } from '@/hooks/useCourses';
 
@@ -34,16 +35,12 @@ const Dashboard: React.FC = () => {
         />
       </div>
 
-      {/* List the courses */}
-      {courses.map(course => (
-        <CourseItem
-          key={course.id}
-          course={course}
-          onDelete={deleteCourse}
-          onToggleSelect={toggleSelectCourse}
-          isSelected={selectedCourses.includes(course.id)}
-        />
-      ))}
+      <DashboardList 
+        courses={courses}
+        onDelete={deleteCourse}
+        onToggleSelect={toggleSelectCourse}
+        selectedCourses={selectedCourses}
+      />
     </div>
   );
 };

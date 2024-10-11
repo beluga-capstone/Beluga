@@ -38,7 +38,7 @@ const CourseItem: React.FC<ContainerItemProps> = ({
     <div className="flex items-center space-x-2">
       <IconButton
         title="Delete"
-        onClick={() => onDelete(user.id)}
+        onClick={() => onDelete(course.id)}
         icon={Trash2}
         iconColor="red-500"
       />

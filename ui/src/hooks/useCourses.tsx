@@ -3,8 +3,11 @@
 import { useState } from 'react';
 import { Course } from '@/types';
 import { DEFAULT_COURSES } from '@/constants';
+import { useRouter } from 'next/navigation';
 
 export const useCourses = () => {
+    const router = useRouter();
+
     const [courses, setCourses] = useState<Course[]>(DEFAULT_COURSES);
     const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
 
@@ -21,6 +24,7 @@ export const useCourses = () => {
 
     const deleteCourse = (id: number) => {
         const updatedCourses = courses.filter(course => course.id !== id);
+        router.refresh();
         setCourses(updatedCourses);
         setSelectedCourses(selectedCourses.filter(selectedId => selectedId !== id));
     };

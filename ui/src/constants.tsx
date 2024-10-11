@@ -35,5 +35,10 @@ export const DEFAULT_CONTAINERS: Container[] = [
 export const DEFAULT_COURSES: Course[] = [
   { id: 1, name: "course1", term:"spring", year:2024 },
   { id: 2, name: "course2", term:"spring", year:2023 },
-  { id: 3, name: "course3", term:"fall", year:2022 }
+  { id: 3, name: "course3", term:"fall", year:2022 },
+  { id: 4, name: "course2", term:"spring", year:2023 },
+  { id: 5, name: "course2", term:"spring", year:2023 },
+  { id: 6, name: "course2", term:"spring", year:2023 },
+  { id: 7, name: "course2", term:"spring", year:2023 },
+  { id: 8, name: "course2", term:"spring", year:2023 },
 ];
