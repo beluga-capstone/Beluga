@@ -1,27 +1,31 @@
-import { Icon } from '@iconify/react';
+import { Home, Users, Folder, Monitor } from 'lucide-react'; // Import lucide-react icons
 
-import { SideNavItem, Container } from './types';
+import { SideNavItem, Container, User } from './types';
+
+export const ROLES = [
+  "Admin", "Professor", "TA", "Student"
+];
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
   {
     title: 'Dashboard',
     path: '/',
-    icon: <Icon icon="lucide:home" width="24" height="24" />,
+    icon: <Home size={24} />, // Use lucide-react icons directly
   },
   {
     title: 'Students',
     path: '/students',
-    icon: <Icon icon="lucide:users" width="24" height="24" />,
+    icon: <Users size={24} />,
   },
   {
     title: 'Assignments',
     path: '/assignments',
-    icon: <Icon icon="lucide:folder" width="24" height="24" />,
+    icon: <Folder size={24} />,
   },
   { 
     title: 'Machines',
     path: '/machines',
-    icon: <Icon icon="lucide:computer" width="24" height="24" />,
+    icon: <Monitor size={24} />, // Use Monitor for machines
     subMenuItems: [
       { title: 'Containers', path: '/machines/containers' },
       { title: 'Images', path: '/machines/images' },
@@ -30,4 +34,10 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
 ];
 
 export const DEFAULT_CONTAINERS: Container[] = [
+];
+
+export const DEFAULT_USERS: User[] = [
+  { id: 1, firstName: 'Deric', lastName: 'Le', role: 'Admin' },
+  { id: 2, firstName: 'Drew', lastName: 'Pusey', role: 'Student' },
+  { id: 3, firstName: 'Minh', lastName: 'Nguyen', middleName:"Dao", role: 'Student' },
 ];

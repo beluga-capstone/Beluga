@@ -12,3 +12,11 @@ export interface Container {
     status: 'running' | 'paused' | 'stopped';
     launchTime: string;
 }
+
+export interface User {
+    id: number;
+    firstName: string;
+    lastName: string;
+    middleName?: string;
+    role: string;
+}
