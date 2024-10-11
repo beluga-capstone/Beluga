@@ -1,6 +1,6 @@
 import { Icon } from '@iconify/react';
 
-import { SideNavItem, Container } from './types';
+import { SideNavItem, Container, Course } from './types';
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
   {
@@ -30,4 +30,10 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
 ];
 
 export const DEFAULT_CONTAINERS: Container[] = [
+];
+
+export const DEFAULT_COURSES: Course[] = [
+  { id: 1, name: "course1", term:"spring", year:2024 },
+  { id: 2, name: "course2", term:"spring", year:2023 },
+  { id: 3, name: "course3", term:"fall", year:2022 }
 ];

@@ -12,3 +12,10 @@ export interface Container {
     status: 'running' | 'paused' | 'stopped';
     launchTime: string;
 }
+
+export interface Course {
+    id: number;
+    name: string;
+    term: string;
+    year: number;
+}
