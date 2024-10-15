@@ -1,6 +1,11 @@
+"use client";
+
 import { DEFAULT_IMAGES } from "@/constants";
+import { useContainers } from "@/hooks/useContainers";
+import Link from "next/link";
 
 const NewContainer: React.FC = () => {
+  const { addContainer } = useContainers();
   return (
     <div className="container mx-auto p-4">
       <h1 className="font-bold text-4xl mb-6">New Container</h1>
@@ -58,6 +63,25 @@ const NewContainer: React.FC = () => {
           <option value="64">64 GB</option>
           <option value="128">128 GB</option>
         </select>
+      </div>
+      <div className="flex flex-column justify-end">
+        <Link href="/machines/containers" className="p-2">
+          <button
+            type="button"
+            className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
+          >
+            Cancel
+          </button>
+        </Link>
+        <Link href="/machines/containers" className="p-2">
+          <button
+            type="button"
+            className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+            onClick={() => addContainer()}
+          >
+            Create
+          </button>
+        </Link>
       </div>
     </div>
   );
