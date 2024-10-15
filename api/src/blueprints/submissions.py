@@ -19,7 +19,6 @@ def create_submission():
         grade=data.get('grade'),
         comment_id=data.get('comment_id'),
         status=data.get('status'),
-        container_id=data.get('container_id'),
         data=data.get('data')
     )
 

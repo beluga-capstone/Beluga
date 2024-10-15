@@ -72,7 +72,6 @@ class Submission(db.Model):
     submission_date = db.Column(db.DateTime, default=datetime.now)
     grade = db.Column(db.Integer)
     status = db.Column(db.String(50))
-    container_id = db.Column(db.Integer, db.ForeignKey('container.container_id'))
     data = db.Column(db.Text)
 
 class Container(db.Model):
