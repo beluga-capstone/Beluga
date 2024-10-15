@@ -12,7 +12,6 @@ const Containers: React.FC = () => {
   const {
     containers,
     selectedContainers,
-    addContainer,
     deleteContainer,
     updateContainerStatus,
     toggleSelectContainer,

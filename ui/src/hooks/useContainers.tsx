@@ -22,10 +22,10 @@ export const useContainers = () => {
     setContainers(loadedContainers);
   }, []);
 
-  const addContainer = () => {
+  const addContainer = (name: string) => {
     const newContainer: Container = {
       id: Date.now(),
-      name: `Container ${containers.length + 1}`,
+      name: name,
       status: 'stopped',
       launchTime: new Date().toLocaleString(),
     };

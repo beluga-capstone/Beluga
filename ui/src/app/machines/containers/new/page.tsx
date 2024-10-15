@@ -1,17 +1,22 @@
 "use client";
 
+import Button from "@/components/Button";
 import { DEFAULT_IMAGES } from "@/constants";
 import { useContainers } from "@/hooks/useContainers";
-import Link from "next/link";
+import { useState } from "react";
 
 const NewContainer: React.FC = () => {
   const { addContainer } = useContainers();
+  const [containerName, setContainerName] = useState("");
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="font-bold text-4xl mb-6">New Container</h1>
       <h2>Container Name</h2>
       <div className="pt-2 pb-8">
         <input
+          value={containerName}
+          onChange={(e) => setContainerName(e.target.value)}
           type="text"
           className="border rounded p-1 bg-surface"
           placeholder="Container name"
@@ -65,23 +70,25 @@ const NewContainer: React.FC = () => {
         </select>
       </div>
       <div className="flex flex-column justify-end">
-        <Link href="/machines/containers" className="p-2">
-          <button
-            type="button"
+        <div className="p-2">
+          <Button
             className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
+            href="/machines/containers"
           >
             Cancel
-          </button>
-        </Link>
-        <Link href="/machines/containers" className="p-2">
-          <button
-            type="button"
+          </Button>
+        </div>
+
+        <div className="p-2">
+          <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={() => addContainer()}
+            onClick={() => addContainer(containerName)}
+            href="/machines/containers"
+            disabled={!containerName}
           >
             Create
-          </button>
-        </Link>
+          </Button>
+        </div>
       </div>
     </div>
   );
