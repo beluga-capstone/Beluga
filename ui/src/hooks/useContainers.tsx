@@ -39,6 +39,9 @@ export const useContainers = () => {
       memoryGBs: memoryGBs,
       storageGBs: storageGBs,
     };
+    
+    console.log(newContainer["id"]);
+
     const updatedContainers = [...containers, newContainer];
     setContainers(updatedContainers);
     saveContainersToStorage(updatedContainers);
