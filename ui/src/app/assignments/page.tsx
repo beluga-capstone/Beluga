@@ -37,7 +37,9 @@ const Assignments: React.FC = () => {
           </tr>
           {assignments.map((assignment) => (
             <tr key={assignment.id}>
-              <td className="text-center py-2">{assignment.title}</td>
+              <Link href={`/assignments/${assignment.id}`}>
+                <td className="text-center py-2">{assignment.title}</td>
+              </Link>
               <td className="text-center py-2">
                 {assignment.releaseDate.toLocaleDateString()}
               </td>
