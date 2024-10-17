@@ -5,6 +5,7 @@ import { useContainers } from "@/hooks/useContainers";
 import { Container } from "@/types";
 
 import ContainerPageInfo from "@/components/ContainerPageInfo";
+import ContainerPageTerminal from "@/components/ContainerPageTerminal";
 
 const ContainerPage = ({ params }: { params: { id: string } }) => {
     const { containers } = useContainers();
@@ -52,7 +53,7 @@ const ContainerPage = ({ params }: { params: { id: string } }) => {
                 <ContainerPageInfo container={container} />
 
                 {/* display container component here */}
-
+                <ContainerPageTerminal />
             </div>
         );
     }
