@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Assignment } from "@/types";
-import { ASSIGNMENTS } from "@/constants";
 
 const loadAssignmentsFromStorage = (): Assignment[] => {
   const data = localStorage.getItem("assignments");
@@ -13,8 +12,9 @@ const loadAssignmentsFromStorage = (): Assignment[] => {
       releaseDate: new Date(assignment.releaseDate),
       dueDate: new Date(assignment.dueDate),
     }));
+  } else {
+    return [];
   }
-  return ASSIGNMENTS;
 };
 
 const saveAssignmentsToStorage = (assignments: Assignment[]) => {
@@ -29,7 +29,12 @@ export const useAssignments = () => {
     setAssignments(loadedAssignments);
   }, []);
 
-  const addAssignment = (title: string, description: string, releaseDate: Date, dueDate: Date) => {
+  const addAssignment = (
+    title: string,
+    description: string,
+    releaseDate: Date,
+    dueDate: Date
+  ) => {
     const newAssignment: Assignment = {
       id: Date.now(),
       courseId: 1,
@@ -37,7 +42,7 @@ export const useAssignments = () => {
       description: description,
       releaseDate: releaseDate,
       dueDate: dueDate,
-      containerId: 1
+      containerId: 1,
     };
 
     const updatedAssignments = [...assignments, newAssignment];

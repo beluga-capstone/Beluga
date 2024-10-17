@@ -29,34 +29,4 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
   },
 ];
 
-export const ASSIGNMENTS: Assignment[] = [
-  {
-    id: 1,
-    courseId: 1,
-    title: "Assignment 1",
-    description: "This is the first assignment",
-    releaseDate: new Date(),
-    dueDate: new Date(),
-    containerId: 1,
-  },
-  {
-    id: 2,
-    courseId: 1,
-    title: "Assignment 2",
-    description: "This is the second assignment",
-    releaseDate: new Date(),
-    dueDate: new Date(),
-    containerId: 2,
-  },
-  {
-    id: 3,
-    courseId: 1,
-    title: "Assignment 3",
-    description: "This is the third assignment",
-    releaseDate: new Date(),
-    dueDate: new Date(),
-    containerId: 3,
-  }
-];
-
 export const DEFAULT_CONTAINERS: Container[] = [];
