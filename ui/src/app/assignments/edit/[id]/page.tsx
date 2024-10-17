@@ -11,20 +11,24 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
   const assignment = assignments.find(
     (assignment) => assignment.id === assignmentId
   );
-  const { updateAssignment } = useAssignments();
+  const { updateAssignment, deleteAssignment } = useAssignments();
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [releaseDate, setReleaseDate] = React.useState("");
   const [dueDate, setDueDate] = React.useState("");
   const { containers } = useContainers();
-  const [containerId, setContainerId] = React.useState(assignment?.containerId || 0);
-  
+  const [containerId, setContainerId] = React.useState(
+    assignment?.containerId || 0
+  );
+
   React.useEffect(() => {
     if (assignment) {
       setTitle(assignment.title);
       setDescription(assignment.description);
-      setReleaseDate(new Date(assignment.releaseDate).toISOString().split('T')[0]);
-      setDueDate(new Date(assignment.dueDate).toISOString().split('T')[0]);
+      setReleaseDate(
+        new Date(assignment.releaseDate).toISOString().split("T")[0]
+      );
+      setDueDate(new Date(assignment.dueDate).toISOString().split("T")[0]);
     }
   }, [assignment]);
 
@@ -96,32 +100,43 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         </select>
       </div>
 
-      <div className="flex flex-column justify-end">
+      <div className="flex flex-column justify-between">
         <div className="p-2">
           <Button
-            className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
+            className="bg-red-500 text-white px-4 py-2 rounded flex items-center"
+            onClick={() => deleteAssignment(assignmentId)}
             href="/assignments"
           >
-            Cancel
+            Delete
           </Button>
         </div>
-        <div className="p-2">
-          <Button
-            className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={() =>
-              updateAssignment(
-                assignmentId,
-                title,
-                description,
-                new Date(releaseDate),
-                new Date(dueDate)
-              )
-            }
-            href="/assignments"
-            disabled={!title}
-          >
-            Save
-          </Button>
+        <div className="flex">
+          <div className="p-2">
+            <Button
+              className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
+              href="/assignments"
+            >
+              Cancel
+            </Button>
+          </div>
+          <div className="p-2">
+            <Button
+              className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+              onClick={() =>
+                updateAssignment(
+                  assignmentId,
+                  title,
+                  description,
+                  new Date(releaseDate),
+                  new Date(dueDate)
+                )
+              }
+              href="/assignments"
+              disabled={!title}
+            >
+              Save
+            </Button>
+          </div>
         </div>
       </div>
     </div>
