@@ -35,7 +35,8 @@ export const ASSIGNMENTS: Assignment[] = [
     courseId: 1,
     title: "Assignment 1",
     description: "This is the first assignment",
-    dueDate: "2021-09-30",
+    releaseDate: new Date(),
+    dueDate: new Date(),
     containerId: 1,
   },
   {
@@ -43,7 +44,8 @@ export const ASSIGNMENTS: Assignment[] = [
     courseId: 1,
     title: "Assignment 2",
     description: "This is the second assignment",
-    dueDate: "2021-10-30",
+    releaseDate: new Date(),
+    dueDate: new Date(),
     containerId: 2,
   },
   {
@@ -51,7 +53,8 @@ export const ASSIGNMENTS: Assignment[] = [
     courseId: 1,
     title: "Assignment 3",
     description: "This is the third assignment",
-    dueDate: "2021-11-30",
+    releaseDate: new Date(),
+    dueDate: new Date(),
     containerId: 3,
   }
 ];

@@ -11,7 +11,8 @@ export interface Assignment {
   courseId: number;
   title: string;
   description: string;
-  dueDate: string;
+  releaseDate: Date;
+  dueDate: Date;
   containerId: number;
 }
 

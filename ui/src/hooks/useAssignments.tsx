@@ -6,7 +6,15 @@ import { ASSIGNMENTS } from "@/constants";
 
 const loadAssignmentsFromStorage = (): Assignment[] => {
   const data = localStorage.getItem("assignments");
-  return data ? JSON.parse(data) : ASSIGNMENTS;
+  if (data) {
+    const parsedData = JSON.parse(data);
+    return parsedData.map((assignment: any) => ({
+      ...assignment,
+      releaseDate: new Date(assignment.releaseDate),
+      dueDate: new Date(assignment.dueDate),
+    }));
+  }
+  return ASSIGNMENTS;
 };
 
 const saveAssignmentsToStorage = (assignments: Assignment[]) => {
@@ -21,8 +29,18 @@ export const useAssignments = () => {
     setAssignments(loadedAssignments);
   }, []);
 
-  const addAssignment = (assignment: Assignment) => {
-    const updatedAssignments = [...assignments, assignment];
+  const addAssignment = (title: string, description: string, releaseDate: Date, dueDate: Date) => {
+    const newAssignment: Assignment = {
+      id: Date.now(),
+      courseId: 1,
+      title: title,
+      description: description,
+      releaseDate: releaseDate,
+      dueDate: dueDate,
+      containerId: 1
+    };
+
+    const updatedAssignments = [...assignments, newAssignment];
     setAssignments(updatedAssignments);
     saveAssignmentsToStorage(updatedAssignments);
   };
