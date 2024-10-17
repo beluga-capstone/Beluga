@@ -5,7 +5,7 @@ import { useAssignments } from "@/hooks/useAssignments";
 import { Edit2, Plus } from "lucide-react";
 import Link from "next/link";
 
-export default function Assignments() {
+const Assignments: React.FC = () => {
   const { assignments } = useAssignments();
 
   return (
@@ -48,7 +48,9 @@ export default function Assignments() {
               <td className="text-center py-2">0</td>
               <td className="text-center py-2">0</td>
               <td>
-                <Edit2 size={24} />
+                <Link href={`/assignments/edit/${assignment.id}`}>
+                  <Edit2 size={24} />
+                </Link>
               </td>
             </tr>
           ))}
@@ -56,4 +58,6 @@ export default function Assignments() {
       </table>
     </div>
   );
-}
+};
+
+export default Assignments;

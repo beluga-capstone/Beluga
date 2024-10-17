@@ -50,6 +50,35 @@ export const useAssignments = () => {
     saveAssignmentsToStorage(updatedAssignments);
   };
 
+  const updateAssignment = (
+    id: number,
+    title: string,
+    description: string,
+    releaseDate: Date,
+    dueDate: Date
+  ) => {
+    const updatedAssignment = {
+      id: id,
+      courseId: 1,
+      title: title,
+      description: description,
+      releaseDate: releaseDate,
+      dueDate: dueDate,
+      containerId: 1,
+    };
+
+    const updatedAssignments = assignments.map((assignment) => {
+      if (assignment.id === updatedAssignment.id) {
+        return updatedAssignment;
+      } else {
+        return assignment;
+      }
+    });
+
+    setAssignments(updatedAssignments);
+    saveAssignmentsToStorage(updatedAssignments);
+  };
+
   const deleteAssignment = (id: number) => {
     const updatedAssignments = assignments.filter(
       (assignment) => assignment.id !== id
@@ -58,5 +87,5 @@ export const useAssignments = () => {
     saveAssignmentsToStorage(updatedAssignments);
   };
 
-  return { assignments, addAssignment, deleteAssignment };
+  return { assignments, addAssignment, updateAssignment, deleteAssignment };
 };
