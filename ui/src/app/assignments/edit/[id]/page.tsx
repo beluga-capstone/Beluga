@@ -61,7 +61,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
           value={releaseDate}
           onChange={(e) => setReleaseDate(e.target.value)}
           type="date"
-          className="border rounded p-1 bg-surface"
+          className="border rounded p-1 bg-surface dark:[color-scheme:dark]"
           placeholder="Release Date"
           aria-label="Release Date"
         />
@@ -73,7 +73,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
           type="date"
-          className="border rounded p-1 bg-surface"
+          className="border rounded p-1 bg-surface dark:[color-scheme:dark]"
           placeholder="Due Date"
           aria-label="Due Date"
         />
