@@ -33,7 +33,8 @@ export const useAssignments = () => {
     title: string,
     description: string,
     releaseDate: Date,
-    dueDate: Date
+    dueDate: Date,
+    containerId: number
   ) => {
     const newAssignment: Assignment = {
       id: Date.now(),
@@ -42,7 +43,7 @@ export const useAssignments = () => {
       description: description,
       releaseDate: releaseDate,
       dueDate: dueDate,
-      containerId: 1,
+      containerId: containerId,
     };
 
     const updatedAssignments = [...assignments, newAssignment];
@@ -55,7 +56,8 @@ export const useAssignments = () => {
     title: string,
     description: string,
     releaseDate: Date,
-    dueDate: Date
+    dueDate: Date,
+    containerId: number
   ) => {
     const updatedAssignment = {
       id: id,
@@ -64,7 +66,7 @@ export const useAssignments = () => {
       description: description,
       releaseDate: releaseDate,
       dueDate: dueDate,
-      containerId: 1,
+      containerId: containerId,
     };
 
     const updatedAssignments = assignments.map((assignment) => {

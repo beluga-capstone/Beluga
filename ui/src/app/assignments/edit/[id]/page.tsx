@@ -18,7 +18,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
   const [dueDate, setDueDate] = React.useState("");
   const { containers } = useContainers();
   const [containerId, setContainerId] = React.useState(
-    assignment?.containerId || 0
+    assignment?.containerId || -1
   );
 
   React.useEffect(() => {
@@ -29,6 +29,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         new Date(assignment.releaseDate).toISOString().split("T")[0]
       );
       setDueDate(new Date(assignment.dueDate).toISOString().split("T")[0]);
+      setContainerId(assignment.containerId);
     }
   }, [assignment]);
 
@@ -91,7 +92,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
           onChange={(e) => setContainerId(parseInt(e.target.value))}
           className="border rounded p-1 bg-surface"
         >
-          <option value={0}>Select a container</option>
+          <option value={-1}>Select a container</option>
           {containers.map((container) => (
             <option key={container.id} value={container.id}>
               {container.name}
@@ -128,7 +129,8 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
                   title,
                   description,
                   new Date(releaseDate),
-                  new Date(dueDate)
+                  new Date(dueDate),
+                  containerId
                 )
               }
               href="/assignments"

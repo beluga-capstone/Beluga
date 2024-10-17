@@ -12,7 +12,7 @@ const NewAssignment: React.FC = () => {
   const [releaseDate, setReleaseDate] = React.useState("");
   const [dueDate, setDueDate] = React.useState("");
   const { containers } = useContainers();
-  const [containerId, setContainerId] = React.useState(0);
+  const [containerId, setContainerId] = React.useState(-1);
 
   return (
     <div className="container mx-auto p-4">
@@ -73,7 +73,7 @@ const NewAssignment: React.FC = () => {
           onChange={(e) => setContainerId(parseInt(e.target.value))}
           className="border rounded p-1 bg-surface"
         >
-          <option value={0}>Select a container</option>
+          <option value={-1}>Select a container</option>
           {containers.map((container) => (
             <option key={container.id} value={container.id}>
               {container.name}
@@ -99,7 +99,8 @@ const NewAssignment: React.FC = () => {
                 title,
                 description,
                 new Date(releaseDate),
-                new Date(dueDate)
+                new Date(dueDate),
+                containerId
               )
             }
             href="/assignments"
