@@ -34,9 +34,10 @@ const NewAssignment: React.FC = () => {
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="border rounded p-1 bg-surface"
+          className="border rounded p-1 bg-surface w-3/4"
           placeholder="Description"
           aria-label="Description"
+          rows={5}
         />
       </div>
 
