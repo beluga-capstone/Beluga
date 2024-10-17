@@ -41,10 +41,16 @@ const Assignments: React.FC = () => {
                 <td className="text-center py-2">{assignment.title}</td>
               </Link>
               <td className="text-center py-2">
-                {assignment.releaseDate.toLocaleDateString()}
+                {assignment.releaseDate.toLocaleDateString("en-US", {
+                  dateStyle: "short",
+                  timeZone: "UTC",
+                })}
               </td>
               <td className="text-center py-2">
-                {assignment.dueDate.toLocaleDateString()}
+                {assignment.dueDate.toLocaleDateString("en-US", {
+                  dateStyle: "short",
+                  timeZone: "UTC",
+                })}
               </td>
               <td className="text-center py-2">0</td>
               <td className="text-center py-2">0</td>
