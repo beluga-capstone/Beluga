@@ -8,13 +8,10 @@ term_bp = Blueprint('term', __name__)
 def create_term():
     data = request.get_json()
 
-    if not data or not data.get('name') or not data.get('course_id'):
-        return jsonify({'error': 'Name and Course ID are required'}), 400
+    if not data or not data.get('name'):
+        return jsonify({'error': 'Name is required'}), 400
     
-    new_term = Term(
-        name=data['name'],
-        course_id=data['course_id']
-    )
+    new_term = Term(name=data['name'])
 
     try:
         db.session.add(new_term)
@@ -30,8 +27,7 @@ def get_terms():
     terms = Term.query.all()
     terms_list = [{
         'term_id': term.term_id,
-        'name': term.name,
-        'course_id': term.course_id
+        'name': term.name
     } for term in terms]
 
     return jsonify(terms_list), 200
@@ -43,8 +39,7 @@ def get_term(term_id):
 
     return jsonify({
         'term_id': term.term_id,
-        'name': term.name,
-        'course_id': term.course_id
+        'name': term.name
     }), 200
 
 # Update a term (PUT)
@@ -54,7 +49,6 @@ def update_term(term_id):
     data = request.get_json()
 
     term.name = data.get('name', term.name)
-    term.course_id = data.get('course_id', term.course_id)
 
     try:
         db.session.commit()
