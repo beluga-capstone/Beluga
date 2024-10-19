@@ -24,9 +24,29 @@ def create_app():
 
         db.create_all()
 
+        init_admin_user()
+
         init_roles()
         
         return app
+
+def init_admin_user():
+    from src.util.db import User
+    # Check if the admin user already exists
+    admin_user = User.query.filter_by(username='admin').first()
+    if not admin_user:
+        # Create a new admin user
+        admin_user = User(
+            username='admin',
+            email='admin@example.com',
+            first_name='Admin',
+            last_name='User',
+            role_id=None
+        )
+        db.session.add(admin_user)
+        db.session.commit()
+    
+    return admin_user.user_id
 
 def init_roles():
     from src.util.db import Role
