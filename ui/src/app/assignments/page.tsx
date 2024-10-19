@@ -6,7 +6,7 @@ import { Edit2, Plus, ToggleLeft, ToggleRight } from "lucide-react";
 import Link from "next/link";
 
 const Assignments: React.FC = () => {
-  const { assignments, setPublished } = useAssignments();
+  const { assignments, setPublished, setLateSubmissions } = useAssignments();
 
   return (
     <div className="container mx-auto p-4">
@@ -53,22 +53,40 @@ const Assignments: React.FC = () => {
                 })}
               </td>
               <td className="text-center py-2">0</td>
-              <td className="flex justify-center py-2">
-                {assignment.isPublished ? (
-                  <ToggleRight
-                    size={32}
-                    className="text-green-500"
-                    onClick={() => setPublished(assignment.id, false)}
-                  />
-                ) : (
-                  <ToggleLeft
-                    size={32}
-                    className="text-red-500"
-                    onClick={() => setPublished(assignment.id, true)}
-                  />
-                )}
+              <td className="py-2">
+                <div className="flex justify-center items-center">
+                  {assignment.isPublished ? (
+                    <ToggleRight
+                      size={32}
+                      className="text-green-500"
+                      onClick={() => setPublished(assignment.id, false)}
+                    />
+                  ) : (
+                    <ToggleLeft
+                      size={32}
+                      className="text-red-500"
+                      onClick={() => setPublished(assignment.id, true)}
+                    />
+                  )}
+                </div>
               </td>
-              <td className="text-center py-2">0</td>
+              <td className="py-2">
+                <div className="flex justify-center items-center">
+                  {assignment.allowsLateSubmissions ? (
+                    <ToggleRight
+                      size={32}
+                      className="text-green-500"
+                      onClick={() => setLateSubmissions(assignment.id, false)}
+                    />
+                  ) : (
+                    <ToggleLeft
+                      size={32}
+                      className="text-red-500"
+                      onClick={() => setLateSubmissions(assignment.id, true)}
+                    />
+                  )}
+                </div>
+              </td>
               <td>
                 <Link href={`/assignments/edit/${assignment.id}`}>
                   <Edit2 size={24} />

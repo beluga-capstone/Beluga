@@ -1,9 +1,9 @@
 export type SideNavItem = {
-    title: string;
-    path: string;
-    icon?: JSX.Element;
-    submenu?: boolean;
-    subMenuItems?: SideNavItem[];
+  title: string;
+  path: string;
+  icon?: JSX.Element;
+  submenu?: boolean;
+  subMenuItems?: SideNavItem[];
 };
 
 export interface Assignment {
@@ -14,12 +14,13 @@ export interface Assignment {
   isPublished: boolean;
   releaseDate: Date;
   dueDate: Date;
+  allowsLateSubmissions: boolean;
   containerId: number;
 }
 
 export interface Container {
-    id: number;
-    name: string;
-    status: 'running' | 'paused' | 'stopped';
-    launchTime: string;
+  id: number;
+  name: string;
+  status: "running" | "paused" | "stopped";
+  launchTime: string;
 }

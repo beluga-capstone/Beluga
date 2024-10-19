@@ -44,6 +44,7 @@ export const useAssignments = () => {
       isPublished: false,
       releaseDate: releaseDate,
       dueDate: dueDate,
+      allowsLateSubmissions: false,
       containerId: containerId,
     };
 
@@ -56,7 +57,6 @@ export const useAssignments = () => {
     id: number,
     title: string,
     description: string,
-    isPublished: boolean,
     releaseDate: Date,
     dueDate: Date,
     containerId: number
@@ -66,7 +66,6 @@ export const useAssignments = () => {
       courseId: 1,
       title: title,
       description: description,
-      isPublished: isPublished,
       releaseDate: releaseDate,
       dueDate: dueDate,
       containerId: containerId,
@@ -74,7 +73,7 @@ export const useAssignments = () => {
 
     const updatedAssignments = assignments.map((assignment) => {
       if (assignment.id === updatedAssignment.id) {
-        return updatedAssignment;
+        return { ...assignment, ...updatedAssignment };
       } else {
         return assignment;
       }
@@ -105,5 +104,18 @@ export const useAssignments = () => {
     saveAssignmentsToStorage(updatedAssignments);
   };
 
-  return { assignments, addAssignment, updateAssignment, deleteAssignment, setPublished };
+  const setLateSubmissions = (id: number, allowsLateSubmissions: boolean) => {
+    const updatedAssignments = assignments.map((assignment) => {
+      if (assignment.id === id) {
+        return { ...assignment, allowsLateSubmissions: allowsLateSubmissions };
+      } else {
+        return assignment;
+      }
+    });
+
+    setAssignments(updatedAssignments);
+    saveAssignmentsToStorage(updatedAssignments);
+  };
+
+  return { assignments, addAssignment, updateAssignment, deleteAssignment, setPublished, setLateSubmissions };
 };
