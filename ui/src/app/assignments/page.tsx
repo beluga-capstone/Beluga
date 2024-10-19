@@ -2,11 +2,11 @@
 
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
-import { Edit2, Plus } from "lucide-react";
+import { Edit2, Plus, ToggleLeft, ToggleRight } from "lucide-react";
 import Link from "next/link";
 
 const Assignments: React.FC = () => {
-  const { assignments } = useAssignments();
+  const { assignments, setPublished } = useAssignments();
 
   return (
     <div className="container mx-auto p-4">
@@ -53,7 +53,21 @@ const Assignments: React.FC = () => {
                 })}
               </td>
               <td className="text-center py-2">0</td>
-              <td className="text-center py-2">0</td>
+              <td className="flex justify-center py-2">
+                {assignment.isPublished ? (
+                  <ToggleRight
+                    size={32}
+                    className="text-green-500"
+                    onClick={() => setPublished(assignment.id, false)}
+                  />
+                ) : (
+                  <ToggleLeft
+                    size={32}
+                    className="text-red-500"
+                    onClick={() => setPublished(assignment.id, true)}
+                  />
+                )}
+              </td>
               <td className="text-center py-2">0</td>
               <td>
                 <Link href={`/assignments/edit/${assignment.id}`}>

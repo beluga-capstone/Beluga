@@ -128,6 +128,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
                   assignmentId,
                   title,
                   description,
+                  false,
                   new Date(releaseDate),
                   new Date(dueDate),
                   containerId

@@ -41,6 +41,7 @@ export const useAssignments = () => {
       courseId: 1,
       title: title,
       description: description,
+      isPublished: false,
       releaseDate: releaseDate,
       dueDate: dueDate,
       containerId: containerId,
@@ -55,6 +56,7 @@ export const useAssignments = () => {
     id: number,
     title: string,
     description: string,
+    isPublished: boolean,
     releaseDate: Date,
     dueDate: Date,
     containerId: number
@@ -64,6 +66,7 @@ export const useAssignments = () => {
       courseId: 1,
       title: title,
       description: description,
+      isPublished: isPublished,
       releaseDate: releaseDate,
       dueDate: dueDate,
       containerId: containerId,
@@ -89,5 +92,18 @@ export const useAssignments = () => {
     saveAssignmentsToStorage(updatedAssignments);
   };
 
-  return { assignments, addAssignment, updateAssignment, deleteAssignment };
+  const setPublished = (id: number, isPublished: boolean) => {
+    const updatedAssignments = assignments.map((assignment) => {
+      if (assignment.id === id) {
+        return { ...assignment, isPublished: isPublished };
+      } else {
+        return assignment;
+      }
+    });
+
+    setAssignments(updatedAssignments);
+    saveAssignmentsToStorage(updatedAssignments);
+  };
+
+  return { assignments, addAssignment, updateAssignment, deleteAssignment, setPublished };
 };
