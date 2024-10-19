@@ -6,6 +6,14 @@ export type SideNavItem = {
   subMenuItems?: SideNavItem[];
 };
 
+export interface Student {
+  id: number;
+  firstName: string;
+  lastName: string;
+  middleName?: string;
+  email: string;
+}
+
 export interface Assignment {
   id: number;
   courseId: number;

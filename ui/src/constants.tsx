@@ -1,6 +1,6 @@
 import { Icon } from "@iconify/react";
 
-import { SideNavItem, Container, Assignment } from "./types";
+import { SideNavItem, Container, Assignment, Student } from "./types";
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
   {
@@ -26,6 +26,46 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
       { title: "Containers", path: "/machines/containers" },
       { title: "Images", path: "/machines/images" },
     ],
+  },
+];
+
+export const DEFAULT_STUDENTS: Student[] = [
+  {
+    id: 1,
+    firstName: "Bode",
+    lastName: "Raymond",
+    email: "boderaymond@tamu.edu",
+  },
+  {
+    id: 2,
+    firstName: "Deric",
+    lastName: "Le",
+    email: "rake@tamu.edu",
+  },
+  {
+    id: 3,
+    firstName: "Drew",
+    lastName: "Pusey",
+    email: "drewpusey@tamu.edu",
+  },
+  {
+    id: 4,
+    firstName: "Jeffrey",
+    lastName: "Li",
+    email: "cherrytree1324@tamu.edu",
+  },
+  {
+    id: 5,
+    firstName: "Minh",
+    lastName: "Nguyen",
+    middleName: "Dao",
+    email: "minhdao@tamu.edu",
+  },
+  {
+    id: 6,
+    firstName: "Nitesh",
+    lastName: "Duraivel",
+    email: "niteshduraivel@tamu.edu",
   },
 ];
 

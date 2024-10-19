@@ -67,6 +67,9 @@ const AssignmentPage = ({ params }: { params: { id: string } }) => {
           </p>
         </>
       )}
+      <Link href={`/assignments/${assignment?.id}/submissions`}>
+        <p className="text-blue-500">View Submissions</p>
+      </Link>
     </div>
   );
 };
