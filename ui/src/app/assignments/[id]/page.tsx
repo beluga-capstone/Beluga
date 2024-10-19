@@ -2,6 +2,7 @@
 
 import { useAssignments } from "@/hooks/useAssignments";
 import { useContainers } from "@/hooks/useContainers";
+import { Edit2 } from "lucide-react";
 import Link from "next/link";
 
 const AssignmentPage = ({ params }: { params: { id: string } }) => {
@@ -16,15 +17,32 @@ const AssignmentPage = ({ params }: { params: { id: string } }) => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="font-bold text-4xl mb-6">{assignment?.title}</h1>
+      <div className="mb-4 flex justify-between items-center">
+        <h1 className="font-bold text-4xl mb-6">{assignment?.title}</h1>
+        <Link href={`/assignments/edit/${assignment?.id}`}>
+          <Edit2 size={24} />
+        </Link>
+      </div>
       <div className="flex justify-between items-center">
         <div className="flex-row">
           <h2 className="font-bold pb-4">
-            Due Date: {assignment?.dueDate.toLocaleDateString()}
+            Due Date:{" "}
+            {assignment?.dueDate.toLocaleDateString("en-US", {
+              dateStyle: "short",
+              timeZone: "UTC",
+            })}
           </h2>
           <h2 className="font-bold pb-4">
-            Available: {assignment?.releaseDate.toLocaleDateString()} to{" "}
-            {assignment?.dueDate.toLocaleDateString()}
+            Available:{" "}
+            {assignment?.releaseDate.toLocaleDateString("en-US", {
+              dateStyle: "short",
+              timeZone: "UTC",
+            })}{" "}
+            to{" "}
+            {assignment?.dueDate.toLocaleDateString("en-US", {
+              dateStyle: "short",
+              timeZone: "UTC",
+            })}
           </h2>
         </div>
         {assignment?.containerId && assignment.containerId !== -1 && (
