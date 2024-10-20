@@ -1,66 +1,110 @@
-import { useEffect, useRef } from 'react';
-import 'xterm/css/xterm.css';
-import { io, Socket } from 'socket.io-client';
-import { Terminal } from 'xterm';
-import { FitAddon } from 'xterm-addon-fit';
+"use client";
 
-const FontSize = 16;
-const Col = 80;
+import React, { useEffect, useRef } from 'react';
+import { Terminal, ITerminalOptions } from '@xterm/xterm';
+import { FitAddon } from '@xterm/addon-fit';
+import { WebLinksAddon } from '@xterm/addon-web-links';
+import '@xterm/xterm/css/xterm.css';
 
-const ContainerPageTerminal = () => {
-  const webTerminal = useRef<Terminal | null>(null);
-  const socketRef = useRef<Socket | null>(null);
+const ContainerPageTerminal: React.FC = () => {
+  const terminalRef = useRef<HTMLDivElement | null>(null);
+  const xtermRef = useRef<Terminal | null>(null);
+  const socketRef = useRef<WebSocket | null>(null);
+  const fitAddonRef = useRef<FitAddon | null>(null);
 
   useEffect(() => {
-    const initializeTerminal = async () => {
-      const ele = document.getElementById('terminal');
-      if (ele && !webTerminal.current) {
-        const height = ele.clientHeight;
+    if (!terminalRef.current) return;
 
-        // init xterm terminal
-        const terminal = new Terminal({
-          cursorBlink: true,
-          cols: Col,
-          rows: Math.ceil(height / FontSize),
-        });
-
-        const fitAddon = new FitAddon();
-        terminal.loadAddon(fitAddon);
-
-        terminal.open(ele);
-        terminal.focus();
-        fitAddon.fit();
-        webTerminal.current = terminal;
-
-        const socket = io('http://172.17.0.2:8080');
-        socketRef.current = socket;
-
-        terminal.onData((data) => socket.emit('message', data));
-
-        socket.on('message', (data) => terminal.write(data));
-
-        socket.on('error', (err) => {
-          console.error('Socket.IO error:', err);
-        });
-
-        return () => {
-          socket.disconnect();
-        };
-      }
+    const terminalOptions: ITerminalOptions = {
+      cursorBlink: true,
+      fontSize: 14,
+      fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+      theme: {
+        background: '#1e1e1e',
+        foreground: '#ffffff'
+      },
+      convertEol: true,
+      cursorStyle: 'block',
+      scrollback: 1000,
     };
 
-    initializeTerminal();
+    // Initialize terminal
+    const term = new Terminal(terminalOptions);
+    xtermRef.current = term;
 
+    // Create addons
+    const fitAddon = new FitAddon();
+    fitAddonRef.current = fitAddon;
+    const webLinksAddon = new WebLinksAddon();
+
+    // Load addons
+    term.loadAddon(fitAddon);
+    term.loadAddon(webLinksAddon);
+
+    // Open terminal
+    term.open(terminalRef.current);
+    fitAddon.fit();
+
+    // Initialize WebSocket
+    const ws = new WebSocket('ws://localhost:8080');
+    socketRef.current = ws;
+
+    ws.onopen = () => {
+      term.writeln('\x1b[32mConnected to your virtual environment.\x1b[0m');
+      
+      // Handle terminal input
+      term.onData((data: string) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(data);
+        }
+      });
+
+      // Handle terminal resize
+      term.onResize(({ cols, rows }) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'resize', cols, rows }));
+        }
+      });
+    };
+
+    ws.onmessage = (event: MessageEvent) => {
+      term.write(event.data);
+    };
+
+    ws.onerror = () => {
+      term.writeln('\x1b[31mWebSocket error occurred\x1b[0m');
+    };
+
+    ws.onclose = (event: CloseEvent) => {
+      term.writeln(`\x1b[31mDisconnected from terminal server (${event.code})\x1b[0m`);
+    };
+
+    // Handle window resize
+    const handleResize = (): void => {
+      fitAddonRef.current?.fit();
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
     return () => {
-      socketRef.current?.disconnect();
+      if (socketRef.current?.readyState === WebSocket.OPEN) {
+        socketRef.current.close();
+      }
+      term.dispose();
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
   return (
-    <div
-      id="terminal"
-      className="bg-black w-full h-[89%] pl-6 pt-2 rounded-sm"
-    />
+    <div className="w-full h-full min-h-[400px] p-4 bg-gray-900">
+      <div 
+        ref={terminalRef} 
+        className="w-full h-full rounded-lg overflow-hidden"
+        aria-label="Terminal emulator"
+        role="terminal"
+      />
+    </div>
   );
 };
 

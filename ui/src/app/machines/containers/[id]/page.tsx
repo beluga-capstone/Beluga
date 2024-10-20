@@ -52,7 +52,7 @@ const ContainerPage = ({ params }: { params: { id: string } }) => {
                 <h1 className="font-bold text-4xl mb-6">Container "{container.name}"</h1>
                 <ContainerPageInfo container={container} />
 
-                {/* display container component here */}
+                {/* <ContainerPageTerminal socketUrl="ws://localhost:8080" /> */}
                 <ContainerPageTerminal />
             </div>
         );
