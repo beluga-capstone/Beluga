@@ -5,10 +5,10 @@ import { useContainers } from "@/hooks/useContainers";
 import { Edit2 } from "lucide-react";
 import Link from "next/link";
 
-const AssignmentPage = ({ params }: { params: { id: string } }) => {
+const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   const { assignments } = useAssignments();
   const assignment = assignments.find(
-    (assignment) => assignment.id === parseInt(params.id, 10)
+    (assignment) => assignment.id === parseInt(params.assignmentId, 10)
   );
   const { containers } = useContainers();
   const containerName = containers.find(

@@ -2,12 +2,18 @@
 
 import { DEFAULT_STUDENTS } from "@/constants";
 import { useAssignments } from "@/hooks/useAssignments";
+import Link from "next/link";
 
-const AssignmentSubmissionsPage = ({ params }: { params: { id: string } }) => {
+const AssignmentSubmissionsPage = ({
+  params,
+}: {
+  params: { assignmentId: string };
+}) => {
   const { assignments } = useAssignments();
   const assignment = assignments.find(
-    (assignment) => assignment.id === parseInt(params.id, 10)
+    (assignment) => assignment.id === parseInt(params.assignmentId, 10)
   );
+  const submissionId = 1;
 
   return (
     <div className="container mx-auto p-4">
@@ -30,7 +36,7 @@ const AssignmentSubmissionsPage = ({ params }: { params: { id: string } }) => {
             <th>Submitted?</th>
             <th>Score/100</th>
             <th>Graded?</th>
-            <th>Time</th>
+            <th>Submission Time</th>
           </tr>
         </thead>
         <tbody>
@@ -41,8 +47,20 @@ const AssignmentSubmissionsPage = ({ params }: { params: { id: string } }) => {
           </tr>
           {DEFAULT_STUDENTS.map((student) => (
             <tr key={student.id}>
-              <td>{student.lastName}</td>
-              <td>{student.firstName}</td>
+              <td>
+                <Link
+                  href={`/assignments/${assignment?.id}/submissions/${submissionId}`}
+                >
+                  {student.lastName}
+                </Link>
+              </td>
+              <td>
+                <Link
+                  href={`/assignments/${assignment?.id}/submissions/${submissionId}`}
+                >
+                  {student.firstName}
+                </Link>
+              </td>
               <td>{student.middleName}</td>
               <td className="text-center">Yes</td>
               <td className="text-center">100</td>
