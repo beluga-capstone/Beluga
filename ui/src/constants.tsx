@@ -70,3 +70,16 @@ export const DEFAULT_STUDENTS: Student[] = [
 ];
 
 export const DEFAULT_CONTAINERS: Container[] = [];
+
+export const DEFAULT_FILES: string[] = [
+  `# This is a sample Python code to show how it looks in BELUGA
+
+print("a + b = c")
+print("Enter a: ")
+a = int(input())
+print("Enter b: ")
+b = int(input())
+c = a + b
+print("%d + %d = %d" % (a, b, c))
+`,
+];

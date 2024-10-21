@@ -1,52 +1,27 @@
 "use client";
 
-import { useAssignments } from "@/hooks/useAssignments";
-import Link from "next/link";
+import { DEFAULT_FILES } from "@/constants";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import {
+  materialDark,
+  materialLight,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
 
-const SubmissionPage = ({
-  params,
-}: {
-  params: { assignmentId: string; submissionId: string };
-}) => {
-  const { assignments } = useAssignments();
-  const assignment = assignments.find(
-    (assignment) => assignment.id === parseInt(params.assignmentId, 10)
-  );
-  const studentFirstName = "Bode";
-  const studentLastName = "Raymond";
-
+const SubmissionPage = () => {
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-4 flex justify-between items-center">
-        <h1 className="font-bold text-4xl mb-6">{assignment?.title}</h1>
-        <h2>
-          Due:{" "}
-          {assignment?.dueDate.toLocaleDateString("en-US", {
-            dateStyle: "short",
-            timeZone: "UTC",
-          })}
-        </h2>
-      </div>
-      <h2 className="text-2xl pb-8">
-        {studentFirstName} {studentLastName}
-      </h2>
-      <h2 className="text-xl">Files:</h2>
-      <ul className="pl-8">
-        <li>
-          <Link
-            href={`/assignments/${params.assignmentId}/submissions/${params.submissionId}/files/1`}
-          >
-            file1.py
-          </Link>
-        </li>
-        <li>
-          <Link
-            href={`/assignments/${params.assignmentId}/submissions/${params.submissionId}/files/2`}
-          >
-            file2.py
-          </Link>
-        </li>
-      </ul>
+      <SyntaxHighlighter
+        language="python"
+        style={
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? materialDark
+            : materialLight
+        }
+        showLineNumbers
+      >
+        {DEFAULT_FILES[0]}
+      </SyntaxHighlighter>
     </div>
   );
 };
