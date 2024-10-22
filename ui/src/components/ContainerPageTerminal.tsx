@@ -46,7 +46,7 @@ const ContainerPageTerminal: React.FC<{ socketAddr: string }> = ({ socketAddr })
 
     // Open terminal
     term.open(terminalRef.current);
-    fitAddon.fit();
+    setTimeout(() => fitAddon.fit(), 0);
 
     ws.onopen = () => {
       term.writeln('\x1b[32mConnected to your virtual environment.\x1b[0m');
