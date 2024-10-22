@@ -1,4 +1,4 @@
-import { Icon } from "@iconify/react";
+  import { Icon } from "@iconify/react";
 
 import { SideNavItem, Container, Assignment, Student } from "./types";
 

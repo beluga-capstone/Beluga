@@ -31,4 +31,13 @@ export interface Container {
   name: string;
   status: "running" | "paused" | "stopped";
   launchTime: string;
+  image: Image;
+  cpuCores: number;
+  memoryGBs: number;
+  storageGBs: number;
+}
+
+export interface Image {
+  id: number;
+  name: string;
 }
