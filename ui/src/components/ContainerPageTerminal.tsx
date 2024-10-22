@@ -99,7 +99,7 @@ const ContainerPageTerminal: React.FC<{ socketAddr: string }> = ({ socketAddr })
     <>
       <div 
         ref={terminalRef} 
-        role="terminal"
+        role="terminal textbox" 
       />
     </>
   );
