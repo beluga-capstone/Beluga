@@ -99,7 +99,6 @@ const ContainerPageTerminal: React.FC<{ socketAddr: string }> = ({ socketAddr })
     <>
       <div 
         ref={terminalRef} 
-        aria-label="Terminal emulator"
         role="terminal"
       />
     </>
