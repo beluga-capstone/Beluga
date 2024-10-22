@@ -21,7 +21,6 @@
     "react-dom": "^18",
     "react-syntax-highlighter": "^15.6.1",
     "save-dev": "^0.0.1-security",
-    "react-draggable": "^4.4.6",
     "tailwind-merge": "^2.5.3"
   },
   "devDependencies": {
