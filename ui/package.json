@@ -19,12 +19,15 @@
     "next": "14.2.14",
     "react": "^18",
     "react-dom": "^18",
+    "react-syntax-highlighter": "^15.6.1",
+    "save-dev": "^0.0.1-security",
     "tailwind-merge": "^2.5.3"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "eslint": "^8",
     "eslint-config-next": "14.2.14",
     "postcss": "^8",
