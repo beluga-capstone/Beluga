@@ -24,9 +24,9 @@ def create_app():
 
         db.create_all()
 
-        init_admin_user()
+        admin_user_id = init_admin_user()
 
-        init_roles()
+        init_roles(admin_user_id)
         
         return app
 
@@ -48,7 +48,7 @@ def init_admin_user():
     
     return admin_user.user_id
 
-def init_roles():
+def init_roles(admin_user_id):
     from src.util.db import Role
     # List of default roles to be added
     default_roles = [
@@ -56,25 +56,25 @@ def init_roles():
             'name': 'Admin',
             'permission': 'view_system,manage_users,manage_courses,manage_environments',
             'description': 'Admin role with system management capabilities',
-            'user_create': 1
+            'user_create': admin_user_id
         },
         {
             'name': 'Professor',
             'permission': 'manage_courses,view_analytics,grade_assignments',
             'description': 'Professor role with course and assignment management capabilities',
-            'user_create': 1
+            'user_create': admin_user_id
         },
         {
             'name': 'Student',
             'permission': 'view_courses,submit_assignments,view_grades',
             'description': 'Student role with course viewing and assignment submission capabilities',
-            'user_create': 1
+            'user_create': admin_user_id
         },
         {
             'name': 'TA',
             'permission': 'manage_submissions,manage_feedback,manage_assignments',
             'description': 'TA role with submission and assignment management capabilities',
-            'user_create': 1
+            'user_create': admin_user_id
         }
     ]
 

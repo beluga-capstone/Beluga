@@ -108,3 +108,22 @@ def get_enrollments_for_user(user_id):
         'username': user.username,
         'enrollments': enrollments_list
     }), 200
+
+@enrollment_bp.route('/courses/<int:course_id>/users', methods=['GET'])
+def get_users_for_course(course_id):
+    # Query all enrollments for the given course
+    enrollments = CourseEnrollment.query.filter_by(course_id=course_id).all()
+    
+    # Format the response
+    users_list = []
+    for enrollment in enrollments:
+        user = User.query.get(enrollment.user_id)
+        if user:
+            users_list.append({
+                'user_id': user.user_id,
+                'username': user.username,
+                'email': user.email,
+                'role_id': user.role_id
+            })
+    
+    return jsonify(users_list), 200
