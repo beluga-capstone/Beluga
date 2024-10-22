@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react';
 import AddImageModal from "@/components/AddImageModal";
 import EditImageModal from "@/components/EditImageModal";
 import ImageItem from "@/components/ImageItem";
+import Link from "next/link";
 
 type Image = {
     id: number;
@@ -102,16 +103,18 @@ export default function Images() {
         <div className="container mx-auto p-4">
             <h1 className="font-bold text-4xl mb-6">Images</h1>
             <div className="mb-4 flex justify-between items-center">
-                <button
-                    onClick={() => {
-                        setIsModalOpen(true);
-                        setIsEditing(false);
-                        setSelectedImageIds([]);
-                    }}
-                    className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-                >
-                    <Plus className="mr-2" /> Add Image
-                </button>
+                <Link href="/machines/images/new">
+                    <button
+                        onClick={() => {
+                            setIsModalOpen(true);
+                            setIsEditing(false);
+                            setSelectedImageIds([]);
+                        }}
+                        className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+                    >
+                        <Plus className="mr-2" /> Add Image
+                    </button>
+                </Link>
 
                 <div className="space-x-2">
                     <button 
