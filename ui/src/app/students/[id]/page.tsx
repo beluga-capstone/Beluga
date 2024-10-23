@@ -10,11 +10,11 @@ const StudentPage = ({ params }: { params: { id: string } }) => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-4 flex justify-between items-center">
-        <h1 className="font-bold text-4xl mb-6">
+      <div className="mb-8 flex items-center">
+        <h1 className="font-bold text-4xl">
           {user?.firstName} {user?.middleName} {user?.lastName}
         </h1>
-        <Link href={`/students/edit/${user?.id}`}>
+        <Link href={`/students/edit/${user?.id}`} className="px-6">
           <Edit2 size={24} />
         </Link>
       </div>

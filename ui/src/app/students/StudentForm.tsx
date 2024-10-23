@@ -27,40 +27,48 @@ const StudentForm: React.FC<StudentFormProps> = ({
 }) => {
   return (
     <>
-      <h2>First Name</h2>
-      <div className="pt-2 pb-8">
-        <input
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          type="text"
-          className="border rounded p-1 bg-surface"
-          placeholder="First name"
-          aria-label="First name"
-        />
-      </div>
+      <div className="flex space-x-4">
+        <div className="pr-8">
+          <h2>First Name</h2>
+          <div className="pt-2 pb-8">
+            <input
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              type="text"
+              className="border rounded p-1 bg-surface"
+              placeholder="First name"
+              aria-label="First name"
+            />
+          </div>
+        </div>
 
-      <h2>Middle Name</h2>
-      <div className="pt-2 pb-8">
-        <input
-          value={middleName}
-          onChange={(e) => setMiddleName(e.target.value)}
-          type="text"
-          className="border rounded p-1 bg-surface"
-          placeholder="Middle name"
-          aria-label="Middle name"
-        />
-      </div>
+        <div className="pr-8">
+          <h2>Middle Name</h2>
+          <div className="pt-2 pb-8">
+            <input
+              value={middleName}
+              onChange={(e) => setMiddleName(e.target.value)}
+              type="text"
+              className="border rounded p-1 bg-surface"
+              placeholder="Middle name"
+              aria-label="Middle name"
+            />
+          </div>
+        </div>
 
-      <h2>Last Name</h2>
-      <div className="pt-2 pb-8">
-        <input
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          type="text"
-          className="border rounded p-1 bg-surface"
-          placeholder="Last name"
-          aria-label="Last name"
-        />
+        <div>
+          <h2>Last Name</h2>
+          <div className="pt-2 pb-8">
+            <input
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              type="text"
+              className="border rounded p-1 bg-surface"
+              placeholder="Last name"
+              aria-label="Last name"
+            />
+          </div>
+        </div>
       </div>
 
       <h2>Email</h2>

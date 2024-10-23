@@ -6,6 +6,7 @@ import Papa from "papaparse";
 import { User } from "@/types";
 import Button from "@/components/Button";
 import { useUsers } from "@/hooks/useUsers";
+import StudentsTable from "../../StudentsTable";
 
 const ImportStudentsPage: React.FC = () => {
   const { addUsers } = useUsers();
@@ -59,33 +60,7 @@ const ImportStudentsPage: React.FC = () => {
           <p>Drag and drop a CSV file here, or click to select one</p>
         </div>
       ) : (
-        <table className="table w-full">
-          <thead>
-            <tr>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Middle Name</th>
-              <th>Email</th>
-              <th>Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td colSpan={5}>
-                <hr />
-              </td>
-            </tr>
-            {students.map((student) => (
-              <tr key={student.id}>
-                <td className="text-center py-2">{student.firstName}</td>
-                <td className="text-center py-2">{student.lastName}</td>
-                <td className="text-center py-2">{student.middleName}</td>
-                <td className="text-center py-2">{student.email}</td>
-                <td className="text-center py-2">{student.role}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <StudentsTable students={students} />
       )}
 
       {data.length > 0 && (

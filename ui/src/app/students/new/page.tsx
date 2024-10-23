@@ -3,7 +3,6 @@
 import Button from "@/components/Button";
 import { ROLES } from "@/constants";
 import { useUsers } from "@/hooks/useUsers";
-import Link from "next/link";
 import React, { useState } from "react";
 import StudentForm from "../StudentForm";
 
@@ -17,12 +16,7 @@ const NewUser: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-4 flex justify-between items-center">
-        <h1 className="font-bold text-4xl mb-6">New Student</h1>
-        <Link href="/students/new/import">
-          <p className="text-blue-500">Import With File</p>
-        </Link>
-      </div>
+      <h1 className="font-bold text-4xl mb-6">New Student</h1>
 
       <StudentForm
         firstName={firstName}
