@@ -1,6 +1,5 @@
-import { Home, Users, Folder, Monitor } from "lucide-react"; // Import lucide-react icons
-
-import { SideNavItem, Container, User, Student } from "./types";
+import { Home, Users, Folder, Monitor } from "lucide-react";
+import { SideNavItem, Container, Image, Student } from "./types";
 
 export const ROLES = ["Admin", "Professor", "TA", "Student"];
 
@@ -86,24 +85,13 @@ print("%d + %d = %d" % (a, b, c))
 `,
 ];
 
-export const DEFAULT_USERS: User[] = [
+export const DEFAULT_IMAGES: Image[] = [
   {
     id: 1,
-    firstName: "Deric",
-    lastName: "Le",
-    role: "Admin",
+    name: "Ubuntu 24.10"
   },
   {
     id: 2,
-    firstName: "Drew",
-    lastName: "Pusey",
-    role: "Student",
-  },
-  {
-    id: 3,
-    firstName: "Minh",
-    lastName: "Nguyen",
-    middleName: "Dao",
-    role: "Student",
-  },
+    name: "CentOS 7.0-1406"
+  }
 ];
