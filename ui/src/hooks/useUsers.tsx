@@ -28,7 +28,7 @@ export const useUsers = () => {
   const addUser = (
     firstname: string,
     lastname: string,
-    middlename: string,
+    middlename: string | undefined,
     role: string
   ) => {
     const newUser: User = {
@@ -47,8 +47,8 @@ export const useUsers = () => {
   const deleteUser = (id: number) => {
     const updatedUsers = users.filter((user) => user.id !== id);
     setUsers(updatedUsers);
-    setSelectedUsers(selectedUsers.filter((selectedId) => selectedId !== id));
     saveUsersToStorage(updatedUsers);
+    setSelectedUsers(selectedUsers.filter((selectedId) => selectedId !== id));
   };
 
   const toggleSelectUser = (id: number) => {
@@ -65,6 +65,7 @@ export const useUsers = () => {
         (user) => !selectedUsers.includes(user.id)
       );
       setUsers(updatedUsers);
+      saveUsersToStorage(updatedUsers);
       setSelectedUsers([]);
       return null;
     }

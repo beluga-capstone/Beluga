@@ -11,7 +11,6 @@ const Students: React.FC = () => {
   const { 
     users, 
     selectedUsers,
-    addUser, 
     deleteUser, 
     toggleSelectUser, 
     performBulkAction 
@@ -22,8 +21,8 @@ const Students: React.FC = () => {
       <h1 className="font-bold text-4xl mb-6">Students</h1>
       <div className="mb-4 flex justify-between items-center">
         <Button
-          onClick={() => addUser("john", "doe", "", "student")}
           className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+          href="/students/new"
         >
           <Plus className="mr-2" /> Add User
         </Button>
@@ -34,7 +33,6 @@ const Students: React.FC = () => {
         />
       </div>
 
-      {/* List the users */}
       {users.map(user => (
         <UserItem
           key={user.id}
