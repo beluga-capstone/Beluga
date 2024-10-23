@@ -19,8 +19,8 @@ def create_assignment():
         due_at=data.get('due_at'),
         lock_at=data.get('lock_at'),
         unlock_at=data.get('unlock_at'),
-        user_create=data.get('user_create'),
-        image_id=data.get('image_id') 
+        user_id=data.get('user_id'),
+        docker_image_id=data.get('docker_image_id')
     )
 
     try:
@@ -43,8 +43,8 @@ def get_assignments():
         'due_at': assignment.due_at,
         'lock_at': assignment.lock_at,
         'unlock_at': assignment.unlock_at,
-        'user_create': assignment.user_create,
-        'image_id': assignment.image_id 
+        'user_id': assignment.user_id,
+        'docker_image_id': assignment.docker_image_id
     } for assignment in assignments]
 
     return jsonify(assignments_list), 200
@@ -62,8 +62,8 @@ def get_assignment(assignment_id):
         'due_at': assignment.due_at,
         'lock_at': assignment.lock_at,
         'unlock_at': assignment.unlock_at,
-        'user_create': assignment.user_create,
-        'image_id': assignment.image_id 
+        'user_id': assignment.user_id,
+        'docker_image_id': assignment.docker_image_id
     }), 200
 
 # Update an assignment (PUT)
@@ -77,8 +77,8 @@ def update_assignment(assignment_id):
     assignment.due_at = data.get('due_at', assignment.due_at)
     assignment.lock_at = data.get('lock_at', assignment.lock_at)
     assignment.unlock_at = data.get('unlock_at', assignment.unlock_at)
-    assignment.user_create = data.get('user_create', assignment.user_create)
-    assignment.image_id = data.get('image_id', assignment.image_id) 
+    assignment.user_id = data.get('user_id', assignment.user_id)
+    assignment.docker_image_id = data.get('docker_image_id', assignment.docker_image_id)
 
     try:
         db.session.commit()
