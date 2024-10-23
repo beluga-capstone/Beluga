@@ -3,7 +3,7 @@
 import Button from "@/components/Button";
 import { ROLES } from "@/constants";
 import { useUsers } from "@/hooks/useUsers";
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const EditStudent = ({ params }: { params: { id: string } }) => {
   const { users, updateUser } = useUsers();
@@ -13,7 +13,7 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
   const [role, setRole] = useState(ROLES[3]);
-  
+
   useEffect(() => {
     if (user) {
       setFirstName(user.firstName);
@@ -80,7 +80,7 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
         <div className="p-2">
           <Button
             className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
-            href="/students"
+            href={`/students/${userId}`}
           >
             Cancel
           </Button>
@@ -97,7 +97,7 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
                 role
               )
             }
-            href="/students"
+            href={`/students/${userId}`}
             disabled={!firstName || !lastName}
           >
             Save

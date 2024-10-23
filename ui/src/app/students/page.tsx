@@ -39,13 +39,13 @@ const Students: React.FC = () => {
           {users.map((user) => (
             <tr key={user.id}>
               <td className="text-center py-2">
-                <Link href={`/students/edit/${user.id}`}>{user.firstName}</Link>
+                <Link href={`/students/${user.id}`}>{user.firstName}</Link>
               </td>
               <td className="text-center py-2">
-                <Link href={`/students/edit/${user.id}`}>{user.lastName}</Link>
+                <Link href={`/students/${user.id}`}>{user.lastName}</Link>
               </td>
               <td className="text-center py-2">
-                <Link href={`/students/edit/${user.id}`}>{user.middleName}</Link>
+                <Link href={`/students/${user.id}`}>{user.middleName}</Link>
               </td>
               <td className="text-center py-2">{user.role}</td>
             </tr>
