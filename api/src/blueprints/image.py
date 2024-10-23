@@ -10,16 +10,14 @@ image_bp = Blueprint('image', __name__)
 def create_image():
     data = request.get_json()
     new_image = Image(
+        docker_image_id=data['docker_image_id'],
         user_id=data['user_id'],
-        name=data.get('name'),
-        description=data.get('description'),
-        created_at=data.get('created_at', datetime.now()),
-        updated_at=data.get('updated_at', datetime.now())
+        description=data.get('description')
     )
     try:
         db.session.add(new_image)
         db.session.commit()
-        return jsonify({'message': 'Image created successfully', 'image_id': new_image.image_id}), 201
+        return jsonify({'message': 'Image created successfully', 'docker_image_id': new_image.docker_image_id}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -29,37 +27,29 @@ def create_image():
 def get_images():
     images = Image.query.all()
     images_list = [{
-        'image_id': image.image_id,
+        'docker_image_id': image.docker_image_id,
         'user_id': image.user_id,
-        'name': image.name,
-        'description': image.description,
-        'created_at': image.created_at,
-        'updated_at': image.updated_at
+        'description': image.description
     } for image in images]
     return jsonify(images_list), 200
 
 # Get a specific image (GET)
-@image_bp.route('/images/<int:image_id>', methods=['GET'])
-def get_image(image_id):
-    image = Image.query.get_or_404(image_id)
+@image_bp.route('/images/<string:docker_image_id>', methods=['GET'])
+def get_image(docker_image_id):
+    image = Image.query.get_or_404(docker_image_id)
     return jsonify({
-        'image_id': image.image_id,
+        'docker_image_id': image.docker_image_id,
         'user_id': image.user_id,
-        'name': image.name,
-        'description': image.description,
-        'created_at': image.created_at,
-        'updated_at': image.updated_at
+        'description': image.description
     }), 200
 
 # Update an image (PUT)
-@image_bp.route('/images/<int:image_id>', methods=['PUT'])
-def update_image(image_id):
-    image = Image.query.get_or_404(image_id)
+@image_bp.route('/images/<string:docker_image_id>', methods=['PUT'])
+def update_image(docker_image_id):
+    image = Image.query.get_or_404(docker_image_id)
     data = request.get_json()
     image.user_id = data.get('user_id', image.user_id)
-    image.name = data.get('name', image.name)
     image.description = data.get('description', image.description)
-    image.updated_at = datetime.now()
     try:
         db.session.commit()
         return jsonify({'message': 'Image updated successfully'}), 200
@@ -68,9 +58,9 @@ def update_image(image_id):
         return jsonify({'error': str(e)}), 500
 
 # Delete an image (DELETE)
-@image_bp.route('/images/<int:image_id>', methods=['DELETE'])
-def delete_image(image_id):
-    image = Image.query.get_or_404(image_id)
+@image_bp.route('/images/<string:docker_image_id>', methods=['DELETE'])
+def delete_image(docker_image_id):
+    image = Image.query.get_or_404(docker_image_id)
     try:
         db.session.delete(image)
         db.session.commit()
