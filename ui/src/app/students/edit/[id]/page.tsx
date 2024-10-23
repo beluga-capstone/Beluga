@@ -4,6 +4,7 @@ import Button from "@/components/Button";
 import { ROLES } from "@/constants";
 import { useUsers } from "@/hooks/useUsers";
 import React, { useEffect, useState } from "react";
+import StudentForm from "../../StudentForm";
 
 const EditStudent = ({ params }: { params: { id: string } }) => {
   const { users, updateUser } = useUsers();
@@ -29,66 +30,18 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
     <div className="container mx-auto p-4">
       <h1 className="font-bold text-4xl mb-6">Edit Student</h1>
 
-      <h2>First Name</h2>
-      <div className="pt-2 pb-8">
-        <input
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          type="text"
-          className="border rounded p-1 bg-surface"
-          placeholder="First name"
-          aria-label="First name"
-        />
-      </div>
-
-      <h2>Middle Name</h2>
-      <div className="pt-2 pb-8">
-        <input
-          value={middleName}
-          onChange={(e) => setMiddleName(e.target.value)}
-          type="text"
-          className="border rounded p-1 bg-surface"
-          placeholder="Middle name"
-          aria-label="Middle name"
-        />
-      </div>
-
-      <h2>Last Name</h2>
-      <div className="pt-2 pb-8">
-        <input
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          type="text"
-          className="border rounded p-1 bg-surface"
-          placeholder="Last name"
-          aria-label="Last name"
-        />
-      </div>
-
-      <h2>Email</h2>
-      <div className="pt-2 pb-8">
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          type="text"
-          className="border rounded p-1 bg-surface"
-          placeholder="Email"
-          aria-label="Email"
-        />
-      </div>
-
-      <h2>Role</h2>
-      <div className="pt-2 pb-8">
-        <select
-          title="Role"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          className="border rounded p-1 bg-surface"
-        >
-          <option value={ROLES[3]}>{ROLES[3]}</option>
-          <option value={ROLES[2]}>{ROLES[2]}</option>
-        </select>
-      </div>
+      <StudentForm
+        firstName={firstName}
+        setFirstName={setFirstName}
+        middleName={middleName}
+        setMiddleName={setMiddleName}
+        lastName={lastName}
+        setLastName={setLastName}
+        email={email}
+        setEmail={setEmail}
+        role={role}
+        setRole={setRole}
+      />
 
       <div className="flex flex-column justify-end">
         <div className="p-2">
