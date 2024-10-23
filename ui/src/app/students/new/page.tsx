@@ -1,6 +1,7 @@
 "use client";
 
 import Button from "@/components/Button";
+import { ROLES } from "@/constants";
 import { useUsers } from "@/hooks/useUsers";
 import React, { useState } from "react";
 
@@ -9,7 +10,7 @@ const NewUser: React.FC = () => {
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState(ROLES[3]);
 
   return (
     <div className="container mx-auto p-4">
@@ -58,8 +59,8 @@ const NewUser: React.FC = () => {
           onChange={(e) => setRole(e.target.value)}
           className="border rounded p-1 bg-surface"
         >
-          <option value="student">Student</option>
-          <option value="teacher">TA</option>
+          <option value="student">{ROLES[3]}</option>
+          <option value="teacher">{ROLES[2]}</option>
         </select>
       </div>
 
@@ -84,6 +85,7 @@ const NewUser: React.FC = () => {
               )
             }
             href="/students"
+            disabled={!firstName || !lastName}
           >
             Add Student
           </Button>

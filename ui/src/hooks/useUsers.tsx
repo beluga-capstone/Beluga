@@ -51,33 +51,9 @@ export const useUsers = () => {
     setSelectedUsers(selectedUsers.filter((selectedId) => selectedId !== id));
   };
 
-  const toggleSelectUser = (id: number) => {
-    setSelectedUsers((prevSelected) =>
-      prevSelected.includes(id)
-        ? prevSelected.filter((selectedId) => selectedId !== id)
-        : [...prevSelected, id]
-    );
-  };
-
-  const performBulkAction = (action: "delete") => {
-    if (action === "delete") {
-      const updatedUsers = users.filter(
-        (user) => !selectedUsers.includes(user.id)
-      );
-      setUsers(updatedUsers);
-      saveUsersToStorage(updatedUsers);
-      setSelectedUsers([]);
-      return null;
-    }
-    return null;
-  };
-
   return {
     users,
-    selectedUsers,
     addUser,
     deleteUser,
-    toggleSelectUser,
-    performBulkAction,
   };
 };
