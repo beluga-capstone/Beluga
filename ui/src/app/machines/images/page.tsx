@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Plus } from 'lucide-react';
+import { Plus, Edit } from 'lucide-react';
 import AddImageModal from "@/components/AddImageModal";
 import EditImageModal from "@/components/EditImageModal";
 import ImageItem from "@/components/ImageItem";
@@ -55,6 +55,7 @@ export default function Images() {
             dockerfileContent: imageData.dockerfileContent,
         };
         setImages([...images, newImage]);
+        setIsModalOpen(false); // Close the modal after creating the image
     };
 
     const handleEditImage = (updatedImage: {
@@ -140,7 +141,7 @@ export default function Images() {
               />
             ))}
 
-            {isModalOpen && isEditing ? (
+            {isModalOpen && (isEditing ? (
                 <EditImageModal
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
@@ -151,13 +152,12 @@ export default function Images() {
                 />
             ) : (
                 <AddImageModal
-                    isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onCreateImage={handleCreateImage}
                     onDeleteImage={handleDeleteImage}
                     imageId={null}
                 />
-            )}
+            ))}
         </div>
     );
 }
