@@ -66,7 +66,7 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
               )
             }
             href={`/students/${userId}`}
-            disabled={!firstName || !lastName}
+            disabled={!firstName || !lastName || !email}
           >
             Save
           </Button>

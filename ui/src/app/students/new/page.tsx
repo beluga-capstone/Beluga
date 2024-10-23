@@ -53,7 +53,7 @@ const NewUser: React.FC = () => {
               )
             }
             href="/students"
-            disabled={!firstName || !lastName}
+            disabled={!firstName || !lastName || !email}
           >
             Add Student
           </Button>
