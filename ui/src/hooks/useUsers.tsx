@@ -44,6 +44,32 @@ export const useUsers = () => {
     saveUsersToStorage(updatedUsers);
   };
 
+  const updateUser = (
+    id: number,
+    firstname: string,
+    lastname: string,
+    middlename: string | undefined,
+    role: string
+  ) => {
+    const updatedUser = {
+      id: id,
+      firstName: firstname,
+      lastName: lastname,
+      middleName: middlename,
+      role: role,
+    };
+
+    const updatedUsers = users.map((user) => {
+      if (user.id === id) {
+        return updatedUser;
+      }
+      return user;
+    });
+
+    setUsers(updatedUsers);
+    saveUsersToStorage(updatedUsers);
+  };
+
   const deleteUser = (id: number) => {
     const updatedUsers = users.filter((user) => user.id !== id);
     setUsers(updatedUsers);
@@ -54,6 +80,7 @@ export const useUsers = () => {
   return {
     users,
     addUser,
+    updateUser,
     deleteUser,
   };
 };

@@ -3,18 +3,30 @@
 import Button from "@/components/Button";
 import { ROLES } from "@/constants";
 import { useUsers } from "@/hooks/useUsers";
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
 
-const NewUser: React.FC = () => {
-  const { addUser } = useUsers();
+const EditStudent = ({ params }: { params: { id: string } }) => {
+  const { users, updateUser } = useUsers();
+  const userId = parseInt(params.id, 10);
+  const user = users.find((user) => user.id === userId);
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
   const [role, setRole] = useState(ROLES[3]);
+  
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.firstName);
+      setMiddleName(user.middleName || "");
+      setLastName(user.lastName);
+      setRole(user.role);
+    }
+  }, [user]);
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="font-bold text-4xl mb-6">New Student</h1>
+      <h1 className="font-bold text-4xl mb-6">Edit Student</h1>
+
       <h2>First Name</h2>
       <div className="pt-2 pb-8">
         <input
@@ -77,7 +89,8 @@ const NewUser: React.FC = () => {
           <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
             onClick={() =>
-              addUser(
+              updateUser(
+                userId,
                 firstName,
                 lastName,
                 middleName === "" ? undefined : middleName,
@@ -87,7 +100,7 @@ const NewUser: React.FC = () => {
             href="/students"
             disabled={!firstName || !lastName}
           >
-            Add Student
+            Save
           </Button>
         </div>
       </div>
@@ -95,4 +108,4 @@ const NewUser: React.FC = () => {
   );
 };
 
-export default NewUser;
+export default EditStudent;

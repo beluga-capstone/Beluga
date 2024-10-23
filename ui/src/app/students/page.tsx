@@ -4,6 +4,7 @@ import React from "react";
 import { Plus } from "lucide-react";
 import Button from "@/components/Button";
 import { useUsers } from "@/hooks/useUsers";
+import Link from "next/link";
 
 const Students: React.FC = () => {
   const { users } = useUsers();
@@ -37,9 +38,15 @@ const Students: React.FC = () => {
           </tr>
           {users.map((user) => (
             <tr key={user.id}>
-              <td className="text-center py-2">{user.firstName}</td>
-              <td className="text-center py-2">{user.lastName}</td>
-              <td className="text-center py-2">{user.middleName}</td>
+              <td className="text-center py-2">
+                <Link href={`/students/edit/${user.id}`}>{user.firstName}</Link>
+              </td>
+              <td className="text-center py-2">
+                <Link href={`/students/edit/${user.id}`}>{user.lastName}</Link>
+              </td>
+              <td className="text-center py-2">
+                <Link href={`/students/edit/${user.id}`}>{user.middleName}</Link>
+              </td>
               <td className="text-center py-2">{user.role}</td>
             </tr>
           ))}
