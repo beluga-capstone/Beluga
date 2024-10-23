@@ -10,12 +10,11 @@ def create_app():
     db.init_app(app)
 
     with app.app_context():
-        from src.blueprints import assignment, container, course_enrollment, courses, dependencies, image, role, submissions, term, users
+        from src.blueprints import assignment, container, course_enrollment, courses, image, role, submissions, term, users
         app.register_blueprint(assignment.assignment_bp)
         app.register_blueprint(container.container_bp)
         app.register_blueprint(course_enrollment.enrollment_bp)
         app.register_blueprint(courses.course_bp)
-        app.register_blueprint(dependencies.dependencies_bp)
         app.register_blueprint(image.image_bp)
         app.register_blueprint(role.role_bp)
         app.register_blueprint(submissions.submission_bp)
