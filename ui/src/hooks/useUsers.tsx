@@ -46,6 +46,12 @@ export const useUsers = () => {
     saveUsersToStorage(updatedUsers);
   };
 
+  const addUsers = (newUsers: User[]) => {
+    const updatedUsers = [...users, ...newUsers];
+    setUsers(updatedUsers);
+    saveUsersToStorage(updatedUsers);
+  };
+
   const updateUser = (
     id: number,
     firstname: string,
@@ -84,6 +90,7 @@ export const useUsers = () => {
   return {
     users,
     addUser,
+    addUsers,
     updateUser,
     deleteUser,
   };

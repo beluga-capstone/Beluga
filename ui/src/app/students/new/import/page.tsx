@@ -4,8 +4,11 @@ import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import Papa from "papaparse";
 import { User } from "@/types";
+import Button from "@/components/Button";
+import { useUsers } from "@/hooks/useUsers";
 
 const ImportStudentsPage: React.FC = () => {
+  const { addUsers } = useUsers();
   const [data, setData] = useState<any[]>([]);
   const [students, setStudents] = useState<User[]>([]);
 
@@ -83,6 +86,28 @@ const ImportStudentsPage: React.FC = () => {
             ))}
           </tbody>
         </table>
+      )}
+
+      {data.length > 0 && (
+        <div className="flex flex-column justify-end pt-4">
+          <div className="p-2">
+            <Button
+              className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
+              href="/students"
+            >
+              Cancel
+            </Button>
+          </div>
+          <div className="p-2">
+            <Button
+              className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+              href="/students"
+              onClick={() => addUsers(students)}
+            >
+              Save
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );
