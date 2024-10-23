@@ -20,6 +20,7 @@ const StudentPage = ({ params }: { params: { id: string } }) => {
       </div>
       <div className="flex justify-between items-center">
         <div className="flex-row">
+          <h2 className="font-bold pb-4">Email: {user?.email}</h2>
           <h2 className="font-bold pb-4">Role: {user?.role}</h2>
         </div>
       </div>

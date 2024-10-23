@@ -12,6 +12,7 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [role, setRole] = useState(ROLES[3]);
 
   useEffect(() => {
@@ -19,6 +20,7 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
       setFirstName(user.firstName);
       setMiddleName(user.middleName || "");
       setLastName(user.lastName);
+      setEmail(user.email);
       setRole(user.role);
     }
   }, [user]);
@@ -63,6 +65,18 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
         />
       </div>
 
+      <h2>Email</h2>
+      <div className="pt-2 pb-8">
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          className="border rounded p-1 bg-surface"
+          placeholder="Email"
+          aria-label="Email"
+        />
+      </div>
+
       <h2>Role</h2>
       <div className="pt-2 pb-8">
         <select
@@ -94,6 +108,7 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
                 firstName,
                 lastName,
                 middleName === "" ? undefined : middleName,
+                email,
                 role
               )
             }

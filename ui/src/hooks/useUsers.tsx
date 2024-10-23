@@ -29,6 +29,7 @@ export const useUsers = () => {
     firstname: string,
     lastname: string,
     middlename: string | undefined,
+    email: string,
     role: string
   ) => {
     const newUser: User = {
@@ -36,6 +37,7 @@ export const useUsers = () => {
       firstName: firstname,
       lastName: lastname,
       middleName: middlename,
+      email: email,
       role: role,
     };
 
@@ -49,6 +51,7 @@ export const useUsers = () => {
     firstname: string,
     lastname: string,
     middlename: string | undefined,
+    email: string,
     role: string
   ) => {
     const updatedUser = {
@@ -56,6 +59,7 @@ export const useUsers = () => {
       firstName: firstname,
       lastName: lastname,
       middleName: middlename,
+      email: email,
       role: role,
     };
 

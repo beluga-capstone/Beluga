@@ -11,6 +11,7 @@ const NewUser: React.FC = () => {
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [role, setRole] = useState(ROLES[3]);
 
   return (
@@ -57,6 +58,18 @@ const NewUser: React.FC = () => {
         />
       </div>
 
+      <h2>Email</h2>
+      <div className="pt-2 pb-8">
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          className="border rounded p-1 bg-surface"
+          placeholder="Email"
+          aria-label="Email"
+        />
+      </div>
+
       <h2>Role</h2>
       <div className="pt-2 pb-8">
         <select
@@ -87,6 +100,7 @@ const NewUser: React.FC = () => {
                 firstName,
                 lastName,
                 middleName === "" ? undefined : middleName,
+                email,
                 role
               )
             }
