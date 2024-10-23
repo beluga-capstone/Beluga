@@ -134,7 +134,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
                 )
               }
               href="/assignments"
-              disabled={!title}
+              disabled={!title || !releaseDate || !dueDate}
             >
               Save
             </Button>

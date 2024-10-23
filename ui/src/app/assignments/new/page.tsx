@@ -104,7 +104,7 @@ const NewAssignment: React.FC = () => {
               )
             }
             href="/assignments"
-            disabled={!title}
+            disabled={!title || !releaseDate || !dueDate}
           >
             Add Assignment
           </Button>
