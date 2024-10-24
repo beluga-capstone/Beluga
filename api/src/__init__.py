@@ -55,25 +55,25 @@ def init_roles(admin_user_id):
             'name': 'Admin',
             'permission': 'view_system,manage_users,manage_courses,manage_environments',
             'description': 'Admin role with system management capabilities',
-            'user_create': admin_user_id
+            'user_id': admin_user_id
         },
         {
             'name': 'Professor',
             'permission': 'manage_courses,view_analytics,grade_assignments',
             'description': 'Professor role with course and assignment management capabilities',
-            'user_create': admin_user_id
+            'user_id': admin_user_id
         },
         {
             'name': 'Student',
             'permission': 'view_courses,submit_assignments,view_grades',
             'description': 'Student role with course viewing and assignment submission capabilities',
-            'user_create': admin_user_id
+            'user_id': admin_user_id
         },
         {
             'name': 'TA',
             'permission': 'manage_submissions,manage_feedback,manage_assignments',
             'description': 'TA role with submission and assignment management capabilities',
-            'user_create': admin_user_id
+            'user_id': admin_user_id
         }
     ]
 
@@ -84,7 +84,7 @@ def init_roles(admin_user_id):
                 name=role_data['name'],
                 permission=role_data['permission'],
                 description=role_data['description'],
-                user_create=role_data['user_create']
+                user_id=role_data['user_id']
             )
             db.session.add(new_role)
 

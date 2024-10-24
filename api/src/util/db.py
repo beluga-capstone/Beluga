@@ -11,7 +11,7 @@ class Role(db.Model):
     name = db.Column(db.String(50), nullable=False)
     permission = db.Column(db.String(200))
     description = db.Column(db.String(200))
-    user_create = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now)
 

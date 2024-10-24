@@ -16,7 +16,7 @@ def create_role():
         name=data['name'],
         permission=data.get('permission', ''),
         description=data.get('description', ''),
-        user_create=data.get('user_create')
+        user_id=data.get('user_id')
     )
     
     try:
@@ -36,7 +36,7 @@ def get_roles():
         'name': role.name,
         'permission': role.permission,
         'description': role.description,
-        'user_create': role.user_create,
+        'user_id': role.user_id,
         'created_at': role.created_at,
         'updated_at': role.updated_at
     } for role in roles]
@@ -53,7 +53,7 @@ def get_role(role_id):
         'name': role.name,
         'permission': role.permission,
         'description': role.description,
-        'user_create': role.user_create,
+        'user_id': role.user_id,
         'created_at': role.created_at,
         'updated_at': role.updated_at
     }), 200
