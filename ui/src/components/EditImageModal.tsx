@@ -15,7 +15,7 @@ interface EditImageModalProps {
     } | null;
 }
 
-function EditImageModal({onClose, onUpdateImage, imageId, selectedImage }: EditImageModalProps) {
+function EditImageModal({onClose, onUpdateImage, onDeleteImage, imageId, selectedImage }: EditImageModalProps) {
     const [imageName, setImageName] = useState("");
     const [courses, setCourses] = useState<string[]>([]);
     const [packages, setPackages] = useState<string[]>([]);
@@ -28,6 +28,11 @@ function EditImageModal({onClose, onUpdateImage, imageId, selectedImage }: EditI
             setCourses(selectedImage.courses);
             setPackages(selectedImage.packages);
             setDockerFileContent(selectedImage.dockerfileContent);
+        } else {
+            setImageName("");
+            setCourses([]);
+            setPackages([]);
+            setDockerFileContent("");
         }
     }, [selectedImage]);
 
@@ -141,7 +146,7 @@ function EditImageModal({onClose, onUpdateImage, imageId, selectedImage }: EditI
                 )}
             </div>
 
-            <div className="flex justify-between items-center mt-4">
+            <div className="flex justify-between items-center -mt-4">
                 <button
                     className={`border rounded p-1 bg-surface ${
                         isAdvancedDetailsOpen ? "bg-gray-300" : ""
@@ -150,13 +155,26 @@ function EditImageModal({onClose, onUpdateImage, imageId, selectedImage }: EditI
                 >
                     {isAdvancedDetailsOpen ? "Hide Advanced Details" : "Show Advanced Details"}
                 </button>
-
+            </div>
+            
+            <div className="flex justify-between items-center mt-12">
+                <button 
+                    className="bg-red-500 text-white px-4 py-2 rounded flex items-center"
+                    onClick={() => {
+                        if (imageId) {
+                            onDeleteImage(imageId); // Call the delete function
+                        }
+                    }}
+                >
+                    Delete
+                </button>
+                
                 <div className="flex space-x-4">
                     <button className="bg-gray-500 text-white px-4 py-2 rounded flex items-center" onClick={onClose}>
                         Cancel
                     </button>
                     <button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center" onClick={handleUpdateImage}>
-                        Create
+                        Update
                     </button>
                 </div>
             </div>

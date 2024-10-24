@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Plus } from 'lucide-react';
 import AddImageModal from "@/components/AddImageModal";
 import EditImageModal from "@/components/EditImageModal";
@@ -21,6 +22,8 @@ export default function Images() {
     const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
     const [selectedImageIds, setSelectedImageIds] = useState<number[]>([]);
 
+    const router = useRouter(); 
+
     useEffect(() => {
         const storedImages = localStorage.getItem("images");
         if (storedImages) {
@@ -28,6 +31,7 @@ export default function Images() {
             setImages(JSON.parse(storedImages));
         }
     }, []);
+    
 
     useEffect(() => {
         if (images.length > 0) {
@@ -96,8 +100,10 @@ export default function Images() {
     };
 
     const handleDeleteSelectedImages = () => {
-        setImages(images.filter((image) => !selectedImageIds.includes(image.id)));
+        const updatedImages = images.filter((image) => !selectedImageIds.includes(image.id));
+        setImages(updatedImages);
         setSelectedImageIds([]);
+        localStorage.setItem("images", JSON.stringify(updatedImages));
     };
 
     return (
@@ -107,7 +113,6 @@ export default function Images() {
                 <Link href="/machines/images/new">
                     <button
                         onClick={() => {
-                            setIsModalOpen(true);
                             setIsEditing(false);
                             setSelectedImageIds([]);
                         }}
@@ -128,19 +133,25 @@ export default function Images() {
             </div>
 
             {images.map((image) => (
-                <ImageItem
-                  key={image.id}
-                  image={image}
-                  isSelected={selectedImageIds.includes(image.id)}
-                  onToggleSelect={handleToggleSelect}
-                  onEdit={(id) => {
-                      setSelectedImageId(id);
-                      setIsEditing(true);
-                      setIsModalOpen(true);
-                  }} 
-              />
+                <div
+                    key={image.id}
+                    className="cursor-pointer"
+                    onClick={() => {
+                        setSelectedImageId(image.id);
+                        router.push(`/machines/images/details?id=${image.id}`);
+                    }}
+                >
+                    <ImageItem
+                        image={image}
+                        isSelected={selectedImageIds.includes(image.id)}
+                        onToggleSelect={handleToggleSelect}
+                        onEdit={(id) => {
+                            setSelectedImageId(id);
+                            setIsEditing(true);
+                        }} 
+                    />
+                </div>
             ))}
-
             {isModalOpen && (isEditing ? (
                 <EditImageModal
                     onClose={() => setIsModalOpen(false)}
