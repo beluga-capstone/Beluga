@@ -1,5 +1,5 @@
 import { Home, Users, Folder, Monitor } from "lucide-react";
-import { SideNavItem, Container, Image, Student } from "./types";
+import { SideNavItem, Container, Image, Student, Course } from "./types";
 
 export const ROLES = ["Admin", "Professor", "TA", "Student"];
 
@@ -27,6 +27,33 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
       { title: "Containers", path: "/machines/containers" },
       { title: "Images", path: "/machines/images" },
     ],
+  },
+];
+
+export const DEFAULT_COURSES: Course[] = [
+  {
+    id: 1,
+    name: "CSCE 410",
+    section: 598,
+    term: "Fall 2024",
+    studentsEnrolled: 45,
+    isPublished: true,
+  },
+  {
+    id: 2,
+    name: "CSCE 463",
+    section: 599,
+    term: "Fall 2024",
+    studentsEnrolled: 50,
+    isPublished: true,
+  },
+  {
+    id: 3,
+    name: "CSCE 313",
+    section: 901,
+    term: "Spring 2024",
+    studentsEnrolled: 67,
+    isPublished: false,
   },
 ];
 
@@ -88,10 +115,10 @@ print("%d + %d = %d" % (a, b, c))
 export const DEFAULT_IMAGES: Image[] = [
   {
     id: 1,
-    name: "Ubuntu 24.10"
+    name: "Ubuntu 24.10",
   },
   {
     id: 2,
-    name: "CentOS 7.0-1406"
-  }
+    name: "CentOS 7.0-1406",
+  },
 ];
