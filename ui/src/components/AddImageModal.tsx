@@ -18,8 +18,8 @@ interface AddImageModalProps {
 function AddImageModal({ onClose, onCreateImage, imageId }: AddImageModalProps) {
     const [isAdvancedDetailsOpen, setIsAdvancedDetailsOpen] = useState(false);
     const [imageName, setImageName] = useState("");
-    const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
-    const [selectedPackages, setSelectedPackages] = useState<string[]>([]);
+    const [courses, setSelectedCourses] = useState<string[]>([]);
+    const [packages, setSelectedPackages] = useState<string[]>([]);
     const [dockerFileContent, setDockerFileContent] = useState("");
 
     const handleCourseChange = (course: string) => {
@@ -42,8 +42,8 @@ function AddImageModal({ onClose, onCreateImage, imageId }: AddImageModalProps) 
 
         onCreateImage({
             title: imageName,
-            courses: selectedCourses,
-            packages: selectedPackages,
+            courses: courses,
+            packages: packages,
             dockerfileContent: dockerFileContent,
         });
     };
@@ -72,7 +72,7 @@ function AddImageModal({ onClose, onCreateImage, imageId }: AddImageModalProps) 
                         <label key={course} className="flex items-center bg-surface">
                             <input
                                 type="checkbox"
-                                checked={selectedCourses.includes(course)}
+                                checked={courses.includes(course)}
                                 onChange={() => handleCourseChange(course)}
                                 className="mr-2"
                             />{" "}
@@ -105,7 +105,7 @@ function AddImageModal({ onClose, onCreateImage, imageId }: AddImageModalProps) 
                             <td className="text-center">
                                 <input
                                     type="checkbox"
-                                    checked={selectedPackages.includes(packageName)}
+                                    checked={packages.includes(packageName)}
                                     onChange={() => handlePackageChange(packageName)}
                                 />
                             </td>

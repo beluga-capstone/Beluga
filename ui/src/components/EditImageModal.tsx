@@ -1,9 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Icon } from "@iconify/react";
 
 interface EditImageModalProps {
-    isOpen: boolean;
     onClose: () => void;
     onUpdateImage: (updatedImage: { id: number; title: string; courses: string[]; packages: string[]; dockerfileContent: string }) => void;
     onDeleteImage: (imageId: number | null) => void;
@@ -17,12 +15,11 @@ interface EditImageModalProps {
     } | null;
 }
 
-function EditImageModal({ isOpen, onClose, onUpdateImage, imageId, selectedImage }: EditImageModalProps) {
+function EditImageModal({onClose, onUpdateImage, imageId, selectedImage }: EditImageModalProps) {
     const [imageName, setImageName] = useState("");
     const [courses, setCourses] = useState<string[]>([]);
     const [packages, setPackages] = useState<string[]>([]);
     const [dockerFileContent, setDockerFileContent] = useState("");
-    const [isMinimized, setIsMinimized] = useState(false);
     const [isAdvancedDetailsOpen, setIsAdvancedDetailsOpen] = useState(false);
 
     useEffect(() => {
@@ -33,8 +30,6 @@ function EditImageModal({ isOpen, onClose, onUpdateImage, imageId, selectedImage
             setDockerFileContent(selectedImage.dockerfileContent);
         }
     }, [selectedImage]);
-
-    if (!isOpen) return null; 
 
     const handleUpdateImage = () => {
         if (imageName.trim() !== "" && imageId !== null) {
@@ -66,119 +61,106 @@ function EditImageModal({ isOpen, onClose, onUpdateImage, imageId, selectedImage
     };
 
     return (
-        <>
-            <div className="fixed inset-0 bg-black opacity-50 z-40" />
-
-            <div className="bg-white shadow-lg rounded-lg p-5 w-5/6 h-4/5 flex flex-col ml-28 mt-8 z-50 relative">
-                <div className="modal-header flex justify-between items-center">
-                    <div></div>
-                    <div className="flex justify-end space-x-2 mb-4">
-                        <button className="text-black" onClick={onClose}>
-                            <Icon icon="mdi:close" width="20" height="20" />
-                        </button>
-                    </div>
+        <div className="container mx-auto p-4">
+            <h1 className="font-bold text-4xl mb-6">Edit Image</h1>
+            <div className="mb-4">
+            <h2>Image Name</h2>
+                <div className="pt-2 pb-8">
+                    <input
+                        id="imageName"
+                        type="text"
+                        value={imageName}
+                        onChange={(e) => setImageName(e.target.value)}
+                        className="border rounded p-1 bg-surface"
+                        placeholder="Image Name"
+                    />
                 </div>
+            </div>
 
-                {!isMinimized && (
+            <div className="mb-4">
+                <h2>Courses Assigned:</h2>
+                <div className="mb-4">
+                    {['CSCE 121', 'CSCE 313', 'CSCE 410'].map((course) => (
+                        <label key={course} className="flex items-center bg-surface">
+                            <input
+                                type="checkbox"
+                                checked={courses.includes(course)}
+                                onChange={() => handleCourseChange(course)}
+                                className="mr-2"
+                            />{" "}
+                            {course}
+                        </label>
+                    ))}
+                </div>
+            </div>
+                
+            <div className="pt-2 pb-8">
+            <input
+                type="text"
+                placeholder="Search"
+                className="border rounded p-1 bg-surface"
+            />
+            </div>
+
+            <div className="mb-4">
+            <table className="min-w mb-4">
+                <thead>
+                    <tr className="border-b border-black">
+                        <th className="text-left bg-surface">Package</th>
+                        <th className="text-center bg-surface">Install</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {['vim', 'python3', 'imagemagick'].map((packageName) => (
+                        <tr key={packageName}>
+                            <td className="bg-surface">{packageName}</td>
+                            <td className="text-center">
+                                <input
+                                    type="checkbox"
+                                    checked={packages.includes(packageName)}
+                                    onChange={() => handlePackageChange(packageName)}
+                                />
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            </div>
+
+            <div className="pt-2 pb-8">
+                {isAdvancedDetailsOpen && (
                     <>
-                        <div className="modal-body flex justify-between">
-                            <div className="w-1/2">
-                                {/* Image Name */}
-                                <label className="font-semibold block mb-2 text-black">Image Name</label>
-                                <input
-                                    type="text"
-                                    value={imageName}
-                                    onChange={(e) => setImageName(e.target.value)}
-                                    placeholder="Enter image name"
-                                    className="border border-gray-300 rounded p-2 w-full mb-4 text-black"
-                                />
-
-                                {/* Course Assign */}
-                                <label className="block mb-2 text-black">Courses Assigned:</label>
-                                <div className="mb-4">
-                                    {['CSCE 121', 'CSCE 313', 'CSCE 410'].map((course) => (
-                                        <label key={course} className="flex items-center text-black">
-                                            <input
-                                                type="checkbox"
-                                                checked={courses.includes(course)}
-                                                onChange={() => handleCourseChange(course)}
-                                                className="mr-2"
-                                            />{" "}
-                                            {course}
-                                        </label>
-                                    ))}
-                                </div>
-
-                                {/* Search */}
-                                <input
-                                    type="text"
-                                    placeholder="Search packages"
-                                    className="border border-gray-300 rounded p-2 w-full mb-4 text-black"
-                                />
-
-                                {/* Package */}
-                                <table className="min-w-full mb-4">
-                                    <thead>
-                                        <tr className="border-b border-black">
-                                            <th className="text-left text-black">Package</th>
-                                            <th className="text-center text-black">Install</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {['vim', 'python3', 'imagemagick'].map((packageName) => (
-                                            <tr key={packageName}>
-                                                <td className="text-black">{packageName}</td>
-                                                <td className="text-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={packages.includes(packageName)}
-                                                        onChange={() => handlePackageChange(packageName)}
-                                                    />
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {/* DockerFile */}
-                            <div className="w-1/2 pl-4">
-                                {isAdvancedDetailsOpen && (
-                                    <>
-                                        <label className="block mb-2 text-black">Docker File:</label>
-                                        <textarea
-                                            className="border border-gray-300 rounded p-2 w-full h-60 text-black"
-                                            placeholder="Type your Dockerfile content here..."
-                                            value={dockerFileContent}
-                                            onChange={(e) => setDockerFileContent(e.target.value)}
-                                        />
-                                    </>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="flex justify-between items-center mt-4">
-                            {/* Advanced Details Button */}
-                            <button
-                                className={`bg-gray-200 text-black px-4 py-2 rounded hover:bg-gray-300 ${
-                                    isAdvancedDetailsOpen ? "bg-gray-300" : ""
-                                }`}
-                                onClick={() => setIsAdvancedDetailsOpen(!isAdvancedDetailsOpen)}
-                            >
-                                {isAdvancedDetailsOpen ? "Hide Advanced Details" : "Show Advanced Details"}
-                            </button>
-
-                            {/* Cancel and Update Buttons */}
-                            <div className="flex space-x-4">
-                                <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" onClick={handleUpdateImage}>
-                                    Update
-                                </button>
-                            </div>
-                        </div>
+                        <label className="block mb-2">Docker File:</label>
+                        <textarea
+                            className="border rounded p-1 w-1/2 h-60 bg-surface"
+                            placeholder="Type your Dockerfile content here..."
+                            value={dockerFileContent}
+                            onChange={(e) => setDockerFileContent(e.target.value)}
+                        />
                     </>
                 )}
             </div>
-        </>
+
+            <div className="flex justify-between items-center mt-4">
+                <button
+                    className={`border rounded p-1 bg-surface ${
+                        isAdvancedDetailsOpen ? "bg-gray-300" : ""
+                    }`}
+                    onClick={() => setIsAdvancedDetailsOpen(!isAdvancedDetailsOpen)}
+                >
+                    {isAdvancedDetailsOpen ? "Hide Advanced Details" : "Show Advanced Details"}
+                </button>
+
+                <div className="flex space-x-4">
+                    <button className="bg-gray-500 text-white px-4 py-2 rounded flex items-center" onClick={onClose}>
+                        Cancel
+                    </button>
+                    <button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center" onClick={handleUpdateImage}>
+                        Create
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 }
 

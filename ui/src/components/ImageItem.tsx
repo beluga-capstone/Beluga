@@ -1,5 +1,6 @@
 import React from "react";
 import { Edit2, CheckSquare, Square } from 'lucide-react';
+import Link from "next/link";
 
 type ImageItemProps = {
     image: {
@@ -36,16 +37,17 @@ const ImageItem: React.FC<ImageItemProps> = ({ image, isSelected, onToggleSelect
                     <p className="text-gray-500">Courses: {image.courses.join(", ")}</p>
                 </div>
             </div>
-            
-            <button
-                onClick={() => isSelected && onEdit(image.id)}
-                disabled={!isSelected}
-                className={`px-1 py-1 rounded flex items-center ${
-                    isSelected ? 'text-white' : 'text-gray-500 cursor-not-allowed'
-                }`}
-            >
-                <Edit2 className="mr-1" />
-            </button>
+            <Link href="/machines/images/new">
+                <button
+                    onClick={() => isSelected && onEdit(image.id)}
+                    disabled={!isSelected}
+                    className={`px-1 py-1 rounded flex items-center ${
+                        isSelected ? 'text-white' : 'text-gray-500 cursor-not-allowed'
+                    }`}
+                >
+                    <Edit2 className="mr-1" />
+                </button>
+            </Link>
         </div>
     );
 };
