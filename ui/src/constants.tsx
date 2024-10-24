@@ -1,6 +1,6 @@
   import { Icon } from "@iconify/react";
 
-import { SideNavItem, Container, Assignment, Student } from "./types";
+import { SideNavItem, Container, Assignment, Student, Image } from "./types";
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
   {
@@ -82,15 +82,4 @@ b = int(input())
 c = a + b
 print("%d + %d = %d" % (a, b, c))
 `,
-];
-
-export const DEFAULT_IMAGES: Image[] = [
-  {
-    id: 1,
-    name: "Ubuntu 24.10"
-  },
-  {
-    id: 2,
-    name: "CentOS 7.0-1406"
-  }
 ];

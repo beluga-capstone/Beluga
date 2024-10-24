@@ -39,5 +39,8 @@ export interface Container {
 
 export interface Image {
   id: number;
-  name: string;
-}
+  title: string;
+  courses: string[];
+  packages: string[];
+  dockerfileContent: string;
+};
