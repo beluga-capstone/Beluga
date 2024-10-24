@@ -1,4 +1,4 @@
-  import { Icon } from "@iconify/react";
+import { Home, Users, Folder, Monitor } from "lucide-react";
 
 import { SideNavItem, Container, Assignment, Student, Image } from "./types";
 
@@ -6,22 +6,22 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
   {
     title: "Dashboard",
     path: "/",
-    icon: <Icon icon="lucide:home" width="24" height="24" />,
+    icon: <Home size={24} />,
   },
   {
     title: "Students",
     path: "/students",
-    icon: <Icon icon="lucide:users" width="24" height="24" />,
+    icon: <Users size={24} />,
   },
   {
     title: "Assignments",
     path: "/assignments",
-    icon: <Icon icon="lucide:folder" width="24" height="24" />,
+    icon: <Folder size={24} />,
   },
   {
     title: "Machines",
     path: "/machines",
-    icon: <Icon icon="lucide:computer" width="24" height="24" />,
+    icon: <Monitor size={24} />,
     subMenuItems: [
       { title: "Containers", path: "/machines/containers" },
       { title: "Images", path: "/machines/images" },
@@ -83,3 +83,4 @@ c = a + b
 print("%d + %d = %d" % (a, b, c))
 `,
 ];
+
