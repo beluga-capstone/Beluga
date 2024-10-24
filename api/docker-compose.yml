@@ -10,11 +10,12 @@ services:
       - "8000:8000"
     environment:
       - POSTGRES_DB=your_db
-      - POSTGRES_USER=test_user
-      - POSTGRES_PASSWORD=test_pwd
-      - DATABASE_URI=postgresql://test_user:test_pwd@db:5432/your_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=temppassword
+      - DATABASE_URI=postgresql://postgres:temppassword@db:5432/your_db
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - ./api:/app
     command: python3 app.py
@@ -24,12 +25,17 @@ services:
     container_name: postgres_db
     environment:
       - POSTGRES_DB=your_db
-      - POSTGRES_USER=test_user
-      - POSTGRES_PASSWORD=test_pwd
+      - POSTGRES_USER=postgres  # Root user
+      - POSTGRES_PASSWORD=temppassword  # Strong password for root
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]  # Health check with root user
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   test: 
     build:
@@ -38,9 +44,12 @@ services:
     container_name: flaskapi_test
     environment:
       - PYTHONPATH=/app/src
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
       - ./api:/app
-    command: pytest  # Command to run tests
+    command: pytest
 
 volumes:
   postgres_data:
