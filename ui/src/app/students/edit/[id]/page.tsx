@@ -7,7 +7,7 @@ import React, { useEffect, useState } from "react";
 import StudentForm from "../../StudentForm";
 
 const EditStudent = ({ params }: { params: { id: string } }) => {
-  const { users, updateUser } = useUsers();
+  const { users, updateUser, deleteUser } = useUsers();
   const userId = parseInt(params.id, 10);
   const user = users.find((user) => user.id === userId);
   const [firstName, setFirstName] = useState("");
@@ -43,34 +43,45 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
         setRole={setRole}
       />
 
-      <div className="flex flex-column justify-end">
+      <div className="flex flex-column justify-between">
         <div className="p-2">
           <Button
-            className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
-            href={`/students/${userId}`}
+            className="bg-red-500 text-white px-4 py-2 rounded flex items-center"
+            onClick={() => deleteUser(userId)}
+            href="/students"
           >
-            Cancel
+            Delete
           </Button>
         </div>
-        <div className="p-2">
-          <Button
-            className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={() =>
-              updateUser(
-                userId,
-                firstName,
-                lastName,
-                middleName === "" ? undefined : middleName,
-                email,
-                role
-              )
-            }
-            href={`/students/${userId}`}
-            disabled={!firstName || !lastName || !email}
-          >
-            Save
-          </Button>
-        </div>
+        <div className="flex">
+          <div className="p-2">
+            <Button
+              className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
+              href={`/students/${userId}`}
+            >
+              Cancel
+            </Button>
+          </div>
+          <div className="p-2">
+            <Button
+              className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+              onClick={() =>
+                updateUser(
+                  userId,
+                  firstName,
+                  lastName,
+                  middleName === "" ? undefined : middleName,
+                  email,
+                  role
+                )
+              }
+              href={`/students/${userId}`}
+              disabled={!firstName || !lastName || !email}
+            >
+              Save
+            </Button>
+          </div>
+        </div>{" "}
       </div>
     </div>
   );

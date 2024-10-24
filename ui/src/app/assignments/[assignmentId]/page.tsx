@@ -17,9 +17,9 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-4 flex justify-between items-center">
-        <h1 className="font-bold text-4xl mb-6">{assignment?.title}</h1>
-        <Link href={`/assignments/edit/${assignment?.id}`}>
+      <div className="mb-8 flex items-center">
+        <h1 className="font-bold text-4xl">{assignment?.title}</h1>
+        <Link href={`/assignments/edit/${assignment?.id}`} className="px-6">
           <Edit2 size={24} />
         </Link>
       </div>
@@ -67,9 +67,11 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
           </p>
         </>
       )}
-      <Link href={`/assignments/${assignment?.id}/submissions`}>
-        <p className="text-blue-500">View Submissions</p>
-      </Link>
+      <p className="text-blue-500 py-8">
+        <Link href={`/assignments/${assignment?.id}/submissions`}>
+          View Submissions
+        </Link>
+      </p>
     </div>
   );
 };
