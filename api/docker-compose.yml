@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: ./  
+      dockerfile: Dockerfile
+    container_name: flaskapi
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_DB=your_db
+      - POSTGRES_USER=test_user
+      - POSTGRES_PASSWORD=test_pwd
+      - DATABASE_URI=postgresql://test_user:test_pwd@db:5432/your_db
+    depends_on:
+      - db
+    volumes:
+      - ./api:/app
+    command: python3 app.py
+
+  db:
+    image: postgres:13
+    container_name: postgres_db
+    environment:
+      - POSTGRES_DB=your_db
+      - POSTGRES_USER=test_user
+      - POSTGRES_PASSWORD=test_pwd
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  test: 
+    build:
+      context: ./  
+      dockerfile: Dockerfile
+    container_name: flaskapi_test
+    environment:
+      - PYTHONPATH=/app/src
+    volumes:
+      - ./api:/app
+    command: pytest  # Command to run tests
+
+volumes:
+  postgres_data:
