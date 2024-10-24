@@ -1,7 +1,6 @@
 import { Home, Users, Folder, Monitor } from "lucide-react";
-import { SideNavItem, Container, Image, Student } from "./types";
 
-export const ROLES = ["Admin", "Professor", "TA", "Student"];
+import { SideNavItem, Container, Assignment, Student, Image } from "./types";
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
   {
@@ -85,13 +84,3 @@ print("%d + %d = %d" % (a, b, c))
 `,
 ];
 
-export const DEFAULT_IMAGES: Image[] = [
-  {
-    id: 1,
-    name: "Ubuntu 24.10"
-  },
-  {
-    id: 2,
-    name: "CentOS 7.0-1406"
-  }
-];
