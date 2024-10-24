@@ -1,6 +1,18 @@
+from sqlalchemy_utils import database_exists, create_database
+from flask_login import LoginManager
 from flask import Flask
+
 from src.util.db import db
 from config import Config
+
+
+login_manager = LoginManager()
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
+
 
 def create_app():
     app = Flask(__name__)
@@ -8,10 +20,16 @@ def create_app():
     app.config.from_object(Config)
 
     db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = '/login'
+
+    if not database_exists(app.config['SQLALCHEMY_DATABASE_URI']):
+        create_database(app.config['SQLALCHEMY_DATABASE_URI'])
 
     with app.app_context():
-        from src.blueprints import assignment, container, course_enrollment, courses, dependencies, image, role, submissions, term, users
+        from src.blueprints import assignment, auth, container, course_enrollment, courses, dependencies, image, role, submissions, term, users
         app.register_blueprint(assignment.assignment_bp)
+        app.register_blueprint(auth.auth_bp)
         app.register_blueprint(container.container_bp)
         app.register_blueprint(course_enrollment.enrollment_bp)
         app.register_blueprint(courses.course_bp)
