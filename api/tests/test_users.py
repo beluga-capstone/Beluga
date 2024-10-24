@@ -8,7 +8,7 @@ def test_create_update_delete_user(test_client):
     assert response.status_code == 201
     assert b'User created successfully' in response.data
 
-    user_id = response.get_json()['id']
+    user_id = response.get_json()['user']
 
     # Update User
     update_data = {

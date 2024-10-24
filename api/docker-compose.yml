@@ -1,13 +1,18 @@
 version: '3.8'
 
 services:
+  adminer:
+      image: adminer
+      restart: always
+      ports:
+        - 8080:8080
   web:
     build:
       context: ./  
       dockerfile: Dockerfile
     container_name: flaskapi
     ports:
-      - "8000:8000"
+      - "5000:5000"
     environment:
       - POSTGRES_DB=your_db
       - POSTGRES_USER=postgres
