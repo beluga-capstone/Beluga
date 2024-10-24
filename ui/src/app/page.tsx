@@ -1,7 +1,13 @@
-import { DEFAULT_COURSES } from "@/constants";
+"use client";
+
+import React from "react";
+import { useDashboard } from "@/hooks/useDashboard";
 import { ToggleLeft, ToggleRight } from "lucide-react";
 
 const Dashboard: React.FC = () => {
+
+  const { courses, setPublished } = useDashboard();
+
   return (
     <div className="container mx-auto p-4">
       <table className="table w-full">
@@ -20,18 +26,26 @@ const Dashboard: React.FC = () => {
               <hr />
             </td>
           </tr>
-          {DEFAULT_COURSES.map((course) => (
+          {courses.map((course) => (
             <tr key={course.id}>
               <td className="text-center py-2">{course.name}</td>
               <td className="text-center py-2">{course.section}</td>
               <td className="text-center py-2">{course.term}</td>
               <td className="text-center py-2">{course.studentsEnrolled}</td>
               <td className="text-center py-2">
-                <div className="flex justify-center items-center">
+              <div className="flex justify-center items-center cursor-pointer">
                   {course.isPublished ? (
-                    <ToggleRight size={32} className="text-green-500" />
+                    <ToggleRight
+                      size={32}
+                      className="text-green-500"
+                      onClick={() => setPublished(course.id, false)}
+                    />
                   ) : (
-                    <ToggleLeft size={32} className="text-red-500" />
+                    <ToggleLeft
+                      size={32}
+                      className="text-red-500"
+                      onClick={() => setPublished(course.id, true)}
+                    />
                   )}
                 </div>
               </td>
