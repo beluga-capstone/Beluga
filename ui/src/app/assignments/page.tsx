@@ -2,7 +2,7 @@
 
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
-import { Edit2, Plus, ToggleLeft, ToggleRight } from "lucide-react";
+import { Plus, ToggleLeft, ToggleRight } from "lucide-react";
 import Link from "next/link";
 
 const Assignments: React.FC = () => {
@@ -37,9 +37,11 @@ const Assignments: React.FC = () => {
           </tr>
           {assignments.map((assignment) => (
             <tr key={assignment.id}>
-              <Link href={`/assignments/${assignment.id}`}>
-                <td className="text-center py-2">{assignment.title}</td>
-              </Link>
+              <td className="text-center py-2">
+                <Link href={`/assignments/${assignment.id}`}>
+                  {assignment.title}
+                </Link>
+              </td>
               <td className="text-center py-2">
                 {assignment.releaseDate.toLocaleDateString("en-US", {
                   dateStyle: "short",
@@ -86,11 +88,6 @@ const Assignments: React.FC = () => {
                     />
                   )}
                 </div>
-              </td>
-              <td>
-                <Link href={`/assignments/edit/${assignment.id}`}>
-                  <Edit2 size={24} />
-                </Link>
               </td>
             </tr>
           ))}

@@ -11,7 +11,7 @@ type ImageItemProps = {
     };
     isSelected: boolean;
     onToggleSelect: (id: number) => void;
-    onEdit: (id: number) => void;
+    onEdit?: (id: number) => void;
 };
 
 const ImageItem: React.FC<ImageItemProps> = ({ image, isSelected, onToggleSelect, onEdit }) => {

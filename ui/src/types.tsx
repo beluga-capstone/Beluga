@@ -6,6 +6,15 @@ export type SideNavItem = {
   subMenuItems?: SideNavItem[];
 };
 
+export interface Course {
+  id: number;
+  name: string;
+  section: number;
+  term: string;
+  studentsEnrolled: number;
+  isPublished: boolean;
+}
+
 export interface Student {
   id: number;
   firstName: string;
@@ -39,5 +48,18 @@ export interface Container {
 
 export interface Image {
   id: number;
+  title: string;
+  courses: string[];
+  packages: string[];
+  dockerfileContent: string;
   name: string;
+}
+
+export interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  middleName?: string;
+  email: string;
+  role: string;
 }

@@ -1,31 +1,58 @@
-  import { Icon } from "@iconify/react";
-
-import { SideNavItem, Container, Assignment, Student } from "./types";
+import { Home, Users, Folder, Monitor } from "lucide-react";
+import { SideNavItem, Container, Image, Student, Course, Assignment } from "./types";
+export const ROLES = ["Admin", "Professor", "TA", "Student"];
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
   {
     title: "Dashboard",
     path: "/",
-    icon: <Icon icon="lucide:home" width="24" height="24" />,
+    icon: <Home size={24} />,
   },
   {
     title: "Students",
     path: "/students",
-    icon: <Icon icon="lucide:users" width="24" height="24" />,
+    icon: <Users size={24} />,
   },
   {
     title: "Assignments",
     path: "/assignments",
-    icon: <Icon icon="lucide:folder" width="24" height="24" />,
+    icon: <Folder size={24} />,
   },
   {
     title: "Machines",
     path: "/machines",
-    icon: <Icon icon="lucide:computer" width="24" height="24" />,
+    icon: <Monitor size={24} />,
     subMenuItems: [
       { title: "Containers", path: "/machines/containers" },
       { title: "Images", path: "/machines/images" },
     ],
+  },
+];
+
+export const DEFAULT_COURSES: Course[] = [
+  {
+    id: 1,
+    name: "CSCE 120",
+    section: 500,
+    term: "Fall 2024",
+    studentsEnrolled: 50,
+    isPublished: true,
+  },
+  {
+    id: 2,
+    name: "CSCE 313",
+    section: 200,
+    term: "Fall 2024",
+    studentsEnrolled: 67,
+    isPublished: true,
+  },
+  {
+    id: 3,
+    name: "CSCE 410",
+    section: 500,
+    term: "Spring 2024",
+    studentsEnrolled: 0,
+    isPublished: false,
   },
 ];
 
@@ -87,10 +114,19 @@ print("%d + %d = %d" % (a, b, c))
 export const DEFAULT_IMAGES: Image[] = [
   {
     id: 1,
-    name: "Ubuntu 24.10"
+    title: "Default title",
+    courses: ["csce101"],
+    packages: ["vim"],
+    dockerfileContent: "none",
+    name: "default image1",
   },
   {
-    id: 2,
-    name: "CentOS 7.0-1406"
-  }
+    id: 1,
+    title: "Default title",
+    courses: ["csce101"],
+    packages: ["bruh"],
+    dockerfileContent: "none",
+    name: "default image2",
+  },
 ];
+
