@@ -1,5 +1,5 @@
 import { Home, Users, Folder, Monitor } from "lucide-react";
-import { SideNavItem, Container, Image, Student, Course, Image } from "./types";
+import { SideNavItem, Container, Image, Student, Course, Assignment } from "./types";
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
   {
