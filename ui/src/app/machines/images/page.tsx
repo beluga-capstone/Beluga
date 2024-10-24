@@ -18,7 +18,7 @@ export default function Images() {
 
   const router = useRouter();
 
-  const showSelectAll = images.length > 1 && selectedImageIds.length > 0;
+  // const showSelectAll = images.length > 1 && selectedImageIds.length > 0;
 
   return (
     <div className="container mx-auto p-4">
@@ -43,8 +43,6 @@ export default function Images() {
             </div>
         )}
       </div>
-
-      {showSelectAll && (
         <div className="flex items-center mb-2">
           <CheckBox
             checked={selectedImageIds.length === images.length}
@@ -55,7 +53,6 @@ export default function Images() {
             label="Select All"
           />
         </div>
-      )}
 
       {images.map((image) => (
         <div
