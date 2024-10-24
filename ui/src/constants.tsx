@@ -1,6 +1,5 @@
 import { Home, Users, Folder, Monitor } from "lucide-react";
-
-import { SideNavItem, Container, Assignment, Student, Image } from "./types";
+import { SideNavItem, Container, Image, Student, Course, Assignment } from "./types";
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
   {
@@ -26,6 +25,33 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
       { title: "Containers", path: "/machines/containers" },
       { title: "Images", path: "/machines/images" },
     ],
+  },
+];
+
+export const DEFAULT_COURSES: Course[] = [
+  {
+    id: 1,
+    name: "CSCE 120",
+    section: 500,
+    term: "Fall 2024",
+    studentsEnrolled: 50,
+    isPublished: true,
+  },
+  {
+    id: 2,
+    name: "CSCE 313",
+    section: 200,
+    term: "Fall 2024",
+    studentsEnrolled: 67,
+    isPublished: true,
+  },
+  {
+    id: 3,
+    name: "CSCE 410",
+    section: 500,
+    term: "Spring 2024",
+    studentsEnrolled: 0,
+    isPublished: false,
   },
 ];
 
