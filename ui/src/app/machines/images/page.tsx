@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react';
 import AddImageModal from "@/components/AddImageModal";
 import EditImageModal from "@/components/EditImageModal";
 import ImageItem from "@/components/ImageItem";
+import CheckBox from "@/components/CheckBox";
 import Link from "next/link";
 
 type Image = {
@@ -21,6 +22,7 @@ export default function Images() {
     const [images, setImages] = useState<Image[]>([]);
     const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
     const [selectedImageIds, setSelectedImageIds] = useState<number[]>([]);
+    const [isSelectAll, setIsSelectAll] = useState(false);
 
     const router = useRouter(); 
 
@@ -93,6 +95,15 @@ export default function Images() {
         }
     }
 
+    const handleSelectAll = () => {
+        if (isSelectAll) {
+            setSelectedImageIds([]); 
+        } else {
+            setSelectedImageIds(images.map((image) => image.id));
+        }
+        setIsSelectAll(!isSelectAll);
+    };
+
     const handleToggleSelect = (id: number) => {
         setSelectedImageIds((prev) =>
             prev.includes(id) ? prev.filter((imageId) => imageId !== id) : [...prev, id]
@@ -104,6 +115,7 @@ export default function Images() {
         setImages(updatedImages);
         setSelectedImageIds([]);
         localStorage.setItem("images", JSON.stringify(updatedImages));
+        setIsSelectAll(false);
     };
 
     return (
@@ -122,15 +134,25 @@ export default function Images() {
                     </button>
                 </Link>
 
-                <div className="space-x-2">
+                {selectedImageIds.length > 0 && (
                     <button 
                         onClick={handleDeleteSelectedImages} 
                         className="bg-red-700 text-white px-4 py-2 rounded"
                     >
                         Delete Selected
                     </button>
-                </div>
+                )}
             </div>
+
+            {images.length > 1 && selectedImageIds.length > 0 && (
+                <div className="mb-4">
+                    <CheckBox
+                        checked={isSelectAll}
+                        onChange={handleSelectAll}
+                        label="Select All"
+                    />
+                </div>
+            )}
 
             {images.map((image) => (
                 <div
