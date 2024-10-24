@@ -20,6 +20,15 @@ export const useImages = () => {
         }
     }, [images]);
 
+    useEffect(() => {
+        if (selectedImageIds.length === 0) {
+            const deleteButton = document.getElementById("delete-button");
+            if (deleteButton) {
+                deleteButton.classList.add("hidden");
+            }
+        }
+      }, [selectedImageIds]);
+
     const addImage = (newImage: Image) => {
         setImages([...images, newImage]);
     };
@@ -42,10 +51,31 @@ export const useImages = () => {
         );
     };
 
-    const deleteSelectedImages = () => {
-        const updatedImages = images.filter((image) => !selectedImageIds.includes(image.id));
-        setImages(updatedImages);
-        setSelectedImageIds([]);
+    const selectAllImages = (select: boolean) => {
+        if (selectedImageIds.length === images.length) {
+            setSelectedImageIds([]);
+        } else {
+            setSelectedImageIds(images.map(image => image.id));
+        }
+    };
+
+    const deleteSelectedImages = async () => {
+        try {
+            await fetch("/api/deleteImages", {
+                method: "POST",
+                body: JSON.stringify({ imageIds: selectedImageIds }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+    
+            const updatedImages = images.filter((image) => !selectedImageIds.includes(image.id));
+            setImages(updatedImages);
+            setSelectedImageIds([]);
+            localStorage.setItem("images", JSON.stringify(updatedImages));
+        } catch (error) {
+            console.error("Error deleting images:", error);
+        }
     };
 
     return {
@@ -56,5 +86,6 @@ export const useImages = () => {
         deleteImage,
         toggleSelectImage,
         deleteSelectedImages,
+        selectAllImages,
     };
 };
