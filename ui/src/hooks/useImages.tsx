@@ -59,10 +59,23 @@ export const useImages = () => {
         }
     };
 
-    const deleteSelectedImages = () => {
-        const updatedImages = images.filter((image) => !selectedImageIds.includes(image.id));
-        setImages(updatedImages);
-        setSelectedImageIds([]);
+    const deleteSelectedImages = async () => {
+        try {
+            await fetch("/api/deleteImages", {
+                method: "POST",
+                body: JSON.stringify({ imageIds: selectedImageIds }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+    
+            const updatedImages = images.filter((image) => !selectedImageIds.includes(image.id));
+            setImages(updatedImages);
+            setSelectedImageIds([]);
+            localStorage.setItem("images", JSON.stringify(updatedImages));
+        } catch (error) {
+            console.error("Error deleting images:", error);
+        }
     };
 
     return {

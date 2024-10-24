@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import ImageItem from "@/components/ImageItem";
@@ -18,32 +18,30 @@ export default function Images() {
 
   const router = useRouter();
 
-  // const showSelectAll = images.length > 1 && selectedImageIds.length > 0;
-
   return (
     <div className="container mx-auto p-4">
       <h1 className="font-bold text-4xl mb-6">Images</h1>
       <div className="mb-4 flex justify-between items-center">
         <Link href="/machines/images/new">
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-          >
+          <button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center">
             <Plus className="mr-2" /> Add Image
           </button>
         </Link>
 
         {selectedImageIds.length > 0 && (
-            <div className="space-x-2">
-                <button
-                    onClick={deleteSelectedImages}
-                    className="bg-red-700 text-white px-4 py-2 rounded"
-                >
-                    Delete Selected
-                </button>
-            </div>
+          <div className="space-x-2">
+            <button
+              onClick={deleteSelectedImages}
+              className="bg-red-700 text-white px-4 py-2 rounded"
+            >
+              Delete Selected
+            </button>
+          </div>
         )}
       </div>
-        <div className="flex items-center mb-2">
+
+      {images.length > 0 && (
+        <div className="flex items-center mb-4">
           <CheckBox
             checked={selectedImageIds.length === images.length}
             onChange={() => {
@@ -53,6 +51,7 @@ export default function Images() {
             label="Select All"
           />
         </div>
+      )}
 
       {images.map((image) => (
         <div
