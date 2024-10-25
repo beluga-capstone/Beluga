@@ -57,13 +57,13 @@ function EditImageModal({onClose, onUpdateImage, onDeleteImage, imageId, selecte
         );
     };
 
-    const handlePackageChange = (packageName: string) => {
-        setPackages((prevPackages) =>
-            prevPackages.includes(packageName)
-                ? prevPackages.filter((p) => p !== packageName)
-                : [...prevPackages, packageName]
-        );
-    };
+    // const handlePackageChange = (packageName: string) => {
+    //     setPackages((prevPackages) =>
+    //         prevPackages.includes(packageName)
+    //             ? prevPackages.filter((p) => p !== packageName)
+    //             : [...prevPackages, packageName]
+    //     );
+    // };
 
     return (
         <div className="container mx-auto p-4">
@@ -123,7 +123,7 @@ function EditImageModal({onClose, onUpdateImage, onDeleteImage, imageId, selecte
                                 <input
                                     type="checkbox"
                                     checked={packages.includes(packageName)}
-                                    onChange={() => handlePackageChange(packageName)}
+                                    disabled
                                 />
                             </td>
                         </tr>
@@ -138,9 +138,8 @@ function EditImageModal({onClose, onUpdateImage, onDeleteImage, imageId, selecte
                         <label className="block mb-2">Docker File:</label>
                         <textarea
                             className="border rounded p-1 w-1/2 h-60 bg-surface"
-                            placeholder="Type your Dockerfile content here..."
                             value={dockerFileContent}
-                            onChange={(e) => setDockerFileContent(e.target.value)}
+                            readOnly
                         />
                     </>
                 )}

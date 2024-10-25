@@ -37,6 +37,7 @@ const ImageItem: React.FC<ImageItemProps> = ({ image, isSelected, onToggleSelect
                 <div>
                     <h2 className="font-bold">{image.title}</h2>
                     <p className="text-gray-500">Courses: {image.courses.join(", ")}</p>
+                    <p className="text-gray-500">Packages: {image.packages.join(", ")}</p>
                 </div>
             </div>
         </div>
