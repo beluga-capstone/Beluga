@@ -3,7 +3,7 @@
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
 import React from "react";
-import AssignmentForm from "../../AssignmentsForm";
+import AssignmentForm from "../../../../components/AssignmentsForm";
 
 const EditAssignment = ({ params }: { params: { id: string } }) => {
   const assignmentId = parseInt(params.id, 10);
