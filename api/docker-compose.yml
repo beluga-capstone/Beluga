@@ -9,6 +9,7 @@ services:
     ports:
       - "5000:5000"
     environment:
+      - CONFIG=testing
       - POSTGRES_DB=your_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=temppassword
