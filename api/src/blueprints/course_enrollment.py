@@ -31,7 +31,7 @@ def create_enrollment():
 # Get all enrollments (GET)
 @enrollment_bp.route('/enrollments', methods=['GET'])
 def get_enrollments():
-    enrollments = CourseEnrollment.query.all()
+    course_enrollments = db.session.scalars(db.select(CourseEnrollment)).all()
     enrollments_list = [{
         'enrollment_id': enrollment.enrollment_id,
         'course_id': enrollment.course_id,
@@ -44,7 +44,9 @@ def get_enrollments():
 # Get a specific enrollment (GET)
 @enrollment_bp.route('/enrollments/<int:enrollment_id>', methods=['GET'])
 def get_enrollment(enrollment_id):
-    enrollment = CourseEnrollment.query.get_or_404(enrollment_id)
+    course_enrollment = db.session.get(CourseEnrollment, course_enrollment_id)
+    if course_enrollment is None:
+        return jsonify({'error': 'CourseEnrollment not found'}), 404
 
     return jsonify({
         'enrollment_id': enrollment.enrollment_id,
@@ -56,9 +58,11 @@ def get_enrollment(enrollment_id):
 # Update an enrollment (PUT)
 @enrollment_bp.route('/enrollments/<int:enrollment_id>', methods=['PUT'])
 def update_enrollment(enrollment_id):
-    enrollment = CourseEnrollment.query.get_or_404(enrollment_id)
-    data = request.get_json()
+    course_enrollment = db.session.get(CourseEnrollment, course_enrollment_id)
+    if course_enrollment is None:
+        return jsonify({'error': 'CourseEnrollment not found'}), 404
 
+    data = request.get_json()
     enrollment.course_id = data.get('course_id', enrollment.course_id)
     enrollment.user_id = data.get('user_id', enrollment.user_id)
     enrollment.enrollment_date = data.get('enrollment_date', enrollment.enrollment_date)
@@ -73,7 +77,9 @@ def update_enrollment(enrollment_id):
 # Delete an enrollment (DELETE)
 @enrollment_bp.route('/enrollments/<int:enrollment_id>', methods=['DELETE'])
 def delete_enrollment(enrollment_id):
-    enrollment = CourseEnrollment.query.get_or_404(enrollment_id)
+    course_enrollment = db.session.get(CourseEnrollment, course_enrollment_id)
+    if course_enrollment is None:
+        return jsonify({'error': 'CourseEnrollment not found'}), 404
 
     try:
         db.session.delete(enrollment)
@@ -87,15 +93,17 @@ def delete_enrollment(enrollment_id):
 @enrollment_bp.route('/users/<int:user_id>/enrollments', methods=['GET'])
 def get_enrollments_for_user(user_id):
     # Check if the user exists
-    user = User.query.get_or_404(user_id)
+    user = db.session.get(User, user_id)
+    if user is None:
+        return jsonify({'error': 'User not found'}), 404
 
     # Query all enrollments for the user
-    enrollments = CourseEnrollment.query.filter_by(user_id=user_id).all()
+    enrollments = db.session.scalars(db.select(CourseEnrollment).filter_by(user_id=user_id)).all()
     
     # Format the response
     enrollments_list = []
     for enrollment in enrollments:
-        course = Course.query.get(enrollment.course_id)
+        course = db.session.get(Course, enrollment.course_id)
         enrollments_list.append({
             'enrollment_id': enrollment.enrollment_id,
             'course_id': enrollment.course_id,
@@ -109,15 +117,16 @@ def get_enrollments_for_user(user_id):
         'enrollments': enrollments_list
     }), 200
 
+# Get all users enrolled in a specific course (GET)
 @enrollment_bp.route('/courses/<int:course_id>/users', methods=['GET'])
 def get_users_for_course(course_id):
     # Query all enrollments for the given course
-    enrollments = CourseEnrollment.query.filter_by(course_id=course_id).all()
+    enrollments = db.session.scalars(db.select(CourseEnrollment).filter_by(course_id=course_id)).all()
     
     # Format the response
     users_list = []
     for enrollment in enrollments:
-        user = User.query.get(enrollment.user_id)
+        user = db.session.get(User, enrollment.user_id)
         if user:
             users_list.append({
                 'user_id': user.user_id,

@@ -10,12 +10,11 @@ def create_app():
     db.init_app(app)
 
     with app.app_context():
-        from src.blueprints import assignment, container, course_enrollment, courses, dependencies, image, role, submissions, term, users
+        from src.blueprints import assignment, container, course_enrollment, courses, image, role, submissions, term, users
         app.register_blueprint(assignment.assignment_bp)
         app.register_blueprint(container.container_bp)
         app.register_blueprint(course_enrollment.enrollment_bp)
         app.register_blueprint(courses.course_bp)
-        app.register_blueprint(dependencies.dependencies_bp)
         app.register_blueprint(image.image_bp)
         app.register_blueprint(role.role_bp)
         app.register_blueprint(submissions.submission_bp)
@@ -56,25 +55,25 @@ def init_roles(admin_user_id):
             'name': 'Admin',
             'permission': 'view_system,manage_users,manage_courses,manage_environments',
             'description': 'Admin role with system management capabilities',
-            'user_create': admin_user_id
+            'user_id': admin_user_id
         },
         {
             'name': 'Professor',
             'permission': 'manage_courses,view_analytics,grade_assignments',
             'description': 'Professor role with course and assignment management capabilities',
-            'user_create': admin_user_id
+            'user_id': admin_user_id
         },
         {
             'name': 'Student',
             'permission': 'view_courses,submit_assignments,view_grades',
             'description': 'Student role with course viewing and assignment submission capabilities',
-            'user_create': admin_user_id
+            'user_id': admin_user_id
         },
         {
             'name': 'TA',
             'permission': 'manage_submissions,manage_feedback,manage_assignments',
             'description': 'TA role with submission and assignment management capabilities',
-            'user_create': admin_user_id
+            'user_id': admin_user_id
         }
     ]
 
@@ -85,7 +84,7 @@ def init_roles(admin_user_id):
                 name=role_data['name'],
                 permission=role_data['permission'],
                 description=role_data['description'],
-                user_create=role_data['user_create']
+                user_id=role_data['user_id']
             )
             db.session.add(new_role)
 

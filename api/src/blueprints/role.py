@@ -16,7 +16,7 @@ def create_role():
         name=data['name'],
         permission=data.get('permission', ''),
         description=data.get('description', ''),
-        user_create=data.get('user_create')
+        user_id=data.get('user_id')
     )
     
     try:
@@ -30,13 +30,13 @@ def create_role():
 # Read all roles (GET)
 @role_bp.route('/roles', methods=['GET'])
 def get_roles():
-    roles = Role.query.all()
+    roles = db.session.scalars(db.select(Role)).all()
     roles_list = [{
         'role_id': role.role_id,
         'name': role.name,
         'permission': role.permission,
         'description': role.description,
-        'user_create': role.user_create,
+        'user_id': role.user_id,
         'created_at': role.created_at,
         'updated_at': role.updated_at
     } for role in roles]
@@ -46,14 +46,16 @@ def get_roles():
 # Read a single role by ID (GET)
 @role_bp.route('/roles/<int:role_id>', methods=['GET'])
 def get_role(role_id):
-    role = Role.query.get_or_404(role_id)
-    
+    role = db.session.get(Role, role_id)
+    if role is None:
+        return jsonify({'error': 'Role not found'}), 404
+
     return jsonify({
         'role_id': role.role_id,
         'name': role.name,
         'permission': role.permission,
         'description': role.description,
-        'user_create': role.user_create,
+        'user_id': role.user_id,
         'created_at': role.created_at,
         'updated_at': role.updated_at
     }), 200
@@ -61,9 +63,11 @@ def get_role(role_id):
 # Update a role (PUT)
 @role_bp.route('/roles/<int:role_id>', methods=['PUT'])
 def update_role(role_id):
-    role = Role.query.get_or_404(role_id)
-    data = request.get_json()
-    
+    role = db.session.get(Role, role_id)
+    if role is None:
+        return jsonify({'error': 'Role not found'}), 404
+
+    data = request.get_json()    
     role.name = data.get('name', role.name)
     role.permission = data.get('permission', role.permission)
     role.description = data.get('description', role.description)
@@ -79,7 +83,9 @@ def update_role(role_id):
 # Delete a role (DELETE)
 @role_bp.route('/roles/<int:role_id>', methods=['DELETE'])
 def delete_role(role_id):
-    role = Role.query.get_or_404(role_id)
+    role = db.session.get(Role, role_id)
+    if role is None:
+        return jsonify({'error': 'Role not found'}), 404
     
     try:
         db.session.delete(role)
