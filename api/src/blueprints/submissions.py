@@ -33,7 +33,7 @@ def create_submission():
 # Get all submissions (GET)
 @submission_bp.route('/submissions', methods=['GET'])
 def get_submissions():
-    submissions = Submission.query.all()
+    submissions = db.session.scalars(db.select(Submission)).all()
     submissions_list = [{
         'submission_id': submission.submission_id,
         'user_id': submission.user_id,
@@ -49,7 +49,9 @@ def get_submissions():
 # Get a specific submission (GET)
 @submission_bp.route('/submissions/<int:submission_id>', methods=['GET'])
 def get_submission(submission_id):
-    submission = Submission.query.get_or_404(submission_id)
+    submission = db.session.get(Submission, submission_id)
+    if submission is None:
+        return jsonify({'error': 'Submission not found'}), 404
 
     return jsonify({
         'submission_id': submission.submission_id,
@@ -64,9 +66,11 @@ def get_submission(submission_id):
 # Update a submission (PUT)
 @submission_bp.route('/submissions/<int:submission_id>', methods=['PUT'])
 def update_submission(submission_id):
-    submission = Submission.query.get_or_404(submission_id)
-    data = request.get_json()
+    submission = db.session.get(Submission, submission_id)
+    if submission is None:
+        return jsonify({'error': 'Submission not found'}), 404
 
+    data = request.get_json()
     submission.user_id = data.get('user_id', submission.user_id)
     submission.assignment_id = data.get('assignment_id', submission.assignment_id)
     submission.submission_date = data.get('submission_date', submission.submission_date)
@@ -84,7 +88,9 @@ def update_submission(submission_id):
 # Delete a submission (DELETE)
 @submission_bp.route('/submissions/<int:submission_id>', methods=['DELETE'])
 def delete_submission(submission_id):
-    submission = Submission.query.get_or_404(submission_id)
+    submission = db.session.get(Submission, submission_id)
+    if submission is None:
+        return jsonify({'error': 'Submission not found'}), 404
 
     try:
         db.session.delete(submission)

@@ -25,7 +25,7 @@ def create_image():
 # Get all images (GET)
 @image_bp.route('/images', methods=['GET'])
 def get_images():
-    images = Image.query.all()
+    images = db.session.scalars(db.select(Image)).all()
     images_list = [{
         'docker_image_id': image.docker_image_id,
         'user_id': image.user_id,
@@ -36,7 +36,9 @@ def get_images():
 # Get a specific image (GET)
 @image_bp.route('/images/<string:docker_image_id>', methods=['GET'])
 def get_image(docker_image_id):
-    image = Image.query.get_or_404(docker_image_id)
+    image = db.session.get(Image, image_id)
+    if image is None:
+        return jsonify({'error': 'Image not found'}), 404
     return jsonify({
         'docker_image_id': image.docker_image_id,
         'user_id': image.user_id,
@@ -46,7 +48,9 @@ def get_image(docker_image_id):
 # Update an image (PUT)
 @image_bp.route('/images/<string:docker_image_id>', methods=['PUT'])
 def update_image(docker_image_id):
-    image = Image.query.get_or_404(docker_image_id)
+    image = db.session.get(Image, image_id)
+    if image is None:
+        return jsonify({'error': 'Image not found'}), 404
     data = request.get_json()
     image.user_id = data.get('user_id', image.user_id)
     image.description = data.get('description', image.description)
@@ -60,7 +64,10 @@ def update_image(docker_image_id):
 # Delete an image (DELETE)
 @image_bp.route('/images/<string:docker_image_id>', methods=['DELETE'])
 def delete_image(docker_image_id):
-    image = Image.query.get_or_404(docker_image_id)
+    image = db.session.get(Image, image_id)
+    if image is None:
+        return jsonify({'error': 'Image not found'}), 404
+
     try:
         db.session.delete(image)
         db.session.commit()

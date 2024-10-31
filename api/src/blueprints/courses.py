@@ -32,7 +32,7 @@ def create_course():
 # Get all courses (GET)
 @course_bp.route('/courses', methods=['GET'])
 def get_courses():
-    courses = Course.query.all()
+    courses = db.session.scalars(db.select(Course)).all()
     courses_list = [{
         'course_id': course.course_id,
         'name': course.name,
@@ -48,7 +48,9 @@ def get_courses():
 # Get a specific course (GET)
 @course_bp.route('/courses/<int:course_id>', methods=['GET'])
 def get_course(course_id):
-    course = Course.query.get_or_404(course_id)
+    course = db.session.get(Course, course_id)
+    if course is None:
+        return jsonify({'error': 'Course not found'}), 404
     
     return jsonify({
         'course_id': course.course_id,
@@ -63,9 +65,11 @@ def get_course(course_id):
 # Update a course (PUT)
 @course_bp.route('/courses/<int:course_id>', methods=['PUT'])
 def update_course(course_id):
-    course = Course.query.get_or_404(course_id)
-    data = request.get_json()
+    course = db.session.get(Course, course_id)
+    if course is None:
+        return jsonify({'error': 'Course not found'}), 404
 
+    data = request.get_json()
     course.name = data.get('name', course.name)
     course.user_id = data.get('user_id', course.user_id)
     course.description = data.get('description', course.description)
@@ -84,7 +88,9 @@ def update_course(course_id):
 # Delete a course (DELETE)
 @course_bp.route('/courses/<int:course_id>', methods=['DELETE'])
 def delete_course(course_id):
-    course = Course.query.get_or_404(course_id)
+    course = db.session.get(Course, course_id)
+    if course is None:
+        return jsonify({'error': 'Course not found'}), 404
 
     try:
         db.session.delete(course)

@@ -26,7 +26,7 @@ def create_container():
 # Get all containers (GET)
 @container_bp.route('/containers', methods=['GET'])
 def get_containers():
-    containers = Container.query.all()
+    containers = db.session.scalars(db.select(Container)).all()
     containers_list = [{
         'docker_container_id': container.docker_container_id,
         'user_id': container.user_id,
@@ -38,7 +38,9 @@ def get_containers():
 # Get a specific container (GET)
 @container_bp.route('/containers/<string:docker_container_id>', methods=['GET'])
 def get_container(docker_container_id):
-    container = Container.query.get_or_404(docker_container_id)
+    container = db.session.get(Container, container_id)
+    if container is None:
+        return jsonify({'error': 'Container not found'}), 404
 
     return jsonify({
         'docker_container_id': container.docker_container_id,
@@ -49,9 +51,11 @@ def get_container(docker_container_id):
 # Update a container (PUT)
 @container_bp.route('/containers/<string:docker_container_id>', methods=['PUT'])
 def update_container(docker_container_id):
-    container = Container.query.get_or_404(docker_container_id)
-    data = request.get_json()
+    container = db.session.get(Container, container_id)
+    if container is None:
+        return jsonify({'error': 'Container not found'}), 404
 
+    data = request.get_json()
     container.user_id = data.get('user_id', container.user_id)
     container.description = data.get('description', container.description)
 
@@ -65,7 +69,9 @@ def update_container(docker_container_id):
 # Delete a container (DELETE)
 @container_bp.route('/containers/<string:docker_container_id>', methods=['DELETE'])
 def delete_container(docker_container_id):
-    container = Container.query.get_or_404(docker_container_id)
+    container = db.session.get(Container, container_id)
+    if container is None:
+        return jsonify({'error': 'Container not found'}), 404
 
     try:
         db.session.delete(container)

@@ -24,7 +24,7 @@ def create_term():
 # Get all terms (GET)
 @term_bp.route('/terms', methods=['GET'])
 def get_terms():
-    terms = Term.query.all()
+    terms = db.session.scalars(db.select(Term)).all()
     terms_list = [{
         'term_id': term.term_id,
         'name': term.name
@@ -35,7 +35,9 @@ def get_terms():
 # Get a specific term (GET)
 @term_bp.route('/terms/<int:term_id>', methods=['GET'])
 def get_term(term_id):
-    term = Term.query.get_or_404(term_id)
+    term = db.session.get(Term, term_id)
+    if term is None:
+        return jsonify({'error': 'Term not found'}), 404
 
     return jsonify({
         'term_id': term.term_id,
@@ -45,9 +47,11 @@ def get_term(term_id):
 # Update a term (PUT)
 @term_bp.route('/terms/<int:term_id>', methods=['PUT'])
 def update_term(term_id):
-    term = Term.query.get_or_404(term_id)
-    data = request.get_json()
+    term = db.session.get(Term, term_id)
+    if term is None:
+        return jsonify({'error': 'Term not found'}), 404
 
+    data = request.get_json()
     term.name = data.get('name', term.name)
 
     try:
@@ -60,7 +64,9 @@ def update_term(term_id):
 # Delete a term (DELETE)
 @term_bp.route('/terms/<int:term_id>', methods=['DELETE'])
 def delete_term(term_id):
-    term = Term.query.get_or_404(term_id)
+    term = db.session.get(Term, term_id)
+    if term is None:
+        return jsonify({'error': 'Term not found'}), 404
 
     try:
         db.session.delete(term)

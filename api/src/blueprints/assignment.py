@@ -34,7 +34,7 @@ def create_assignment():
 # Get all assignments (GET)
 @assignment_bp.route('/assignments', methods=['GET'])
 def get_assignments():
-    assignments = Assignment.query.all()
+    assignments = db.session.scalars(db.select(Assignment)).all()
     assignments_list = [{
         'assignment_id': assignment.assignment_id,
         'course_id': assignment.course_id,
@@ -52,7 +52,9 @@ def get_assignments():
 # Get a specific assignment (GET)
 @assignment_bp.route('/assignments/<int:assignment_id>', methods=['GET'])
 def get_assignment(assignment_id):
-    assignment = Assignment.query.get_or_404(assignment_id)
+    assignment = db.session.get(Assignment, assignment_id)
+    if assignment is None:
+        return jsonify({'error': 'Assignment not found'}), 404
 
     return jsonify({
         'assignment_id': assignment.assignment_id,
@@ -69,9 +71,11 @@ def get_assignment(assignment_id):
 # Update an assignment (PUT)
 @assignment_bp.route('/assignments/<int:assignment_id>', methods=['PUT'])
 def update_assignment(assignment_id):
-    assignment = Assignment.query.get_or_404(assignment_id)
-    data = request.get_json()
+    assignment = db.session.get(Assignment, assignment_id)
+    if assignment is None:
+        return jsonify({'error': 'Assignment not found'}), 404
 
+    data = request.get_json()
     assignment.title = data.get('title', assignment.title)
     assignment.description = data.get('description', assignment.description)
     assignment.due_at = data.get('due_at', assignment.due_at)
@@ -90,7 +94,9 @@ def update_assignment(assignment_id):
 # Delete an assignment (DELETE)
 @assignment_bp.route('/assignments/<int:assignment_id>', methods=['DELETE'])
 def delete_assignment(assignment_id):
-    assignment = Assignment.query.get_or_404(assignment_id)
+    assignment = db.session.get(Assignment, assignment_id)
+    if assignment is None:
+        return jsonify({'error': 'Assignment not found'}), 404
 
     try:
         db.session.delete(assignment)
