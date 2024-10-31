@@ -1,6 +1,10 @@
 import pytest
+from uuid import UUID
 
 def test_create_update_delete_term(test_client, term_id):
+    # Verify the term_id is a valid UUID
+    assert UUID(term_id)
+
     # Step 1: Update the Term
     update_data = {
         'name': 'Summer 2025'
@@ -21,5 +25,5 @@ def test_create_update_delete_term(test_client, term_id):
     assert b'Term deleted successfully' in delete_response.data
 
     # Step 4: Verify the Term Deletion
-    verified_delete_response = test_client.get(f'/terms/{term_id}')
-    assert verified_delete_response.status_code == 404
+    verify_delete_response = test_client.get(f'/terms/{term_id}')
+    assert verify_delete_response.status_code == 404

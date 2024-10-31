@@ -1,5 +1,6 @@
 import os
 import sys
+from uuid import uuid4
 
 os.chdir(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -19,7 +20,6 @@ def test_client():
         with app.app_context():
             db.create_all()  
         yield testing_client  
-        # db.drop_all()  
 
 @pytest.fixture
 def user_id(test_client):
@@ -33,10 +33,10 @@ def user_id(test_client):
     assert b'User created successfully' in response.data
 
     # Return the user ID for use in tests
-    return response.get_json()['user']
+    return response.get_json()['user_id']
 
 @pytest.fixture
-def assignment_id(test_client, course_id, image_id, user_id):
+def assignment_id(test_client, course_id, docker_image_id, user_id):
     # Create Assignment
     create_data = {
         'course_id': course_id,
@@ -45,8 +45,8 @@ def assignment_id(test_client, course_id, image_id, user_id):
         'due_at': '2024-10-31T23:59:59',
         'lock_at': '2024-10-31T23:59:59',
         'unlock_at': '2024-10-01T00:00:00',
-        'user_create': user_id,
-        'image_id': image_id
+        'user_id': user_id,
+        'docker_image_id': docker_image_id
     }
     response = test_client.post('/assignments', json=create_data)
     assert response.status_code == 201
@@ -54,20 +54,15 @@ def assignment_id(test_client, course_id, image_id, user_id):
     return response.get_json()['assignment_id']
 
 @pytest.fixture
-def container_id(test_client, image_id, user_id):
+def container_id(test_client, user_id):
     create_data = {
+        'docker_container_id': str(uuid4()),  # Unique ID for each test
         'user_id': user_id,
-        'status': 'running',
-        'cpu_usage': 30.5,
-        'memory_usage': 1024,
-        'create_date': '2024-10-20T10:00:00',
-        'last_modify': '2024-10-20T12:00:00',
-        'image_id': image_id
+        'description': 'This is a test container'
     }
     response = test_client.post('/containers', json=create_data)
-    assert response.status_code == 201
-    assert b'Container created successfully' in response.data
-    return response.get_json()['container_id']
+    assert response.status_code == 201, f"Error: {response.get_json().get('error')}"
+    return response.get_json()['docker_container_id']
 
 @pytest.fixture
 def course_id(test_client, term_id, user_id):
@@ -86,38 +81,34 @@ def course_id(test_client, term_id, user_id):
 
 @pytest.fixture
 def enrollment_id(test_client, user_id, course_id):
-    # Create Enrollment
     create_data = {
         'course_id': course_id,
         'user_id': user_id,
         'enrollment_date': '2024-10-22T12:00:00'
     }
     response = test_client.post('/enrollments', json=create_data)
-    assert response.status_code == 201
-    assert b'Enrollment created successfully' in response.data
+    assert response.status_code == 201, f"Error: {response.get_json().get('error')}"
     return response.get_json()['enrollment_id']
 
+
 @pytest.fixture
-def image_id(test_client, user_id):
+def docker_image_id(test_client, user_id):
     create_data = {
+        'docker_image_id': str(uuid4()),  # Generate a unique ID for each test
         'user_id': user_id,
-        'name': 'Test Image',
-        'description': 'This is a test image',
-        'created_at': '2024-10-22T12:00:00',
-        'updated_at': '2024-10-22T12:00:00'
+        'description': 'This is a test image'
     }
     response = test_client.post('/images', json=create_data)
-    assert response.status_code == 201
-    assert b'Image created successfully' in response.data
-    return response.get_json()['image_id']
-    
+    assert response.status_code == 201, f"Error: {response.get_json().get('error')}"
+    return response.get_json()['docker_image_id']
+
 @pytest.fixture
-def role_id(test_client):
+def role_id(test_client, user_id):
     create_data = {
         'name': 'Admin2',
         'permission': 'full_access',
         'description': 'Administrator role with full access',
-        'user_create': 1
+        'user_id': user_id
     }
     response = test_client.post('/roles', json=create_data)
     assert response.status_code == 201
@@ -133,3 +124,14 @@ def term_id(test_client):
     assert response.status_code == 201
     assert b'Term created successfully' in response.data
     return response.get_json()['term_id']
+
+@pytest.fixture
+def submission_id(test_client, user_id, assignment_id):
+    create_data = {
+        'user_id': user_id,  # Replace with a valid user UUID
+        'assignment_id': assignment_id # Replace with a valid assignment UUID
+    }
+    response = test_client.post('/submissions', json=create_data)
+    assert response.status_code == 201
+    assert b'Submission created successfully' in response.data
+    return response.get_json()['submission_id']

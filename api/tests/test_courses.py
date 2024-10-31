@@ -1,6 +1,10 @@
 import pytest
+from uuid import UUID
 
 def test_create_update_delete_course(test_client, course_id):
+    # Verify that course_id is a valid UUID
+    assert UUID(course_id)
+
     # Step 1: Update the Course
     update_data = {
         'name': 'Advanced Python',
