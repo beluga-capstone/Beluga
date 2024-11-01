@@ -12,7 +12,7 @@ const NewUser: React.FC = () => {
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState(ROLES[3]);
+  const [role, setRole] = useState(ROLES.STUDENT);
 
   return (
     <div className="container mx-auto p-4">
