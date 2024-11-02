@@ -1,6 +1,12 @@
 from flask import Blueprint, request, jsonify
+from src import socketio
 from src.util.db import db, Image
+from flask_socketio import emit
 from datetime import datetime
+import docker
+import io
+
+docker_client = docker.from_env()
 
 image_bp = Blueprint('image', __name__)
 
@@ -24,6 +30,44 @@ def create_image():
         return jsonify({'message': 'Image created successfully', 'docker_image_id': new_image.docker_image_id}), 201
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@image_bp.route('/images/build', methods=['POST'])
+def build_image():
+    data = request.get_json()
+    dockerfile_content = data['dockerfile_content']
+    user_id = data['user_id']
+    description = data.get('description', '')
+    image_tag = data.get('image_tag', f'image_{datetime.utcnow().isoformat()}')
+
+    try:
+        # Build the image with a status update
+        image, logs = docker_client.images.build(
+            fileobj=io.BytesIO(dockerfile_content.encode('utf-8')),
+            tag=image_tag,
+            rm=True
+        )
+
+        for log in logs:
+            # Send each line of the build log to the frontend
+            socketio.emit('build_status', {'status': log.get('stream', '').strip()})
+
+        # Save image information to the database after completion
+        new_image = Image(
+            docker_image_id=image.id,
+            user_id=user_id,
+            description=description
+        )
+        db.session.add(new_image)
+        db.session.commit()
+
+        # Notify the frontend of completion
+        socketio.emit('build_complete', {'docker_image_id': image.id})
+
+        return jsonify({'message': 'Image built successfully', 'docker_image_id': image.id}), 201
+    except Exception as e:
+        db.session.rollback()
+        socketio.emit('build_error', {'error': str(e)})
         return jsonify({'error': str(e)}), 500
 
 # Get all images (GET)

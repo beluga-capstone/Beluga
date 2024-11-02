@@ -1,7 +1,7 @@
 import os
 
 class BaseConfig:
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URI', 'postgresql://root:temppassword@localhost:5432/beluga')    
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URI', 'postgresql://postgres:temppassword@localhost:5432/your_db')    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 class TestingConfig:
