@@ -24,7 +24,7 @@ def login():
 def logout():
     logout_user()
     flash('You have been logged out.')
-    return redirect('/login')
+    return redirect('/auth/login')
 
 
 @auth_bp.route('/authorize/<provider>')
@@ -63,7 +63,7 @@ def oauth_callback(provider):
             if key.startswith('error'):
                 flash(f'{key}: {val}')
 
-        return redirect('/login')
+        return redirect('/auth/login')
 
     if request.args['state'] != session.get('oauth_state'):
         abort(401)
@@ -99,7 +99,7 @@ def oauth_callback(provider):
     fname = provider_config['userinfo']['given_name'](res.json())
     lname = provider_config['userinfo']['family_name'](res.json())
     username = provider_config['userinfo']['username'](res.json())
-    role = 1
+    role = 8
 
     user = User.query.filter_by(email=email).first()
 

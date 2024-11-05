@@ -31,17 +31,34 @@ class User(db.Model, UserMixin):
     def get_id(self):
         return (self.user_id)
 
+    def parse_role(self):
+        roles = ['student', 'ta', 'prof', 'admin']
+        r = {}
+
+        for k, v in zip(roles, map(int, bin(self.role_id)[2:])):
+            r[k] = bool(v)
+
+        return r
+
     def is_student(self):
-        return True
+        if self.parse_role()['student']:
+            return True
+        return False
 
     def is_ta(self):
-        return True
+        if self.parse_role()['ta']:
+            return True
+        return False
 
     def is_prof(self):
-        return True
+        if self.parse_role()['prof']:
+            return True
+        return False
 
     def is_admin(self):
-        return True
+        if self.parse_role()['admin']:
+            return True
+        return False
 
 class Term(db.Model):
     __tablename__ = 'term'

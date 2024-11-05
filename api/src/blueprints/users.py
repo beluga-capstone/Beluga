@@ -54,9 +54,8 @@ def get_users():
 
 # Read User by ID (GET)
 @users_bp.route('/users/<int:user_id>', methods=['GET'])
+@student_required
 def get_user(user_id):
-    import sys
-    print(f'\n\n\n\n{user_id}\n\n\n\n',file=sys.stderr)
     user = User.query.get_or_404(user_id)
     user_data = {
         'user_id': user.user_id,
