@@ -1,6 +1,6 @@
 import React, { use, useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import SyntaxHighlighter from "react-syntax-highlighter";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
   materialDark,
   materialLight,
@@ -12,7 +12,10 @@ const SubmissionZone = () => {
   const [selectedFile, setSelectedFile] = useState(0);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    setData(acceptedFiles);
+    const sortedFiles = acceptedFiles.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    setData(sortedFiles);
   }, []);
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -56,14 +59,22 @@ const SubmissionZone = () => {
       ) : (
         <div>
           <h2 className="pb-2 font-bold">Files Selected</h2>
-          <div className="border p-4 flex">
-            <ul className="pr-4">
+          <table>
+            <thead>
               {data.map((file, index) => (
-                <li key={index} onClick={() => setSelectedFile(index)}>
+                <td
+                  key={index}
+                  onClick={() => setSelectedFile(index)}
+                  className={`border border-on-surface p-4 ${
+                    selectedFile === index ? "bg-on-surface" : ""
+                  }`}
+                >
                   {file.name}
-                </li>
+                </td>
               ))}
-            </ul>
+            </thead>
+          </table>
+          <div className="border border-on-surface p-4 flex">
             {typeof filesText[selectedFile] === "string" && (
               <div className="flex-1">
                 <SyntaxHighlighter
