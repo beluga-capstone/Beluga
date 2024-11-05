@@ -1,3 +1,4 @@
+import { FILE_TYPES } from "@/constants";
 import React, { use, useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -27,7 +28,7 @@ const SubmissionZone: React.FC<SubmissionZoneProps> = ({
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
-    accept: { text: [".py"] },
+    accept: { text: FILE_TYPES.map((type) => type.extension) },
   });
 
   useEffect(() => {
@@ -61,7 +62,10 @@ const SubmissionZone: React.FC<SubmissionZoneProps> = ({
           className="border-dashed border-2 border-gray-400 p-16 text-center"
         >
           <input {...getInputProps()} />
-          <p>Drag and drop a Python file here, or click to select one</p>
+          <p>
+            Drag and drop a file here, or click to select one{" "}
+            {FILE_TYPES.map((type) => type.extension).join(", ")}
+          </p>
         </div>
       ) : (
         <div>

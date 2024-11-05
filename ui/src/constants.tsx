@@ -1,5 +1,13 @@
 import { Home, Users, Folder, Monitor } from "lucide-react";
-import { SideNavItem, Container, Image, Student, Course, Assignment } from "./types";
+import {
+  SideNavItem,
+  Container,
+  Image,
+  Student,
+  Course,
+  Assignment,
+  Language,
+} from "./types";
 
 export const ROLES = {
   ADMIN: "Admin",
@@ -7,6 +15,13 @@ export const ROLES = {
   TA: "TA",
   STUDENT: "Student",
 };
+
+export const FILE_TYPES: Language[] = [
+  {
+    prismName: "Python",
+    extension: ".py",
+  },
+];
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
   {
@@ -135,4 +150,3 @@ export const DEFAULT_IMAGES: Image[] = [
     name: "default image2",
   },
 ];
-
