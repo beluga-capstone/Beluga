@@ -1,8 +1,13 @@
 from flask import Blueprint, request, jsonify
-from src.util.db import db, User
+from flask_login import login_required
 from datetime import datetime
 
+from src.util.auth import student_required
+from src.util.db import db, User
+
+
 users_bp = Blueprint('users', __name__)
+
 
 # Create User (POST)
 @users_bp.route('/users', methods=['POST'])
@@ -50,6 +55,8 @@ def get_users():
 # Read User by ID (GET)
 @users_bp.route('/users/<int:user_id>', methods=['GET'])
 def get_user(user_id):
+    import sys
+    print(f'\n\n\n\n{user_id}\n\n\n\n',file=sys.stderr)
     user = User.query.get_or_404(user_id)
     user_data = {
         'user_id': user.user_id,

@@ -2,7 +2,7 @@ from sqlalchemy_utils import database_exists, create_database
 from flask_login import LoginManager
 from flask import Flask
 
-from src.util.db import db
+from src.util.db import db, User
 from config import Config
 
 

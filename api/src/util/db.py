@@ -29,7 +29,19 @@ class User(db.Model, UserMixin):
     update_at = db.Column(db.DateTime, default=datetime.now)
 
     def get_id(self):
-           return (self.user_id)
+        return (self.user_id)
+
+    def is_student(self):
+        return True
+
+    def is_ta(self):
+        return True
+
+    def is_prof(self):
+        return True
+
+    def is_admin(self):
+        return True
 
 class Term(db.Model):
     __tablename__ = 'term'

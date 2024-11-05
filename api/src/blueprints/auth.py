@@ -15,6 +15,10 @@ import requests
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth') 
 
 
+@auth_bp.route('/login', methods=['GET'])
+def login():
+    return redirect(url_for('auth.oauth_authorize', provider='google'))
+
 @auth_bp.route('/logout', methods=['GET'])
 @login_required
 def logout():
