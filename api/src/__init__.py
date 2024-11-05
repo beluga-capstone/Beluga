@@ -1,11 +1,12 @@
 from flask import Flask
 from src.util.db import db
-from config import Config
+from config import config_options
 
-def create_app():
+def create_app(config_name="default"):
     app = Flask(__name__)
+    app.config.from_object(config_options[config_name])
 
-    app.config.from_object(Config)
+    print(config_name)
 
     db.init_app(app)
 
@@ -24,7 +25,6 @@ def create_app():
         db.create_all()
 
         admin_user_id = init_admin_user()
-
         init_roles(admin_user_id)
         
         return app
