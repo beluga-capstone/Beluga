@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_login import login_required
+from flask_login import login_required, current_user
 from datetime import datetime
 
 from src.util.auth import admin_required
@@ -106,3 +106,19 @@ def delete_user(user_id):
         return jsonify({'error': str(e)}), 500
 
 
+@users_bp.route('/users/profile', methods=['GET'])
+@login_required
+def get_current_user():
+    user = User.query.get_or_404(current_user.user_id)
+    user_data = {
+        'user_id': user.user_id,
+        'username': user.username,
+        'email': user.email,
+        'first_name': user.first_name,
+        'middle_name': user.middle_name,
+        'last_name': user.last_name,
+        'role_id': user.role_id,
+        'created_at': user.created_at,
+        'updated_at': user.update_at
+    }
+    return jsonify(user_data), 200
