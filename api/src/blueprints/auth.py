@@ -92,6 +92,11 @@ def oauth_callback(provider):
         abort(401)
 
     email = provider_config['userinfo']['email'](res.json())
+    fname = provider_config['userinfo']['given_name'](res.json())
+    lname = provider_config['userinfo']['family_name'](res.json())
+    username = provider_config['userinfo']['username'](res.json())
+    role = 1
+
     user = User.query.filter_by(email=email).first()
 
     if user:
@@ -99,7 +104,7 @@ def oauth_callback(provider):
         flash('Login successful', 'success')
         return redirect('/')
     else:
-        user = User(email=email)
+        user = User(username=username, email=email, first_name=fname, last_name=lname, role_id=role)
         db.session.add(user)
         db.session.commit()
         login_user(user)

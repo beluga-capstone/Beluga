@@ -1,8 +1,10 @@
-
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 from datetime import datetime
 
+
 db = SQLAlchemy()
+
 
 class Role(db.Model):
     __tablename__ = 'role'
@@ -10,12 +12,12 @@ class Role(db.Model):
     name = db.Column(db.String(50), nullable=False)
     permission = db.Column(db.String(200))
     description = db.Column(db.String(200))
-    user_create = db.Column(db.Integer, db.ForeignKey('user.user_id'))
+    user_create = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now)
 
-class User(db.Model):
-    __tablename__ = 'user'
+class User(db.Model, UserMixin):
+    __tablename__ = 'users'
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False)
@@ -26,6 +28,9 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now)
     update_at = db.Column(db.DateTime, default=datetime.now)
 
+    def get_id(self):
+           return (self.user_id)
+
 class Term(db.Model):
     __tablename__ = 'term'
     term_id = db.Column(db.Integer, primary_key=True)
@@ -35,7 +40,7 @@ class Course(db.Model):
     __tablename__ = 'course'
     course_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     description = db.Column(db.String(255))
     publish = db.Column(db.Boolean, default=False)
     create_at = db.Column(db.DateTime, default=datetime.now)
@@ -47,7 +52,7 @@ class CourseEnrollment(db.Model):
     __tablename__ = 'course_enrollment'
     enrollment_id = db.Column(db.Integer, primary_key=True)
     course_id = db.Column(db.Integer, db.ForeignKey('course.course_id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     enrollment_date = db.Column(db.DateTime, default=datetime.now)
 
 class Assignment(db.Model):
@@ -59,14 +64,14 @@ class Assignment(db.Model):
     due_at = db.Column(db.DateTime)
     lock_at = db.Column(db.DateTime)
     unlock_at = db.Column(db.DateTime)
-    user_create = db.Column(db.Integer, db.ForeignKey('user.user_id'))
+    user_create = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     image_id = db.Column(db.Integer, db.ForeignKey('image.image_id'))
 
 
 class Submission(db.Model):
     __tablename__ = 'submission'
     submission_id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     assignment_id = db.Column(db.Integer, db.ForeignKey('assignment.assignment_id'))
     submission_date = db.Column(db.DateTime, default=datetime.now)
     grade = db.Column(db.Integer)
@@ -76,7 +81,7 @@ class Submission(db.Model):
 class Container(db.Model):
     __tablename__ = 'container'
     container_id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     status = db.Column(db.String(50))
     cpu_usage = db.Column(db.Float)
     memory_usage = db.Column(db.Float)
@@ -87,7 +92,7 @@ class Container(db.Model):
 class Image(db.Model):
     __tablename__ = 'image'
     image_id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.now)
