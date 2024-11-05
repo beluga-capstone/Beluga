@@ -41,22 +41,26 @@ class User(db.Model, UserMixin):
         return r
 
     def is_student(self):
-        if self.parse_role()['student']:
+        roles = self.parse_role()
+        if roles['student'] or roles['ta'] or roles['prof'] or roles['admin']:
             return True
         return False
 
     def is_ta(self):
-        if self.parse_role()['ta']:
+        roles = self.parse_role()
+        if roles['ta'] or roles['prof'] or roles['admin']:
             return True
         return False
 
     def is_prof(self):
-        if self.parse_role()['prof']:
+        roles = self.parse_role()
+        if roles['prof'] or roles['admin']:
             return True
         return False
 
     def is_admin(self):
-        if self.parse_role()['admin']:
+        roles = self.parse_role()
+        if roles['admin']:
             return True
         return False
 
