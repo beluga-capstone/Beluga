@@ -1,12 +1,14 @@
 "use client";
 
 import Button from "@/components/Button";
+import SubmissionZone from "@/components/SubmissionZone";
 import { ROLES } from "@/constants";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useContainers } from "@/hooks/useContainers";
 import { useProfile } from "@/hooks/useProfile";
 import { ArrowUpFromLine, Edit2 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   const { profile } = useProfile();
@@ -18,6 +20,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   const containerName = containers.find(
     (container) => container.id === assignment?.containerId
   )?.name;
+  const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
 
   return (
     <div className="container mx-auto p-4">
@@ -33,11 +36,12 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
           </Link>
         )}
         {profile?.role === ROLES.STUDENT && (
-          <Link href={`/assignments/${assignment?.id}/submit`} className="px-6">
-            <Button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center">
-              <ArrowUpFromLine className="mr-2" /> Upload Files
-            </Button>
-          </Link>
+          <Button
+            className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+            onClick={() => setSubmissionWindowIsOpen(true)}
+          >
+            <ArrowUpFromLine className="mr-2" /> Upload Files
+          </Button>
         )}
       </div>
       <div className="flex justify-between items-center">
@@ -90,6 +94,9 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
             View Submissions
           </Link>
         </p>
+      )}
+      {profile?.role === ROLES.STUDENT && submissionWindowIsOpen && (
+        <SubmissionZone />
       )}
     </div>
   );
