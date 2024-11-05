@@ -1,10 +1,11 @@
 "use client";
 
+import Button from "@/components/Button";
 import { ROLES } from "@/constants";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useContainers } from "@/hooks/useContainers";
 import { useProfile } from "@/hooks/useProfile";
-import { Edit2 } from "lucide-react";
+import { ArrowUpFromLine, Edit2 } from "lucide-react";
 import Link from "next/link";
 
 const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
@@ -20,11 +21,22 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-8 flex items-center">
+      <div
+        className={`mb-8 flex items-center ${
+          profile?.role === ROLES.STUDENT ? "justify-between" : ""
+        }`}
+      >
         <h1 className="font-bold text-4xl">{assignment?.title}</h1>
         {profile?.role !== ROLES.STUDENT && (
           <Link href={`/assignments/edit/${assignment?.id}`} className="px-6">
             <Edit2 size={24} />
+          </Link>
+        )}
+        {profile?.role === ROLES.STUDENT && (
+          <Link href={`/assignments/${assignment?.id}/submit`} className="px-6">
+            <Button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center">
+              <ArrowUpFromLine className="mr-2" /> Upload Files
+            </Button>
           </Link>
         )}
       </div>
