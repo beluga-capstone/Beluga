@@ -6,7 +6,13 @@ import {
   materialLight,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
 
-const SubmissionZone = () => {
+interface SubmissionZoneProps {
+  setSubmitIsEnabled: (enabled: boolean) => void;
+}
+
+const SubmissionZone: React.FC<SubmissionZoneProps> = ({
+  setSubmitIsEnabled,
+}) => {
   const [data, setData] = useState<any[]>([]);
   const [filesText, setFilesText] = useState<String[]>([]);
   const [selectedFile, setSelectedFile] = useState(0);
@@ -16,6 +22,7 @@ const SubmissionZone = () => {
       a.name.localeCompare(b.name)
     );
     setData(sortedFiles);
+    setSubmitIsEnabled(true);
   }, []);
 
   const { getRootProps, getInputProps } = useDropzone({

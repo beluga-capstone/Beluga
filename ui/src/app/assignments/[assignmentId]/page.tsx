@@ -21,6 +21,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
     (container) => container.id === assignment?.containerId
   )?.name;
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
+  const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
 
   return (
     <div className="container mx-auto p-4">
@@ -35,14 +36,38 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
             <Edit2 size={24} />
           </Link>
         )}
-        {profile?.role === ROLES.STUDENT && (
-          <Button
-            className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={() => setSubmissionWindowIsOpen(true)}
-          >
-            <ArrowUpFromLine className="mr-2" /> Upload Files
-          </Button>
-        )}
+        {profile?.role === ROLES.STUDENT &&
+          (submissionWindowIsOpen ? (
+            <div className="flex">
+              <div className="px-2">
+                <Button
+                  className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
+                  onClick={() => setSubmissionWindowIsOpen(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+              <div className="px-2">
+                <Button
+                  className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+                  onClick={() => {
+                    setSubmissionWindowIsOpen(false);
+                    setSubmitIsEnabled(false);
+                  }}
+                  disabled={!submitIsEnabled}
+                >
+                  Submit
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+              onClick={() => setSubmissionWindowIsOpen(true)}
+            >
+              <ArrowUpFromLine className="mr-2" /> Upload Files
+            </Button>
+          ))}
       </div>
       <div className="flex justify-between items-center">
         <div className="flex-row">
@@ -96,7 +121,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
         </p>
       )}
       {profile?.role === ROLES.STUDENT && submissionWindowIsOpen && (
-        <SubmissionZone />
+        <SubmissionZone setSubmitIsEnabled={setSubmitIsEnabled} />
       )}
     </div>
   );
