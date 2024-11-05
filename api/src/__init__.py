@@ -2,6 +2,7 @@ from flask import Flask
 from src.util.db import db
 from config import config_options
 from flask_socketio import SocketIO
+from flask_cors import CORS 
 
 socketio = SocketIO()
 
@@ -12,7 +13,9 @@ def create_app(config_name="default"):
     print(config_name)
 
     db.init_app(app)
-    socketio.init_app(app)
+    socketio.init_app(app, cors_allowed_origins="*")
+
+    CORS(app)
 
     with app.app_context():
         from src.blueprints import assignment, container, course_enrollment, courses, image, role, submissions, term, users
