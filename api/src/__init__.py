@@ -3,7 +3,7 @@ from flask_login import LoginManager
 from flask import Flask
 
 from src.util.db import db, User
-from config import Config
+from config import config_options
 
 
 login_manager = LoginManager()
@@ -14,10 +14,11 @@ def load_user(user_id):
     return User.query.get(user_id)
 
 
-def create_app():
+def create_app(config_name="default"):
     app = Flask(__name__)
+    app.config.from_object(config_options[config_name])
 
-    app.config.from_object(Config)
+    print(config_name)
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -27,13 +28,12 @@ def create_app():
         create_database(app.config['SQLALCHEMY_DATABASE_URI'])
 
     with app.app_context():
-        from src.blueprints import assignment, auth, container, course_enrollment, courses, dependencies, image, role, submissions, term, users
+        from src.blueprints import assignment, auth, container, course_enrollment, courses, image, role, submissions, term, users
         app.register_blueprint(assignment.assignment_bp)
         app.register_blueprint(auth.auth_bp)
         app.register_blueprint(container.container_bp)
         app.register_blueprint(course_enrollment.enrollment_bp)
         app.register_blueprint(courses.course_bp)
-        app.register_blueprint(dependencies.dependencies_bp)
         app.register_blueprint(image.image_bp)
         app.register_blueprint(role.role_bp)
         app.register_blueprint(submissions.submission_bp)
@@ -43,7 +43,6 @@ def create_app():
         db.create_all()
 
         admin_user_id = init_admin_user()
-
         init_roles(admin_user_id)
         
         return app
@@ -75,28 +74,24 @@ def init_roles(admin_user_id):
             'name': 'Admin',
             'permission': 'view_system,manage_users,manage_courses,manage_environments',
             'description': 'Admin role with system management capabilities',
-            'user_create': admin_user_id
         },
         {
             'role_id': 2,
             'name': 'Professor',
             'permission': 'manage_courses,view_analytics,grade_assignments',
             'description': 'Professor role with course and assignment management capabilities',
-            'user_create': admin_user_id
         },
         {
             'role_id': 4,
             'name': 'TA',
             'permission': 'manage_submissions,manage_feedback,manage_assignments',
             'description': 'TA role with submission and assignment management capabilities',
-            'user_create': admin_user_id
         },
         {
             'role_id': 8,
             'name': 'Student',
             'permission': 'view_courses,submit_assignments,view_grades',
             'description': 'Student role with course viewing and assignment submission capabilities',
-            'user_create': admin_user_id
         },
     ]
 
@@ -108,7 +103,6 @@ def init_roles(admin_user_id):
                 name=role_data['name'],
                 permission=role_data['permission'],
                 description=role_data['description'],
-                user_create=role_data['user_create']
             )
             db.session.add(new_role)
 

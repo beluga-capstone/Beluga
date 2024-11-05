@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from datetime import datetime
+import uuid
 
 from src.util.auth import admin_required
 from src.util.db import db, User
@@ -28,7 +29,7 @@ def create_user():
     try:
         db.session.add(new_user)
         db.session.commit()
-        return jsonify({'message': 'User created successfully', 'user': new_user.user_id}), 201
+        return jsonify({'message': 'User created successfully', 'user_id': str(new_user.user_id)}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -36,17 +37,17 @@ def create_user():
 # Read All Users (GET)
 @users_bp.route('/users', methods=['GET'])
 def get_users():
-    users = User.query.all()
+    users = db.session.scalars(db.select(User)).all()
     users_list = []
     for user in users:
         users_list.append({
-            'user_id': user.user_id,
+            'user_id': str(user.user_id),
             'username': user.username,
             'email': user.email,
             'first_name': user.first_name,
             'middle_name': user.middle_name,
             'last_name': user.last_name,
-            'role_id': user.role_id,
+            'role_id': str(user.role_id) if user.role_id else None,
             'created_at': user.created_at,
             'updated_at': user.update_at
         })
@@ -56,26 +57,31 @@ def get_users():
 @users_bp.route('/users/<int:user_id>', methods=['GET'])
 @admin_required
 def get_user(user_id):
-    user = User.query.get_or_404(user_id)
+    user = db.session.get(User, user_id)
+    if user is None:
+        return jsonify({'error': 'User not found'}), 404
+
     user_data = {
-        'user_id': user.user_id,
+        'user_id': str(user.user_id),
         'username': user.username,
         'email': user.email,
         'first_name': user.first_name,
         'middle_name': user.middle_name,
         'last_name': user.last_name,
-        'role_id': user.role_id,
+        'role_id': str(user.role_id) if user.role_id else None,
         'created_at': user.created_at,
         'updated_at': user.update_at
     }
     return jsonify(user_data), 200
 
 # Update User (PUT)
-@users_bp.route('/users/<int:user_id>', methods=['PUT'])
+@users_bp.route('/users/<uuid:user_id>', methods=['PUT'])
 def update_user(user_id):
-    user = User.query.get_or_404(user_id)
-    data = request.get_json()
+    user = db.session.get(User, user_id)
+    if user is None:
+        return jsonify({'error': 'User not found'}), 404
 
+    data = request.get_json()
     # Update user fields
     user.username = data.get('username', user.username)
     user.email = data.get('email', user.email)
@@ -93,9 +99,11 @@ def update_user(user_id):
         return jsonify({'error': str(e)}), 500
 
 # Delete User (DELETE)
-@users_bp.route('/users/<int:user_id>', methods=['DELETE'])
+@users_bp.route('/users/<uuid:user_id>', methods=['DELETE'])
 def delete_user(user_id):
-    user = User.query.get_or_404(user_id)
+    user = db.session.get(User, user_id)
+    if user is None:
+        return jsonify({'error': 'User not found'}), 404
     
     try:
         db.session.delete(user)
@@ -105,11 +113,13 @@ def delete_user(user_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-
 @users_bp.route('/users/profile', methods=['GET'])
 @login_required
 def get_current_user():
-    user = User.query.get_or_404(current_user.user_id)
+    user = db.session.get(User, user_id)
+    if user is None:
+        return jsonify({'error': 'User not found'}), 404
+      
     user_data = {
         'user_id': user.user_id,
         'username': user.username,

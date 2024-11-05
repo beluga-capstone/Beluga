@@ -1,0 +1,3 @@
+.hover-bg-custom {
+  @apply hover:bg-[var(--hover-bg-color)] hover:bg-opacity-[var(--hover-bg-opacity)];
+}

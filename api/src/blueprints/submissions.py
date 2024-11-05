@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from src.util.db import db, Submission
 from datetime import datetime
+import uuid
 
 submission_bp = Blueprint('submission', __name__)
 
@@ -17,7 +18,6 @@ def create_submission():
         assignment_id=data['assignment_id'],
         submission_date=data.get('submission_date', datetime.now()),
         grade=data.get('grade'),
-        comment_id=data.get('comment_id'),
         status=data.get('status'),
         data=data.get('data')
     )
@@ -25,7 +25,7 @@ def create_submission():
     try:
         db.session.add(new_submission)
         db.session.commit()
-        return jsonify({'message': 'Submission created successfully', 'submission_id': new_submission.submission_id}), 201
+        return jsonify({'message': 'Submission created successfully', 'submission_id': str(new_submission.submission_id)}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -33,9 +33,9 @@ def create_submission():
 # Get all submissions (GET)
 @submission_bp.route('/submissions', methods=['GET'])
 def get_submissions():
-    submissions = Submission.query.all()
+    submissions = db.session.scalars(db.select(Submission)).all()
     submissions_list = [{
-        'submission_id': submission.submission_id,
+        'submission_id': str(submission.submission_id),
         'user_id': submission.user_id,
         'assignment_id': submission.assignment_id,
         'submission_date': submission.submission_date,
@@ -47,12 +47,14 @@ def get_submissions():
     return jsonify(submissions_list), 200
 
 # Get a specific submission (GET)
-@submission_bp.route('/submissions/<int:submission_id>', methods=['GET'])
+@submission_bp.route('/submissions/<uuid:submission_id>', methods=['GET'])
 def get_submission(submission_id):
-    submission = Submission.query.get_or_404(submission_id)
+    submission = db.session.get(Submission, submission_id)
+    if submission is None:
+        return jsonify({'error': 'Submission not found'}), 404
 
     return jsonify({
-        'submission_id': submission.submission_id,
+        'submission_id': str(submission.submission_id),
         'user_id': submission.user_id,
         'assignment_id': submission.assignment_id,
         'submission_date': submission.submission_date,
@@ -62,11 +64,13 @@ def get_submission(submission_id):
     }), 200
 
 # Update a submission (PUT)
-@submission_bp.route('/submissions/<int:submission_id>', methods=['PUT'])
+@submission_bp.route('/submissions/<uuid:submission_id>', methods=['PUT'])
 def update_submission(submission_id):
-    submission = Submission.query.get_or_404(submission_id)
-    data = request.get_json()
+    submission = db.session.get(Submission, submission_id)
+    if submission is None:
+        return jsonify({'error': 'Submission not found'}), 404
 
+    data = request.get_json()
     submission.user_id = data.get('user_id', submission.user_id)
     submission.assignment_id = data.get('assignment_id', submission.assignment_id)
     submission.submission_date = data.get('submission_date', submission.submission_date)
@@ -82,9 +86,11 @@ def update_submission(submission_id):
         return jsonify({'error': str(e)}), 500
 
 # Delete a submission (DELETE)
-@submission_bp.route('/submissions/<int:submission_id>', methods=['DELETE'])
+@submission_bp.route('/submissions/<uuid:submission_id>', methods=['DELETE'])
 def delete_submission(submission_id):
-    submission = Submission.query.get_or_404(submission_id)
+    submission = db.session.get(Submission, submission_id)
+    if submission is None:
+        return jsonify({'error': 'Submission not found'}), 404
 
     try:
         db.session.delete(submission)

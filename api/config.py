@@ -6,7 +6,6 @@ from uuid import uuid4
 PROJECT_DIR = path.abspath(path.dirname(__file__))
 load_dotenv(path.join(PROJECT_DIR, '.env'))
 
-
 class Config:
     ENVIRONMENT = environ.get('ENVIRONMENT', 'production')
 
@@ -39,3 +38,13 @@ class Config:
             ],
         }
     }
+
+class TestingConfig:
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URI', 'postgresql://postgres:temppassword@db:5432/your_db')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    TESTING = True
+
+config_options = {
+    'default': Config,
+    'testing': TestingConfig,
+}
