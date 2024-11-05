@@ -101,13 +101,19 @@ def docker_image_id(test_client, user_id):
     assert response.status_code == 201, f"Error: {response.get_json().get('error')}"
     return response.get_json()['docker_image_id']
 
+ROLE_ID_COUNTER = 9 
+
 @pytest.fixture
-def role_id(test_client, user_id):
+def role_id(test_client):
+    global ROLE_ID_COUNTER
+    unique_role_id = ROLE_ID_COUNTER
+    ROLE_ID_COUNTER += 1 
+
     create_data = {
+        'role_id': unique_role_id,
         'name': 'Admin2',
         'permission': 'full_access',
         'description': 'Administrator role with full access',
-        'user_id': user_id
     }
     response = test_client.post('/roles', json=create_data)
     assert response.status_code == 201

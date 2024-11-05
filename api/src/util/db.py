@@ -7,11 +7,10 @@ db = SQLAlchemy()
 
 class Role(db.Model):
     __tablename__ = 'role'
-    role_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    role_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     permission = db.Column(db.String(200))
     description = db.Column(db.String(200))
-    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now)
 
@@ -23,7 +22,7 @@ class User(db.Model):
     first_name = db.Column(db.String(100))
     middle_name = db.Column(db.String(100))
     last_name = db.Column(db.String(100))
-    role_id = db.Column(UUID(as_uuid=True), db.ForeignKey('role.role_id'))
+    role_id = db.Column(db.Integer, db.ForeignKey('role.role_id'))
     created_at = db.Column(db.DateTime, default=datetime.now)
     update_at = db.Column(db.DateTime, default=datetime.now)
 
