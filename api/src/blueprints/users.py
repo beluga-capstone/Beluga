@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_login import login_required
 from datetime import datetime
 
-from src.util.auth import student_required
+from src.util.auth import admin_required
 from src.util.db import db, User
 
 
@@ -54,7 +54,7 @@ def get_users():
 
 # Read User by ID (GET)
 @users_bp.route('/users/<int:user_id>', methods=['GET'])
-@student_required
+@admin_required
 def get_user(user_id):
     user = User.query.get_or_404(user_id)
     user_data = {
