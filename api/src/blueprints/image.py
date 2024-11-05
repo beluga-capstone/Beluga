@@ -41,18 +41,27 @@ def build_image():
     image_tag = data.get('image_tag', f'image_{datetime.utcnow().isoformat()}')
 
     try:
-        # Build the image with a status update
-        image, logs = docker_client.images.build(
+        # Use the low-level API client for more granular log handling
+        api_client = docker.APIClient()
+        
+        # Start building the image and stream logs
+        logs = api_client.build(
             fileobj=io.BytesIO(dockerfile_content.encode('utf-8')),
             tag=image_tag,
-            rm=True
+            rm=True,
+            decode=True  # Ensures each log entry is JSON-decoded
         )
 
         for log in logs:
-            # Send each line of the build log to the frontend
-            socketio.emit('build_status', {'status': log.get('stream', '').strip()})
+            # Emit each line of the build log to the frontend
+            message = log.get('stream') or log.get('status', '').strip()
+            if message:
+                socketio.emit('build_status', {'status': message})
 
-        # Save image information to the database after completion
+        # After successful build, retrieve the image by tag
+        image = docker_client.images.get(image_tag)
+
+        # Save image information to the database
         new_image = Image(
             docker_image_id=image.id,
             user_id=user_id,
@@ -65,10 +74,12 @@ def build_image():
         socketio.emit('build_complete', {'docker_image_id': image.id})
 
         return jsonify({'message': 'Image built successfully', 'docker_image_id': image.id}), 201
+
     except Exception as e:
         db.session.rollback()
         socketio.emit('build_error', {'error': str(e)})
         return jsonify({'error': str(e)}), 500
+
 
 # Get all images (GET)
 @image_bp.route('/images', methods=['GET'])
