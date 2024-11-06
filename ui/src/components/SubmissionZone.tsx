@@ -1,5 +1,4 @@
-import { FILE_TYPES } from "@/constants";
-import React, { use, useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
@@ -28,7 +27,6 @@ const SubmissionZone: React.FC<SubmissionZoneProps> = ({
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
-    accept: { text: FILE_TYPES.map((type) => type.extension) },
   });
 
   useEffect(() => {
@@ -62,10 +60,7 @@ const SubmissionZone: React.FC<SubmissionZoneProps> = ({
           className="border-dashed border-2 border-gray-400 p-16 text-center"
         >
           <input {...getInputProps()} />
-          <p>
-            Drag and drop a file here, or click to select one{" "}
-            {FILE_TYPES.map((type) => type.extension).join(", ")}
-          </p>
+          <p>Drag and drop a file here, or click to select</p>
         </div>
       ) : (
         <div>
@@ -89,7 +84,7 @@ const SubmissionZone: React.FC<SubmissionZoneProps> = ({
             {typeof filesText[selectedFile] === "string" && (
               <div className="flex-1">
                 <SyntaxHighlighter
-                  language="python"
+                  language={data[selectedFile].name.split(".").pop() || "text"}
                   style={
                     window.matchMedia &&
                     window.matchMedia("(prefers-color-scheme: dark)").matches

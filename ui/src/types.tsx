@@ -71,8 +71,3 @@ export interface User {
   email: string;
   role: string;
 }
-
-export interface Language {
-  prismName: string;
-  extension: string;
-}

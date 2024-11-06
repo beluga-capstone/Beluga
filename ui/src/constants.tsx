@@ -6,7 +6,6 @@ import {
   Student,
   Course,
   Assignment,
-  Language,
 } from "./types";
 
 export const ROLES = {
@@ -15,13 +14,6 @@ export const ROLES = {
   TA: "TA",
   STUDENT: "Student",
 };
-
-export const FILE_TYPES: Language[] = [
-  {
-    prismName: "Python",
-    extension: ".py",
-  },
-];
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
   {
