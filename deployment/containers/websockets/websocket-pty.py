@@ -104,8 +104,18 @@ def main():
         help="host to run server on (use 0.0.0.0 to allow access from other hosts)",
     )
     parser.add_argument("--debug", action="store_true", help="debug the server")
+    parser.add_argument(
+        "--command", default="bash", help="Command to run in the terminal"
+    )
+    parser.add_argument(
+        "--cmd-args",
+        default="",
+        help="arguments to pass to command (i.e. --cmd-args='arg1 arg2 --flag')",
+    )
+
     args = parser.parse_args()
     app.config["cmd"] = [args.command] + shlex.split(args.cmd_args)
+
     logging.basicConfig(
         stream=sys.stdout,
         level=logging.DEBUG if args.debug else logging.INFO,
