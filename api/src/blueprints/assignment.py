@@ -5,31 +5,52 @@ from src.util.db import db, Assignment
 
 assignment_bp = Blueprint('assignment', __name__)
 
+# Helper function to validate UUIDs
+def validate_uuid(id_str):
+    try:
+        uuid.UUID(id_str)
+        return True
+    except ValueError:
+        return False
+
 # Create a new assignment (POST)
 @assignment_bp.route('/assignments', methods=['POST'])
 def create_assignment():
     data = request.get_json()
 
+    # Validate required fields
     if not data or not data.get('title') or not data.get('course_id'):
         return jsonify({'error': 'Title and course ID are required'}), 400
 
-    # Validate UUID format for course_id
-    try:
-        uuid.UUID(data['course_id'])
-    except ValueError:
+    # Validate UUID format for course_id and user_id if provided
+    if not validate_uuid(data['course_id']):
         return jsonify({'error': 'Invalid UUID format for course_id'}), 400
+    if 'user_id' in data and not validate_uuid(data['user_id']):
+        return jsonify({'error': 'Invalid UUID format for user_id'}), 400
 
-    new_assignment = Assignment(
-        course_id=data['course_id'],
-        title=data['title'],
-        description=data.get('description'),
-        due_at=data.get('due_at')
-    )
+    # Convert date fields if provided
+    due_at = data.get('due_at')
+    lock_at = data.get('lock_at')
+    unlock_at = data.get('unlock_at')
 
     try:
+        new_assignment = Assignment(
+            course_id=data['course_id'],
+            title=data['title'],
+            description=data.get('description'),
+            due_at=datetime.fromisoformat(due_at) if due_at else None,
+            lock_at=datetime.fromisoformat(lock_at) if lock_at else None,
+            unlock_at=datetime.fromisoformat(unlock_at) if unlock_at else None,
+            user_id=data.get('user_id'),
+            docker_image_id=data.get('docker_image_id')
+        )
+
         db.session.add(new_assignment)
         db.session.commit()
-        return jsonify({'message': 'Assignment created successfully', 'assignment_id': str(new_assignment.assignment_id)}), 201
+        return jsonify({
+            'message': 'Assignment created successfully',
+            'assignment_id': str(new_assignment.assignment_id)
+        }), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -43,7 +64,11 @@ def get_assignments():
         'course_id': str(assignment.course_id),
         'title': assignment.title,
         'description': assignment.description,
-        'due_at': assignment.due_at
+        'due_at': assignment.due_at.isoformat() if assignment.due_at else None,
+        'lock_at': assignment.lock_at.isoformat() if assignment.lock_at else None,
+        'unlock_at': assignment.unlock_at.isoformat() if assignment.unlock_at else None,
+        'user_id': str(assignment.user_id) if assignment.user_id else None,
+        'docker_image_id': assignment.docker_image_id
     } for assignment in assignments]
 
     return jsonify(assignments_list), 200
@@ -60,7 +85,11 @@ def get_assignment(assignment_id):
         'course_id': str(assignment.course_id),
         'title': assignment.title,
         'description': assignment.description,
-        'due_at': assignment.due_at
+        'due_at': assignment.due_at.isoformat() if assignment.due_at else None,
+        'lock_at': assignment.lock_at.isoformat() if assignment.lock_at else None,
+        'unlock_at': assignment.unlock_at.isoformat() if assignment.unlock_at else None,
+        'user_id': str(assignment.user_id) if assignment.user_id else None,
+        'docker_image_id': assignment.docker_image_id
     }), 200
 
 # Update an assignment (PUT)
@@ -73,7 +102,17 @@ def update_assignment(assignment_id):
     data = request.get_json()
     assignment.title = data.get('title', assignment.title)
     assignment.description = data.get('description', assignment.description)
-    assignment.due_at = data.get('due_at', assignment.due_at)
+    
+    # Update date fields
+    if 'due_at' in data:
+        assignment.due_at = datetime.fromisoformat(data['due_at']) if data['due_at'] else None
+    if 'lock_at' in data:
+        assignment.lock_at = datetime.fromisoformat(data['lock_at']) if data['lock_at'] else None
+    if 'unlock_at' in data:
+        assignment.unlock_at = datetime.fromisoformat(data['unlock_at']) if data['unlock_at'] else None
+
+    assignment.user_id = data.get('user_id', assignment.user_id)
+    assignment.docker_image_id = data.get('docker_image_id', assignment.docker_image_id)
 
     try:
         db.session.commit()
