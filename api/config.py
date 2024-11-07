@@ -40,7 +40,7 @@ class Config:
     }
 
 class TestingConfig:
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URI', 'postgresql://postgres:temppassword@db:5432/your_db')
+    SQLALCHEMY_DATABASE_URI = environ.get('DATABASE_URI', 'postgresql://postgres:temppassword@db:5432/your_db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     TESTING = True
 
