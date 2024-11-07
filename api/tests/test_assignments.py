@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime
 
-def test_create_update_delete_assignment(test_client, assignment_id):
+def test_create_update_delete_assignment(test_client, assignment_id, docker_image_id):
     # Step 1: Update Assignment
     update_data = {
         'title': 'Updated Test Assignment',
@@ -19,9 +19,9 @@ def test_create_update_delete_assignment(test_client, assignment_id):
     assert json_data['title'] == 'Updated Test Assignment'
     assert json_data['description'] == 'This is an updated test assignment'
 
-    # Parse the expected and actual 'due_at' values into datetime objects
-    expected_due_at = datetime.strptime('2024-11-05T23:59:59', '%Y-%m-%dT%H:%M:%S')
-    returned_due_at = datetime.strptime(json_data['due_at'], '%a, %d %b %Y %H:%M:%S GMT')
+    # Parse the expected and actual 'due_at' values into datetime objects using ISO format
+    expected_due_at = datetime.fromisoformat('2024-11-05T23:59:59')
+    returned_due_at = datetime.fromisoformat(json_data['due_at'])
 
     # Compare the datetime objects
     assert expected_due_at == returned_due_at

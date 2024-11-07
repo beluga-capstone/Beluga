@@ -4,7 +4,10 @@ from flask import Flask
 
 from src.util.db import db, User
 from config import config_options
+from flask_socketio import SocketIO
+from flask_cors import CORS 
 
+socketio = SocketIO()
 
 login_manager = LoginManager()
 
@@ -21,6 +24,9 @@ def create_app(config_name="default"):
     print(config_name)
 
     db.init_app(app)
+    socketio.init_app(app, cors_allowed_origins="*")
+
+    CORS(app)
     login_manager.init_app(app)
     login_manager.login_view = '/auth/login'
 

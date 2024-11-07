@@ -6,3 +6,7 @@ sqlalchemy-utils
 requests
 pytest
 flask_login
+docker
+pytest
+flask_socketio
+flask-cors

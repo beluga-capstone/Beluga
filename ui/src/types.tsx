@@ -55,12 +55,9 @@ export interface Container {
 }
 
 export interface Image {
-  id: number;
-  title: string;
-  courses: string[];
-  packages: string[];
-  dockerfileContent: string;
-  name: string;
+  docker_image_id: number;
+  user_id: number;
+  description: string;
 }
 
 export interface User {
