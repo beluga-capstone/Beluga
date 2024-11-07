@@ -1,3 +1,4 @@
+import JSZip from "jszip";
 import React, { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -8,10 +9,12 @@ import {
 
 interface SubmissionZoneProps {
   setSubmitIsEnabled: (enabled: boolean) => void;
+  setZipFile: (file: File | null) => void;
 }
 
 const SubmissionZone: React.FC<SubmissionZoneProps> = ({
   setSubmitIsEnabled,
+  setZipFile,
 }) => {
   const [data, setData] = useState<any[]>([]);
   const [filesText, setFilesText] = useState<String[]>([]);
@@ -22,6 +25,13 @@ const SubmissionZone: React.FC<SubmissionZoneProps> = ({
       a.name.localeCompare(b.name)
     );
     setData(sortedFiles);
+    const zip = new JSZip();
+    sortedFiles.forEach((file) => {
+      zip.file(file.name, file);
+    });
+    zip.generateAsync({ type: "blob" }).then((blob) => {
+      setZipFile(new File([blob], "submission.zip"));
+    });
     setSubmitIsEnabled(true);
   }, []);
 
@@ -66,19 +76,20 @@ const SubmissionZone: React.FC<SubmissionZoneProps> = ({
         <div>
           <h2 className="pb-2 font-bold">Files Selected</h2>
           <table>
-            <thead>
+            <tbody>
               {data.map((file, index) => (
-                <td
-                  key={index}
-                  onClick={() => setSelectedFile(index)}
-                  className={`border border-on-surface p-4 ${
-                    selectedFile === index ? "bg-on-surface" : ""
-                  }`}
-                >
-                  {file.name}
-                </td>
+                <tr key={index}>
+                  <td
+                    onClick={() => setSelectedFile(index)}
+                    className={`border border-on-surface p-4 ${
+                      selectedFile === index ? "bg-on-surface" : ""
+                    }`}
+                  >
+                    {file.name}
+                  </td>
+                </tr>
               ))}
-            </thead>
+            </tbody>
           </table>
           <div className="border border-on-surface p-4 flex">
             {typeof filesText[selectedFile] === "string" && (

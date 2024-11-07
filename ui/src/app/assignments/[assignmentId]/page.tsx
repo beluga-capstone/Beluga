@@ -22,6 +22,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   )?.name;
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
+  const [zipFile, setZipFile] = useState<File | null>(null);
 
   return (
     <div className="container mx-auto p-4">
@@ -53,8 +54,9 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
                   onClick={() => {
                     setSubmissionWindowIsOpen(false);
                     setSubmitIsEnabled(false);
+                    console.log(zipFile);
                   }}
-                  disabled={!submitIsEnabled}
+                  disabled={!submitIsEnabled || !zipFile}
                 >
                   Submit
                 </Button>
@@ -121,7 +123,10 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
         </p>
       )}
       {profile?.role === ROLES.STUDENT && submissionWindowIsOpen && (
-        <SubmissionZone setSubmitIsEnabled={setSubmitIsEnabled} />
+        <SubmissionZone
+          setSubmitIsEnabled={setSubmitIsEnabled}
+          setZipFile={setZipFile}
+        />
       )}
     </div>
   );
