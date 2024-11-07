@@ -1,7 +1,9 @@
 from flask import Blueprint, request, jsonify
+from flask_login import current_user
 from datetime import datetime
 import uuid
 from src.util.db import db, CourseEnrollment, User, Course
+from src.util.auth import student_required
 
 enrollment_bp = Blueprint('enrollment', __name__)
 
@@ -96,9 +98,13 @@ def delete_enrollment(enrollment_id):
         return jsonify({'error': str(e)}), 500
 
 # Get all enrollments for a specific user (GET)
-@enrollment_bp.route('/users/<uuid:user_id>/enrollments', methods=['GET'])
-def get_enrollments_for_user(user_id):
+@enrollment_bp.route('/users/enrollments', methods=['GET'])
+@student_required
+def get_enrollments_for_user():
+    # Check if the user exists
+    user_id = current_user.user_id
     user = db.session.get(User, user_id)
+    
     if user is None:
         return jsonify({'error': 'User not found'}), 404
 

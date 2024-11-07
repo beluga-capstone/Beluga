@@ -1,4 +1,8 @@
 flask
 Flask-SQLAlchemy
 psycopg2-binary
+python-dotenv
+sqlalchemy-utils
+requests
 pytest
+flask_login

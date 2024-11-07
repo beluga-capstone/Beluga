@@ -1,9 +1,12 @@
 import uuid
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 from datetime import datetime
 from sqlalchemy.dialects.postgresql import UUID
 
+
 db = SQLAlchemy()
+
 
 class Role(db.Model):
     __tablename__ = 'role'
@@ -25,6 +28,42 @@ class User(db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('role.role_id'))
     created_at = db.Column(db.DateTime, default=datetime.now)
     update_at = db.Column(db.DateTime, default=datetime.now)
+
+    def get_id(self):
+        return (self.user_id)
+
+    def parse_role(self):
+        roles = ['student', 'ta', 'prof', 'admin']
+        r = {}
+
+        for k, v in zip(roles, map(int, bin(self.role_id)[2:])):
+            r[k] = bool(v)
+
+        return r
+
+    def is_student(self):
+        roles = self.parse_role()
+        if roles['student'] or roles['ta'] or roles['prof'] or roles['admin']:
+            return True
+        return False
+
+    def is_ta(self):
+        roles = self.parse_role()
+        if roles['ta'] or roles['prof'] or roles['admin']:
+            return True
+        return False
+
+    def is_prof(self):
+        roles = self.parse_role()
+        if roles['prof'] or roles['admin']:
+            return True
+        return False
+
+    def is_admin(self):
+        roles = self.parse_role()
+        if roles['admin']:
+            return True
+        return False
 
 class Term(db.Model):
     __tablename__ = 'term'

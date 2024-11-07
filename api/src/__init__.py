@@ -1,6 +1,18 @@
+from sqlalchemy_utils import database_exists, create_database
+from flask_login import LoginManager
 from flask import Flask
-from src.util.db import db
+
+from src.util.db import db, User
 from config import config_options
+
+
+login_manager = LoginManager()
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
+
 
 def create_app(config_name="default"):
     app = Flask(__name__)
@@ -9,10 +21,16 @@ def create_app(config_name="default"):
     print(config_name)
 
     db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = '/auth/login'
+
+    if not database_exists(app.config['SQLALCHEMY_DATABASE_URI']):
+        create_database(app.config['SQLALCHEMY_DATABASE_URI'])
 
     with app.app_context():
-        from src.blueprints import assignment, container, course_enrollment, courses, image, role, submissions, term, users
+        from src.blueprints import assignment, auth, container, course_enrollment, courses, image, role, submissions, term, users
         app.register_blueprint(assignment.assignment_bp)
+        app.register_blueprint(auth.auth_bp)
         app.register_blueprint(container.container_bp)
         app.register_blueprint(course_enrollment.enrollment_bp)
         app.register_blueprint(courses.course_bp)
@@ -65,16 +83,16 @@ def init_roles(admin_user_id):
         },
         {
             'role_id': 4,
+            'name': 'TA',
+            'permission': 'manage_submissions,manage_feedback,manage_assignments',
+            'description': 'TA role with submission and assignment management capabilities',
+        },
+        {
+            'role_id': 8,
             'name': 'Student',
             'permission': 'view_courses,submit_assignments,view_grades',
             'description': 'Student role with course viewing and assignment submission capabilities',
         },
-        {
-            'role_id': 8,
-            'name': 'TA',
-            'permission': 'manage_submissions,manage_feedback,manage_assignments',
-            'description': 'TA role with submission and assignment management capabilities',
-        }
     ]
 
     for role_data in default_roles:
