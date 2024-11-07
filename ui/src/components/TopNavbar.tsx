@@ -1,30 +1,43 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useSelectedLayoutSegment } from 'next/navigation';
-import { Icon } from '@iconify/react';
-import useScroll from '@/hooks/useScroll';
-import { cn } from '@/lib/utils';
-
-import UserSettingsPopup from './UserSettingsPopup';
+import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useSelectedLayoutSegment } from "next/navigation";
+import { Icon } from "@iconify/react";
+import useScroll from "@/hooks/useScroll";
+import { cn } from "@/lib/utils";
+import UserSettingsPopup from "./UserSettingsPopup";
 
 const TopNavbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // Popup state
+  const [menuIsOpen, setMenuIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const scrolled = useScroll(5);
   const selectedLayout = useSelectedLayoutSegment();
 
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+    setMenuIsOpen(!menuIsOpen);
   };
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      setMenuIsOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <div
       className={cn(
         `sticky inset-x-0 top-0 z-30 w-full transition-all border-b border-foreground`,
         {
-          'backdrop-blur-lg': scrolled,
-          '': selectedLayout,
+          "backdrop-blur-lg": scrolled,
+          "": selectedLayout,
         }
       )}
     >
@@ -40,15 +53,11 @@ const TopNavbar = () => {
         </div>
 
         <div className="hidden md:flex space-x-4 relative">
-          {/* <div>
-            <Icon icon="lucide:settings" width="24" height="24" />
-          </div> */}
-
-          <div className="relative">
-            <button onClick={toggleMenu}>
+          <div className="relative" ref={menuRef}>
+            <button onClick={toggleMenu} title="Profile Button">
               <Icon icon="lucide:user" width="24" height="24" />
             </button>
-            {isMenuOpen && (<UserSettingsPopup />)}
+            {menuIsOpen && <UserSettingsPopup setMenuIsOpen={setMenuIsOpen} />}
           </div>
         </div>
       </div>
