@@ -1,11 +1,7 @@
 import JSZip from "jszip";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  materialDark,
-  materialLight,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
+import FilesPreview from "./FilesPreview";
 
 interface SubmissionZoneProps {
   setSubmitIsEnabled: (enabled: boolean) => void;
@@ -17,8 +13,6 @@ const SubmissionZone: React.FC<SubmissionZoneProps> = ({
   setZipFile,
 }) => {
   const [data, setData] = useState<any[]>([]);
-  const [filesText, setFilesText] = useState<String[]>([]);
-  const [selectedFile, setSelectedFile] = useState(0);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const sortedFiles = acceptedFiles.sort((a, b) =>
@@ -39,29 +33,6 @@ const SubmissionZone: React.FC<SubmissionZoneProps> = ({
     onDrop,
   });
 
-  useEffect(() => {
-    if (data.length === 0) {
-      return;
-    }
-
-    const readers = data.map((file) => {
-      return new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          if (e.target) {
-            resolve(e.target.result as string);
-          }
-        };
-        reader.onerror = reject;
-        reader.readAsText(file);
-      });
-    });
-
-    Promise.all(readers).then((texts) => {
-      setFilesText(texts);
-    });
-  }, [data]);
-
   return (
     <div className="pt-8">
       {data.length === 0 ? (
@@ -75,41 +46,7 @@ const SubmissionZone: React.FC<SubmissionZoneProps> = ({
       ) : (
         <div>
           <h2 className="pb-2 font-bold">Files Selected</h2>
-          <table>
-            <tbody>
-              <tr>
-                {data.map((file, index) => (
-                  <td
-                    key={index}
-                    onClick={() => setSelectedFile(index)}
-                    className={`border border-on-surface p-4 ${
-                      selectedFile === index ? "bg-on-surface" : ""
-                    }`}
-                  >
-                    {file.name}
-                  </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
-          <div className="border border-on-surface p-4 flex overflow-x-auto">
-            {typeof filesText[selectedFile] === "string" && (
-              <div className="flex-1">
-                <SyntaxHighlighter
-                  language={data[selectedFile].name.split(".").pop() || "text"}
-                  style={
-                    window.matchMedia &&
-                    window.matchMedia("(prefers-color-scheme: dark)").matches
-                      ? materialDark
-                      : materialLight
-                  }
-                  showLineNumbers
-                >
-                  {filesText[selectedFile]}
-                </SyntaxHighlighter>
-              </div>
-            )}
-          </div>
+          <FilesPreview files={data}/>
         </div>
       )}
     </div>
