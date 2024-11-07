@@ -4,7 +4,7 @@ import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useContainers } from "@/hooks/useContainers";
 import React from "react";
-import AssignmentForm from "../AssignmentsForm";
+import AssignmentForm from "../../../components/AssignmentsForm";
 
 const NewAssignment: React.FC = () => {
   const { addAssignment } = useAssignments();

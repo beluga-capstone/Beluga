@@ -29,7 +29,6 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   
   return (
     <>
-      {" "}
       <h2>Assignment Name</h2>
       <div className="pt-2 pb-8">
         <input

@@ -1,17 +1,36 @@
+from sqlalchemy_utils import database_exists, create_database
+from flask_login import LoginManager
 from flask import Flask
-from src.util.db import db
-from config import Config
 
-def create_app():
+from src.util.db import db, User
+from config import config_options
+
+
+login_manager = LoginManager()
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
+
+
+def create_app(config_name="default"):
     app = Flask(__name__)
+    app.config.from_object(config_options[config_name])
 
-    app.config.from_object(Config)
+    print(config_name)
 
     db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = '/auth/login'
+
+    if not database_exists(app.config['SQLALCHEMY_DATABASE_URI']):
+        create_database(app.config['SQLALCHEMY_DATABASE_URI'])
 
     with app.app_context():
-        from src.blueprints import assignment, container, course_enrollment, courses, image, role, submissions, term, users
+        from src.blueprints import assignment, auth, container, course_enrollment, courses, image, role, submissions, term, users
         app.register_blueprint(assignment.assignment_bp)
+        app.register_blueprint(auth.auth_bp)
         app.register_blueprint(container.container_bp)
         app.register_blueprint(course_enrollment.enrollment_bp)
         app.register_blueprint(courses.course_bp)
@@ -24,7 +43,6 @@ def create_app():
         db.create_all()
 
         admin_user_id = init_admin_user()
-
         init_roles(admin_user_id)
         
         return app
@@ -52,39 +70,39 @@ def init_roles(admin_user_id):
     # List of default roles to be added
     default_roles = [
         {
+            'role_id': 1,
             'name': 'Admin',
             'permission': 'view_system,manage_users,manage_courses,manage_environments',
             'description': 'Admin role with system management capabilities',
-            'user_id': admin_user_id
         },
         {
+            'role_id': 2,
             'name': 'Professor',
             'permission': 'manage_courses,view_analytics,grade_assignments',
             'description': 'Professor role with course and assignment management capabilities',
-            'user_id': admin_user_id
         },
         {
-            'name': 'Student',
-            'permission': 'view_courses,submit_assignments,view_grades',
-            'description': 'Student role with course viewing and assignment submission capabilities',
-            'user_id': admin_user_id
-        },
-        {
+            'role_id': 4,
             'name': 'TA',
             'permission': 'manage_submissions,manage_feedback,manage_assignments',
             'description': 'TA role with submission and assignment management capabilities',
-            'user_id': admin_user_id
-        }
+        },
+        {
+            'role_id': 8,
+            'name': 'Student',
+            'permission': 'view_courses,submit_assignments,view_grades',
+            'description': 'Student role with course viewing and assignment submission capabilities',
+        },
     ]
 
     for role_data in default_roles:
         # Check if the role already exists
         if not Role.query.filter_by(name=role_data['name']).first():
             new_role = Role(
+                role_id=role_data['role_id'],
                 name=role_data['name'],
                 permission=role_data['permission'],
                 description=role_data['description'],
-                user_id=role_data['user_id']
             )
             db.session.add(new_role)
 
