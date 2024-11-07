@@ -21,7 +21,7 @@ export default function RootLayout({
       <body>
         <div className="flex">
           <SideNavbar />
-          <main className="flex-1">
+          <main className="flex-1 w-full">
             <MarginWidthWrapper>
               <TopNavbar />
               <PageWrapper>{children}</PageWrapper>

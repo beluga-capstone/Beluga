@@ -91,7 +91,7 @@ const SubmissionZone: React.FC<SubmissionZoneProps> = ({
               ))}
             </tbody>
           </table>
-          <div className="border border-on-surface p-4 flex">
+          <div className="border border-on-surface p-4 flex overflow-x-auto">
             {typeof filesText[selectedFile] === "string" && (
               <div className="flex-1">
                 <SyntaxHighlighter
