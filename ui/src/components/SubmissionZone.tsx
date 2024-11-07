@@ -77,9 +77,10 @@ const SubmissionZone: React.FC<SubmissionZoneProps> = ({
           <h2 className="pb-2 font-bold">Files Selected</h2>
           <table>
             <tbody>
-              {data.map((file, index) => (
-                <tr key={index}>
+              <tr>
+                {data.map((file, index) => (
                   <td
+                    key={index}
                     onClick={() => setSelectedFile(index)}
                     className={`border border-on-surface p-4 ${
                       selectedFile === index ? "bg-on-surface" : ""
@@ -87,8 +88,8 @@ const SubmissionZone: React.FC<SubmissionZoneProps> = ({
                   >
                     {file.name}
                   </td>
-                </tr>
-              ))}
+                ))}
+              </tr>
             </tbody>
           </table>
           <div className="border border-on-surface p-4 flex overflow-x-auto">
