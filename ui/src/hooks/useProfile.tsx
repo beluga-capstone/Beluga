@@ -17,42 +17,59 @@ const saveProfileToStorage = (profile: Profile) => {
 
 export const useProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
+  
+  // gets the user data
+  const getProfile = async() => {
+    const response = await fetch('http://localhost:5000/users/profile', {
+      cache: 'no-store',
+      credentials: "include"
+    });
+    const data = await response.json();
+
+    setProfile({
+      firstName: data['first_name'],
+      lastName: data['last_name'],
+      middleName: data['middle_name'],
+      username:data['username'],
+      email: data['email'],
+      role_id: data['role_id'],
+      user_id:data['user_id'],
+      created_at:data['created_at'],
+      updated_at:data['updated_at']
+    });
+  }
 
   useEffect(() => {
     const loadedProfile = loadProfileFromStorage();
     if (loadedProfile) {
       setProfile(loadedProfile);
     } else {
-      setProfile({
-        firstName: "",
-        lastName: "",
-        email: "",
-        role: ROLES.STUDENT,
-      });
+      getProfile();
     }
   }, []);
 
-  const updateProfile = (
-    firstName: string,
-    middleName: string | undefined,
-    lastName: string,
-    email: string,
-    role: string
-  ) => {
-    const updatedProfile = {
-      ...profile,
-      firstName,
-      middleName,
-      lastName,
-      email,
-      role,
-    };
-    setProfile(updatedProfile);
-    saveProfileToStorage(updatedProfile);
-  };
+
+  // const updateProfile = (
+  //   firstName: string,
+  //   middleName: string | undefined,
+  //   lastName: string,
+  //   email: string,
+  //   role: string
+  // ) => {
+  //   const updatedProfile = {
+  //     ...profile,
+  //     firstName,
+  //     middleName,
+  //     lastName,
+  //     email,
+  //     role,
+  //   };
+  //   setProfile(updatedProfile);
+  //   saveProfileToStorage(updatedProfile);
+  // };
 
   return {
     profile,
-    updateProfile,
+    // updateProfile,
   };
 };

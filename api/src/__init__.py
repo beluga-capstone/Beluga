@@ -6,7 +6,7 @@ from src.util.db import db, User
 from config import config_options
 from flask_socketio import SocketIO
 from flask_cors import CORS 
-
+import logging
 socketio = SocketIO()
 
 login_manager = LoginManager()
@@ -19,14 +19,14 @@ def load_user(user_id):
 
 def create_app(config_name="default"):
     app = Flask(__name__)
+    # app.logger.setLevel(logging.INFO)
     app.config.from_object(config_options[config_name])
-
-    print(config_name)
 
     db.init_app(app)
     socketio.init_app(app, cors_allowed_origins="*")
 
-    CORS(app)
+    # WARNING: supports credentials may be insecure
+    CORS(app, origins="http://localhost:3000", supports_credentials=True)
     login_manager.init_app(app)
     login_manager.login_view = '/auth/login'
 
