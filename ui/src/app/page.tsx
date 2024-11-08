@@ -13,9 +13,6 @@ const Dashboard: React.FC = () => {
   
   return (
     <div>
-      {/* <div>
-        {profile?.username}
-      </div> */}
       <div className="container mx-auto p-4">
         {profile?.role_id == 8 ? (
           <StudentCoursesTable />

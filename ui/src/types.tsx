@@ -12,7 +12,6 @@ export interface Profile {
   middleName?: string;
   username:string;
   email: string;
-
   role_id: number;
   user_id:string;
   created_at:string;
