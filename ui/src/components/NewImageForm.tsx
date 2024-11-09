@@ -4,11 +4,7 @@ import { useRouter } from 'next/navigation';
 
 const socket = io('http://localhost:5000');
 
-interface NewImageFormProps {
-    onClose: () => void;
-}
-
-function NewImageForm({ onClose }: NewImageFormProps) {
+function NewImageForm() {
     const [isAdvancedDetailsOpen, setIsAdvancedDetailsOpen] = useState(false);
     const [imageName, setImageName] = useState("");
     const [courses, setSelectedCourses] = useState<string[]>([]);
