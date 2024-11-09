@@ -1,36 +1,20 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { CheckSquare, Square } from 'lucide-react';
+import React from "react";
+import { CheckSquare, Square, Loader } from 'lucide-react';
+import { useImageData } from "@/hooks/useImageData";
 
 type ImageItemProps = {
     image: {
-        docker_image_id: string; // id should be a string, as docker image ids are typically strings
-        title: string;
-        courses: string[];
-        packages: string[];
-        dockerfileContent: string;
+        docker_image_id: string;
+        user_id: string;
+        description: string;
     };
     isSelected: boolean;
-    onToggleSelect: (id: string) => void; // id should also be a string
+    onToggleSelect: (id: string) => void;
 };
 
 const ImageItem: React.FC<ImageItemProps> = ({ image, isSelected, onToggleSelect }) => {
-    const [imageTag, setImageTag] = useState<string>("");
-
-    // Use useEffect to call the async function when the component mounts
-    useEffect(() => {
-        const getImageTag = async () => {
-            try {
-                const response = await fetch(`http://localhost:5000/images/${image.docker_image_id}`);
-                const data = await response.json();
-                setImageTag(data.tag[0]); // Assuming 'tag' is an array and we want the first element
-            } catch (error) {
-                console.error("Error fetching image tag:", error);
-            }
-        };
-
-        getImageTag();
-    }, [image.docker_image_id]); // Only refetch when the docker_image_id changes
+    const { imageData, loading, error } = useImageData(image.docker_image_id);
 
     return (
         <div className="border p-4 rounded mb-4 flex justify-between items-center">
@@ -50,8 +34,19 @@ const ImageItem: React.FC<ImageItemProps> = ({ image, isSelected, onToggleSelect
                 </button>
                 
                 <div>
-                    <h2 className="font-bold">{imageTag || "Loading..."}</h2>
-                    {/* <p className="text-gray-500">Courses: {image.courses.join(", ")}</p> */}
+                    <h2 className="font-bold flex items-center">
+                        {loading ? (
+                            <>
+                                <Loader className="animate-spin mr-2" size={16} />
+                                <span className="text-gray-400">Loading image data...</span>
+                            </>
+                        ) : (
+                            imageData?.tag[0] || "Unnamed Image"
+                        )}
+                    </h2>
+                    {!loading && imageData && (
+                        <p className="text-gray-500">{imageData.description || "No description available"}</p>
+                    )}
                 </div>
             </div>
         </div>

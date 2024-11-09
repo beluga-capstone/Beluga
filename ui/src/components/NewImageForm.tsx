@@ -42,11 +42,11 @@ function NewImageForm() {
     }, []);
 
     useEffect(() => {
-        if (statusRef.current && !isUserScrolling) {
+        if (statusRef.current) {
             // Scroll to the bottom only if the user is not scrolling
             statusRef.current.scrollTop = statusRef.current.scrollHeight;
         }
-    }, [buildStatus, isUserScrolling]);
+    }, [buildStatus]);
 
     const handleScroll = () => {
         if (statusRef.current) {
@@ -86,7 +86,7 @@ function NewImageForm() {
                 },
                 body: JSON.stringify({
                     dockerfile_content: dockerfileContent,
-                    user_id: "222b1bb6-5a1f-49ad-8d57-fc38bfaa752f",
+                    user_id: "aa7adbbb-a0a2-40e5-b792-0490d8bfcdc3",
                     description: `Image for ${imageName}`,
                     image_tag: imageName
                 })
