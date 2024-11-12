@@ -3,7 +3,7 @@ import { ToggleLeft, ToggleRight } from "lucide-react";
 import Link from "next/link";
 
 const ProfessorAssignmentsTable = () => {
-  const {assignments, setPublished, setLateSubmissions} = useAssignments();
+  const { assignments, setPublished, setLateSubmissions } = useAssignments();
 
   return (
     <table className="table w-full">
@@ -24,20 +24,20 @@ const ProfessorAssignmentsTable = () => {
           </td>
         </tr>
         {assignments.map((assignment) => (
-          <tr key={assignment.id}>
+          <tr key={assignment.assignmentId}>
             <td className="text-center py-2">
-              <Link href={`/assignments/${assignment.id}`}>
+              <Link href={`/assignments/${assignment.assignmentId}`}>
                 {assignment.title}
               </Link>
             </td>
             <td className="text-center py-2">
-              {assignment.releaseDate.toLocaleDateString("en-US", {
+              {assignment.publishAt.toLocaleDateString("en-US", {
                 dateStyle: "short",
                 timeZone: "UTC",
               })}
             </td>
             <td className="text-center py-2">
-              {assignment.dueDate.toLocaleDateString("en-US", {
+              {assignment.dueAt.toLocaleDateString("en-US", {
                 dateStyle: "short",
                 timeZone: "UTC",
               })}
@@ -49,13 +49,13 @@ const ProfessorAssignmentsTable = () => {
                   <ToggleRight
                     size={32}
                     className="text-green-500"
-                    onClick={() => setPublished(assignment.id, false)}
+                    onClick={() => setPublished(assignment.assignmentId, false)}
                   />
                 ) : (
                   <ToggleLeft
                     size={32}
                     className="text-red-500"
-                    onClick={() => setPublished(assignment.id, true)}
+                    onClick={() => setPublished(assignment.assignmentId, true)}
                   />
                 )}
               </div>
@@ -66,13 +66,17 @@ const ProfessorAssignmentsTable = () => {
                   <ToggleRight
                     size={32}
                     className="text-green-500"
-                    onClick={() => setLateSubmissions(assignment.id, false)}
+                    onClick={() =>
+                      setLateSubmissions(assignment.assignmentId, false)
+                    }
                   />
                 ) : (
                   <ToggleLeft
                     size={32}
                     className="text-red-500"
-                    onClick={() => setLateSubmissions(assignment.id, true)}
+                    onClick={() =>
+                      setLateSubmissions(assignment.assignmentId, true)
+                    }
                   />
                 )}
               </div>

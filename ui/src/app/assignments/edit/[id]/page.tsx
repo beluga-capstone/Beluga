@@ -9,13 +9,18 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
   const assignmentId = parseInt(params.id, 10);
   const { assignments } = useAssignments();
   const assignment = assignments.find(
-    (assignment) => assignment.id === assignmentId
+    (assignment) => assignment.assignmentId === assignmentId
   );
   const { updateAssignment, deleteAssignment } = useAssignments();
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
-  const [releaseDate, setReleaseDate] = React.useState("");
-  const [dueDate, setDueDate] = React.useState("");
+  const [dueAt, setDueAt] = React.useState("");
+  const [lockAt, setLockAt] = React.useState("");
+  const [unlockAt, setUnlockAt] = React.useState("");
+  const [isUnlocked, setIsUnlocked] = React.useState(false);
+  const [isPublished, setIsPublished] = React.useState(false);
+  const [publishAt, setPublishAt] = React.useState("");
+  const [allowsLateSubmissions, setAllowsLateSubmissions] = React.useState(false);
   const [containerId, setContainerId] = React.useState(
     assignment?.containerId || -1
   );
@@ -24,10 +29,15 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
     if (assignment) {
       setTitle(assignment.title);
       setDescription(assignment.description);
-      setReleaseDate(
-        new Date(assignment.releaseDate).toISOString().split("T")[0]
+      setDueAt(new Date(assignment.dueAt).toISOString().split("T")[0]);
+      setLockAt(new Date(assignment.lockAt).toISOString().split("T")[0]);
+      setUnlockAt(new Date(assignment.unlockAt).toISOString().split("T")[0]);
+      setIsUnlocked(isUnlocked);
+      setIsPublished(isPublished);
+      setPublishAt(
+        new Date(assignment.publishAt).toISOString().split("T")[0]
       );
-      setDueDate(new Date(assignment.dueDate).toISOString().split("T")[0]);
+      setAllowsLateSubmissions(assignment.allowsLateSubmissions);
       setContainerId(assignment.containerId);
     }
   }, [assignment]);
@@ -41,10 +51,16 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         setTitle={setTitle}
         description={description}
         setDescription={setDescription}
-        releaseDate={releaseDate}
-        setReleaseDate={setReleaseDate}
-        dueDate={dueDate}
-        setDueDate={setDueDate}
+        publishAt={publishAt}
+        setPublishAt={setPublishAt}
+        dueAt={dueAt}
+        setDueAt={setDueAt}
+        lockAt={lockAt}
+        setLockAt={setLockAt}
+        unlockAt={unlockAt}
+        setUnlockAt={setUnlockAt}
+        allowsLateSubmissions={allowsLateSubmissions}
+        setAllowsLateSubmissions={setAllowsLateSubmissions}
         containerId={containerId}
         setContainerId={setContainerId}
       />
@@ -76,13 +92,16 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
                   assignmentId,
                   title,
                   description,
-                  new Date(releaseDate),
-                  new Date(dueDate),
+                  new Date(dueAt),
+                  allowsLateSubmissions ? new Date(lockAt) : new Date(dueAt),
+                  new Date(unlockAt),
+                  new Date(publishAt),
+                  allowsLateSubmissions,
                   containerId
                 )
               }
               href="/assignments"
-              disabled={!title || !releaseDate || !dueDate}
+              disabled={!title}
             >
               Save
             </Button>

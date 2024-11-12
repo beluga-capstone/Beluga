@@ -14,7 +14,8 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   const { profile } = useProfile();
   const { assignments } = useAssignments();
   const assignment = assignments.find(
-    (assignment) => assignment.id === parseInt(params.assignmentId, 10)
+    (assignment) =>
+      assignment.assignmentId === parseInt(params.assignmentId, 10)
   );
   const { containers } = useContainers();
   const containerName = containers.find(
@@ -33,7 +34,10 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
       >
         <h1 className="font-bold text-4xl">{assignment?.title}</h1>
         {profile?.role !== ROLES.STUDENT && (
-          <Link href={`/assignments/edit/${assignment?.id}`} className="px-6">
+          <Link
+            href={`/assignments/edit/${assignment?.assignmentId}`}
+            className="px-6"
+          >
             <Edit2 size={24} />
           </Link>
         )}
@@ -75,19 +79,19 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
         <div className="flex-row">
           <h2 className="font-bold pb-4">
             Due Date:{" "}
-            {assignment?.dueDate.toLocaleDateString("en-US", {
+            {assignment?.dueAt.toLocaleDateString("en-US", {
               dateStyle: "short",
               timeZone: "UTC",
             })}
           </h2>
           <h2 className="font-bold pb-4">
             Available:{" "}
-            {assignment?.releaseDate.toLocaleDateString("en-US", {
+            {assignment?.publishAt.toLocaleDateString("en-US", {
               dateStyle: "short",
               timeZone: "UTC",
             })}{" "}
             to{" "}
-            {assignment?.dueDate.toLocaleDateString("en-US", {
+            {assignment?.dueAt.toLocaleDateString("en-US", {
               dateStyle: "short",
               timeZone: "UTC",
             })}
@@ -117,7 +121,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
       )}
       {profile?.role !== ROLES.STUDENT && (
         <p className="text-blue-500 py-8">
-          <Link href={`/assignments/${assignment?.id}/submissions`}>
+          <Link href={`/assignments/${assignment?.assignmentId}/submissions`}>
             View Submissions
           </Link>
         </p>

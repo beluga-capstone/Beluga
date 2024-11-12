@@ -1,14 +1,21 @@
 import { useContainers } from "@/hooks/useContainers";
+import { ToggleLeft, ToggleRight } from "lucide-react";
 
 interface AssignmentFormProps {
   title: string;
   setTitle: (value: string) => void;
   description: string;
   setDescription: (value: string) => void;
-  releaseDate: string;
-  setReleaseDate: (value: string) => void;
-  dueDate: string;
-  setDueDate: (value: string) => void;
+  publishAt: string;
+  setPublishAt: (value: string) => void;
+  dueAt: string;
+  setDueAt: (value: string) => void;
+  lockAt: string;
+  setLockAt: (value: string) => void;
+  unlockAt: string;
+  setUnlockAt: (value: string) => void;
+  allowsLateSubmissions: boolean;
+  setAllowsLateSubmissions: (value: boolean) => void;
   containerId: number;
   setContainerId: (value: number) => void;
 }
@@ -18,15 +25,21 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   setTitle,
   description,
   setDescription,
-  releaseDate,
-  setReleaseDate,
-  dueDate,
-  setDueDate,
+  publishAt: publishAt,
+  setPublishAt: setPublishAt,
+  dueAt: dueAt,
+  setDueAt: setDueAt,
+  lockAt: lockAt,
+  setLockAt: setLockAt,
+  unlockAt: unlockAt,
+  setUnlockAt: setUnlockAt,
+  allowsLateSubmissions,
+  setAllowsLateSubmissions,
   containerId,
   setContainerId,
 }) => {
   const { containers } = useContainers();
-  
+
   return (
     <>
       <h2>Assignment Name</h2>
@@ -51,28 +64,70 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
           rows={5}
         />
       </div>
-      <h2>Release Date</h2>
+      <h2>Unlock at:</h2>
       <div className="pt-2 pb-8">
         <input
-          value={releaseDate}
-          onChange={(e) => setReleaseDate(e.target.value)}
+          value={unlockAt}
+          onChange={(e) => setUnlockAt(e.target.value)}
           type="date"
           className="border rounded p-1 bg-surface dark:[color-scheme:dark]"
-          placeholder="Release Date"
-          aria-label="Release Date"
+          placeholder="Unlock at"
+          aria-label="Unlock at"
         />
       </div>
-      <h2>Due Date</h2>
+      <h2>Publish at:</h2>
       <div className="pt-2 pb-8">
         <input
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
+          value={publishAt}
+          onChange={(e) => setPublishAt(e.target.value)}
           type="date"
           className="border rounded p-1 bg-surface dark:[color-scheme:dark]"
-          placeholder="Due Date"
-          aria-label="Due Date"
+          placeholder="Release at"
+          aria-label="Release at"
         />
       </div>
+      <h2>Due at:</h2>
+      <div className="pt-2 pb-8">
+        <input
+          value={dueAt}
+          onChange={(e) => setDueAt(e.target.value)}
+          type="date"
+          className="border rounded p-1 bg-surface dark:[color-scheme:dark]"
+          placeholder="Due at"
+          aria-label="Due at"
+        />
+      </div>
+      <div className="flex items-center pb-8">
+        {allowsLateSubmissions ? (
+          <ToggleRight
+            size={32}
+            className="text-green-500"
+            onClick={() => setAllowsLateSubmissions(false)}
+          />
+        ) : (
+          <ToggleLeft
+            size={32}
+            className="text-red-500"
+            onClick={() => setAllowsLateSubmissions(true)}
+          />
+        )}
+        <h2 className="px-4">Allow late submissions</h2>
+      </div>
+      {allowsLateSubmissions && (
+        <>
+          <h2>Lock at:</h2>
+          <div className="pt-2 pb-8">
+            <input
+              value={lockAt}
+              onChange={(e) => setLockAt(e.target.value)}
+              type="date"
+              className="border rounded p-1 bg-surface dark:[color-scheme:dark]"
+              placeholder="Lock at"
+              aria-label="Lock at"
+            />
+          </div>
+        </>
+      )}
       <h2>Container</h2>
       <div className="pt-2 pb-8">
         <select

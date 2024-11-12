@@ -2,17 +2,20 @@
 
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
-import { useContainers } from "@/hooks/useContainers";
 import React from "react";
 import AssignmentForm from "../../../components/AssignmentsForm";
 
 const NewAssignment: React.FC = () => {
   const { addAssignment } = useAssignments();
+  const courseId = 1;
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
-  const [releaseDate, setReleaseDate] = React.useState("");
-  const [dueDate, setDueDate] = React.useState("");
-  const { containers } = useContainers();
+  const [publishAt, setPublishAt] = React.useState("");
+  const [dueAt, setDueAt] = React.useState("");
+  const [lockAt, setLockAt] = React.useState("");
+  const [unlockAt, setUnlockAt] = React.useState("");
+  const [allowsLateSubmissions, setAllowsLateSubmissions] =
+    React.useState(false);
   const [containerId, setContainerId] = React.useState(-1);
 
   return (
@@ -24,10 +27,16 @@ const NewAssignment: React.FC = () => {
         setTitle={setTitle}
         description={description}
         setDescription={setDescription}
-        releaseDate={releaseDate}
-        setReleaseDate={setReleaseDate}
-        dueDate={dueDate}
-        setDueDate={setDueDate}
+        publishAt={publishAt}
+        setPublishAt={setPublishAt}
+        dueAt={dueAt}
+        setDueAt={setDueAt}
+        lockAt={lockAt}
+        setLockAt={setLockAt}
+        unlockAt={unlockAt}
+        setUnlockAt={setUnlockAt}
+        allowsLateSubmissions={allowsLateSubmissions}
+        setAllowsLateSubmissions={setAllowsLateSubmissions}
         containerId={containerId}
         setContainerId={setContainerId}
       />
@@ -46,15 +55,19 @@ const NewAssignment: React.FC = () => {
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
             onClick={() =>
               addAssignment(
+                courseId,
                 title,
                 description,
-                new Date(releaseDate),
-                new Date(dueDate),
+                new Date(dueAt),
+                allowsLateSubmissions ? new Date(lockAt) : new Date(dueAt),
+                new Date(unlockAt),
+                new Date(publishAt),
+                allowsLateSubmissions,
                 containerId
               )
             }
             href="/assignments"
-            disabled={!title || !releaseDate || !dueDate}
+            disabled={!title}
           >
             Add Assignment
           </Button>

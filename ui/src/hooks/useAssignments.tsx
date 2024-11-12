@@ -9,8 +9,10 @@ const loadAssignmentsFromStorage = (): Assignment[] => {
     const parsedData = JSON.parse(data);
     return parsedData.map((assignment: any) => ({
       ...assignment,
-      releaseDate: new Date(assignment.releaseDate),
-      dueDate: new Date(assignment.dueDate),
+      dueAt: new Date(assignment.dueAt),
+      lockAt: new Date(assignment.lockAt),
+      unlockAt: new Date(assignment.unlockAt),
+      publishAt: new Date(assignment.publishAt),
     }));
   } else {
     return [];
@@ -30,21 +32,28 @@ export const useAssignments = () => {
   }, []);
 
   const addAssignment = (
+    courseId: number,
     title: string,
     description: string,
-    releaseDate: Date,
-    dueDate: Date,
+    dueAt: Date,
+    lockAt: Date,
+    unlockAt: Date,
+    publishAt: Date,
+    allowsLateSubmissions: boolean,
     containerId: number
   ) => {
     const newAssignment: Assignment = {
-      id: Date.now(),
-      courseId: 1,
+      assignmentId: Date.now(),
+      courseId: courseId,
       title: title,
       description: description,
-      isPublished: false,
-      releaseDate: releaseDate,
-      dueDate: dueDate,
-      allowsLateSubmissions: false,
+      dueAt: dueAt,
+      lockAt: lockAt,
+      unlockAt: unlockAt,
+      isUnlocked: Date.now() >= unlockAt.getTime(),
+      isPublished: Date.now() >= publishAt.getTime(),
+      publishAt: publishAt,
+      allowsLateSubmissions: allowsLateSubmissions,
       containerId: containerId,
     };
 
@@ -54,25 +63,37 @@ export const useAssignments = () => {
   };
 
   const updateAssignment = (
-    id: number,
+    assignmentId: number,
     title: string,
     description: string,
-    releaseDate: Date,
-    dueDate: Date,
+    dueAt: Date,
+    lockAt: Date,
+    unlockAt: Date,
+    publishAt: Date,
+    allowsLateSubmissions: boolean,
     containerId: number
   ) => {
+    const assignment = assignments.find(
+      (assignment) => assignment.assignmentId === assignmentId
+    );
+
     const updatedAssignment = {
-      id: id,
-      courseId: 1,
+      assignmentId: assignmentId,
+      courseId: assignment?.courseId || -1,
       title: title,
       description: description,
-      releaseDate: releaseDate,
-      dueDate: dueDate,
+      dueAt: dueAt,
+      lockAt: lockAt,
+      unlockAt: unlockAt,
+      isUnlocked: Date.now() >= unlockAt.getTime(),
+      isPublished: Date.now() >= publishAt.getTime(),
+      publishAt: publishAt,
+      allowsLateSubmissions: allowsLateSubmissions,
       containerId: containerId,
     };
 
     const updatedAssignments = assignments.map((assignment) => {
-      if (assignment.id === updatedAssignment.id) {
+      if (assignment.assignmentId === updatedAssignment.assignmentId) {
         return { ...assignment, ...updatedAssignment };
       } else {
         return assignment;
@@ -83,17 +104,17 @@ export const useAssignments = () => {
     saveAssignmentsToStorage(updatedAssignments);
   };
 
-  const deleteAssignment = (id: number) => {
+  const deleteAssignment = (assignmentId: number) => {
     const updatedAssignments = assignments.filter(
-      (assignment) => assignment.id !== id
+      (assignment) => assignment.assignmentId !== assignmentId
     );
     setAssignments(updatedAssignments);
     saveAssignmentsToStorage(updatedAssignments);
   };
 
-  const setPublished = (id: number, isPublished: boolean) => {
+  const setPublished = (assignmentId: number, isPublished: boolean) => {
     const updatedAssignments = assignments.map((assignment) => {
-      if (assignment.id === id) {
+      if (assignment.assignmentId === assignmentId) {
         return { ...assignment, isPublished: isPublished };
       } else {
         return assignment;
@@ -104,9 +125,12 @@ export const useAssignments = () => {
     saveAssignmentsToStorage(updatedAssignments);
   };
 
-  const setLateSubmissions = (id: number, allowsLateSubmissions: boolean) => {
+  const setLateSubmissions = (
+    assignmentId: number,
+    allowsLateSubmissions: boolean
+  ) => {
     const updatedAssignments = assignments.map((assignment) => {
-      if (assignment.id === id) {
+      if (assignment.assignmentId === assignmentId) {
         return { ...assignment, allowsLateSubmissions: allowsLateSubmissions };
       } else {
         return assignment;
@@ -117,5 +141,12 @@ export const useAssignments = () => {
     saveAssignmentsToStorage(updatedAssignments);
   };
 
-  return { assignments, addAssignment, updateAssignment, deleteAssignment, setPublished, setLateSubmissions };
+  return {
+    assignments,
+    addAssignment,
+    updateAssignment,
+    deleteAssignment,
+    setPublished,
+    setLateSubmissions,
+  };
 };
