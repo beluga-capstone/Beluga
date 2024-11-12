@@ -19,7 +19,7 @@ const Dashboard: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="font-bold text-4xl">Dashboard</h1>
         {profile?.role === ROLES.ADMIN && (
-          <Link href="/courses/new">
+          <Link href="/course/new">
             <button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center">
               <Plus className="mr-2" /> Add Course
             </button>

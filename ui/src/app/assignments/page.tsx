@@ -28,7 +28,11 @@ const Assignments: React.FC = () => {
       {profile?.role === ROLES.STUDENT ? (
         <StudentAssignmentsTable />
       ) : (
-        <ProfessorAssignmentsTable />
+        <ProfessorAssignmentsTable 
+          assignments={assignments} 
+          setPublished={setPublished} 
+          setLateSubmissions={setLateSubmissions} 
+        />
       )}
     </div>
   );

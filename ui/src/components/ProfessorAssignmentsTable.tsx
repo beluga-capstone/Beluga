@@ -1,10 +1,15 @@
-import { useAssignments } from "@/hooks/useAssignments";
+import React from "react";
+import { Assignment } from "@/types";
 import { ToggleLeft, ToggleRight } from "lucide-react";
 import Link from "next/link";
 
-const ProfessorAssignmentsTable = () => {
-  const {assignments, setPublished, setLateSubmissions} = useAssignments();
+interface ProfessorAssignmentsTableProps {
+  assignments: Assignment[];
+  setPublished: (id: number, isPublished: boolean) => void;
+  setLateSubmissions: (id: number, allowsLateSubmissions: boolean) => void;
+}
 
+const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({ assignments, setPublished, setLateSubmissions }) => {
   return (
     <table className="table w-full">
       <thead>

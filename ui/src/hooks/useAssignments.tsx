@@ -34,11 +34,12 @@ export const useAssignments = () => {
     description: string,
     releaseDate: Date,
     dueDate: Date,
-    containerId: number
+    containerId: number,
+    courseId: number
   ) => {
     const newAssignment: Assignment = {
       id: Date.now(),
-      courseId: 1,
+      courseId: courseId,
       title: title,
       description: description,
       isPublished: false,
@@ -59,11 +60,12 @@ export const useAssignments = () => {
     description: string,
     releaseDate: Date,
     dueDate: Date,
-    containerId: number
+    containerId: number,
+    courseId: number
   ) => {
     const updatedAssignment = {
       id: id,
-      courseId: 1,
+      courseId: courseId,
       title: title,
       description: description,
       releaseDate: releaseDate,
@@ -117,5 +119,12 @@ export const useAssignments = () => {
     saveAssignmentsToStorage(updatedAssignments);
   };
 
-  return { assignments, addAssignment, updateAssignment, deleteAssignment, setPublished, setLateSubmissions };
+  return {
+    assignments,
+    addAssignment,
+    updateAssignment,
+    deleteAssignment,
+    setPublished,
+    setLateSubmissions,
+  };
 };

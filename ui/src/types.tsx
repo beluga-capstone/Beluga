@@ -70,4 +70,5 @@ export interface User {
   middleName?: string;
   email: string;
   role: string;
+  courseId?: number;
 }

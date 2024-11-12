@@ -17,7 +17,8 @@ const NewCourse: React.FC = () => {
   const router = useRouter();
 
   const [title, setTitle] = useState("");
-  const [section, setSection] = useState<string>("");
+  const [section, setSection] = useState<string>("");   
+  const [professor, setProfessor] = useState<string>("");
   const [semester, setSemester] = useState("");
   const [students, setStudents] = useState<User[]>([]);
 
@@ -47,8 +48,10 @@ const NewCourse: React.FC = () => {
   });
 
   const handleAddCourse = () => {
-    addCourse(title, section, semester, students.length);
-    addUsers(students);
+    const courseId = Date.now();
+    addCourse(title, section, professor, semester, students.length);
+    const studentsWithCourseId = students.map(student => ({ ...student, courseId }));
+    addUsers(studentsWithCourseId);
     router.push("/");
   };
 
@@ -61,6 +64,8 @@ const NewCourse: React.FC = () => {
         setTitle={setTitle}
         section={section}
         setSection={setSection}
+        professor={professor}
+        setProfessor={setProfessor}
         semester={semester}
         setSemester={setSemester}
       />

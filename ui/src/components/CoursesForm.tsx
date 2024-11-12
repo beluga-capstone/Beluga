@@ -3,6 +3,8 @@ interface CoursesFormProps {
     setTitle: (value: string) => void;
     section: string;
     setSection: (value: string) => void;
+    professor: string;
+    setProfessor: (value: string) => void;
     semester: string;
     setSemester: (value: string) => void;
 }
@@ -12,6 +14,8 @@ const CoursesForm: React.FC<CoursesFormProps> = ({
     setTitle,
     section,
     setSection,
+    professor,
+    setProfessor,
     semester,
     setSemester,
 }) => {
@@ -53,6 +57,18 @@ const CoursesForm: React.FC<CoursesFormProps> = ({
               aria-label="Semester"
             />
           </div>
+        </div>
+
+        <div className="flex flex-col w-1/4">
+            <label className="font-semibold mb-1">Professor</label>
+            <input
+                value={professor}
+                onChange={(e) => setProfessor(e.target.value)}
+                type="text"
+                className="border rounded p-2 bg-surface"
+                placeholder="Professor"
+                aria-label="Professor"
+            />
         </div>
       </>
     );

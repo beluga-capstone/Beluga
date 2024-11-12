@@ -3,21 +3,28 @@
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
 import React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import AssignmentForm from "../../../../components/AssignmentsForm";
 
 const EditAssignment = ({ params }: { params: { id: string } }) => {
   const assignmentId = parseInt(params.id, 10);
-  const { assignments } = useAssignments();
+  const { assignments, updateAssignment, deleteAssignment } = useAssignments();
   const assignment = assignments.find(
     (assignment) => assignment.id === assignmentId
   );
-  const { updateAssignment, deleteAssignment } = useAssignments();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const courseName = searchParams.get("name") || `Course ${assignment?.courseId}`;
+
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [releaseDate, setReleaseDate] = React.useState("");
   const [dueDate, setDueDate] = React.useState("");
   const [containerId, setContainerId] = React.useState(
     assignment?.containerId || -1
+  );
+  const [courseId, setCourseId] = React.useState<number | undefined>(
+    assignment?.courseId
   );
 
   React.useEffect(() => {
@@ -29,8 +36,32 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
       );
       setDueDate(new Date(assignment.dueDate).toISOString().split("T")[0]);
       setContainerId(assignment.containerId);
+      setCourseId(assignment.courseId);
     }
   }, [assignment]);
+
+  const handleSave = () => {
+    console.log("Navigating with courseId:", courseId, "and courseName:", courseName);
+    updateAssignment(
+      assignmentId,
+      title,
+      description,
+      new Date(releaseDate),
+      new Date(dueDate),
+      containerId,
+      courseId || 0
+    );
+    const courseNameQuery = encodeURIComponent(courseName);
+    router.push(`/assignments/courses/${courseId}?name=${courseNameQuery}`);
+  };
+  
+
+  const handleDelete = () => {
+    deleteAssignment(assignmentId);
+    if (courseId !== undefined) {
+      router.push(`/assignments/courses/${courseId}?name=${encodeURIComponent(courseName)}`);
+    }
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -53,8 +84,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         <div className="p-2">
           <Button
             className="bg-red-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={() => deleteAssignment(assignmentId)}
-            href="/assignments"
+            onClick={handleDelete}
           >
             Delete
           </Button>
@@ -63,7 +93,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
           <div className="p-2">
             <Button
               className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
-              onClick={() => window.history.back()}
+              onClick={() => router.back()}
             >
               Cancel
             </Button>
@@ -71,17 +101,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
           <div className="p-2">
             <Button
               className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-              onClick={() =>
-                updateAssignment(
-                  assignmentId,
-                  title,
-                  description,
-                  new Date(releaseDate),
-                  new Date(dueDate),
-                  containerId
-                )
-              }
-              href="/assignments"
+              onClick={handleSave}
               disabled={!title || !releaseDate || !dueDate}
             >
               Save

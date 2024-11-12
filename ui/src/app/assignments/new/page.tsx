@@ -5,6 +5,7 @@ import { useAssignments } from "@/hooks/useAssignments";
 import { useContainers } from "@/hooks/useContainers";
 import React from "react";
 import AssignmentForm from "../../../components/AssignmentsForm";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const NewAssignment: React.FC = () => {
   const { addAssignment } = useAssignments();
@@ -14,6 +15,24 @@ const NewAssignment: React.FC = () => {
   const [dueDate, setDueDate] = React.useState("");
   const { containers } = useContainers();
   const [containerId, setContainerId] = React.useState(-1);
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const courseId = searchParams.get("courseId");
+
+  const handleAddAssignment = () => {
+    if (courseId) {
+      addAssignment(
+        title,
+        description,
+        new Date(releaseDate),
+        new Date(dueDate),
+        containerId,
+        parseInt(courseId)
+      );
+      router.push(`/assignments/courses/${courseId}`);
+    }
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -36,7 +55,7 @@ const NewAssignment: React.FC = () => {
         <div className="p-2">
           <Button
             className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
-            href="/assignments"
+            href={`/assignments/courses/${courseId}`}
           >
             Cancel
           </Button>
@@ -44,16 +63,7 @@ const NewAssignment: React.FC = () => {
         <div className="p-2">
           <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={() =>
-              addAssignment(
-                title,
-                description,
-                new Date(releaseDate),
-                new Date(dueDate),
-                containerId
-              )
-            }
-            href="/assignments"
+            onClick={handleAddAssignment}
             disabled={!title || !releaseDate || !dueDate}
           >
             Add Assignment

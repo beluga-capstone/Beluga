@@ -4,6 +4,7 @@ interface Course {
   id: number;
   name: string;
   section: string;
+  professor: string;
   term: string;
   studentsEnrolled: number;
   isPublished: boolean;
@@ -25,16 +26,19 @@ export const useDashboard = () => {
     saveCoursesToStorage(courses);
   }, [courses]);
 
-  const addCourse = (name: string, section: string, term: string, studentsEnrolled: number) => {
+  const addCourse = (name: string, section: string, professor: string, term: string, studentsEnrolled: number) => {
     const newCourse: Course = {
       id: Date.now(),
       name,
       section,
+      professor,
       term,
       studentsEnrolled,
       isPublished: false,
     };
+    
     setCourses([...courses, newCourse]);
+    saveCoursesToStorage([...courses, newCourse]);
   };
 
   const setPublished = (id: number, status: boolean) => {
@@ -43,9 +47,23 @@ export const useDashboard = () => {
     );
   };
 
+  const deleteCourse = (id: number) => {
+    setCourses((prevCourses) => prevCourses.filter((course) => course.id !== id));
+  };
+
+  const updateCourse = (id: number, name: string, section: string, term: string, professor: string) => {
+    setCourses((prevCourses) =>
+      prevCourses.map((course) =>
+        course.id === id ? { ...course, name, section, term, professor } : course
+      )
+    );
+  };
+
   return {
     courses,
     setPublished,
     addCourse,
+    deleteCourse,
+    updateCourse,
   };
 };
