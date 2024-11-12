@@ -1,6 +1,7 @@
 from sqlalchemy_utils import database_exists, create_database
 from flask_login import LoginManager
 from flask import Flask
+from datetime import datetime
 
 from src.util.db import db, User
 from config import config_options
@@ -50,6 +51,7 @@ def create_app(config_name="default"):
 
         admin_user_id = init_admin_user()
         init_roles(admin_user_id)
+        create_example_course()
         
         return app
 
@@ -113,3 +115,39 @@ def init_roles(admin_user_id):
             db.session.add(new_role)
 
     db.session.commit()
+
+def create_example_course():
+    from src.util.db import Term, Course, User
+    # Create a term if it doesn't already exist
+    term = Term.query.filter_by(name="Fall 2024").first()
+    if not term:
+        term = Term(name="Fall 2024")
+        db.session.add(term)
+        db.session.commit()
+    
+    # Create an instructor user if it doesn't already exist
+    instructor = User.query.filter_by(username="instructor").first()
+    if not instructor:
+        instructor = User(
+            username="instructor",
+            email="instructor@example.com",
+            first_name="John",
+            last_name="Doe",
+            role_id=2  # Assuming '2' is the Professor role
+        )
+        db.session.add(instructor)
+        db.session.commit()
+
+    # Create a course if it doesn't already exist
+    course = Course.query.filter_by(name="Introduction to Programming").first()
+    if not course:
+        course = Course(
+            name="Introduction to Programming",
+            user_id=instructor.user_id,
+            description="An introductory course on programming concepts and Python.",
+            publish=True,
+            start_at=datetime.now(),
+            term_id=term.term_id
+        )
+        db.session.add(course)
+        db.session.commit()

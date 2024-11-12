@@ -19,30 +19,30 @@ def create_assignment():
     data = request.get_json()
 
     # Validate required fields
-    if not data or not data.get('title') or not data.get('course_id'):
+    if not data or not data.get('title') or not data.get('courseId'):
         return jsonify({'error': 'Title and course ID are required'}), 400
 
     # Validate UUID format for course_id and user_id if provided
-    if not validate_uuid(data['course_id']):
-        return jsonify({'error': 'Invalid UUID format for course_id'}), 400
-    if 'user_id' in data and not validate_uuid(data['user_id']):
-        return jsonify({'error': 'Invalid UUID format for user_id'}), 400
+    if not validate_uuid(data['courseId']):
+        return jsonify({'error': 'Invalid UUID format for courseId'}), 400
+    if 'userId' in data and not validate_uuid(data['userId']):
+        return jsonify({'error': 'Invalid UUID format for userId'}), 400
 
     # Convert date fields if provided
-    due_at = data.get('due_at')
-    lock_at = data.get('lock_at')
-    unlock_at = data.get('unlock_at')
+    due_at = data.get('dueAt')
+    lock_at = data.get('lockAt')
+    unlock_at = data.get('unlockAt')
 
     try:
         new_assignment = Assignment(
-            course_id=data['course_id'],
+            course_id=data['courseId'],
             title=data['title'],
             description=data.get('description'),
             due_at=datetime.fromisoformat(due_at) if due_at else None,
             lock_at=datetime.fromisoformat(lock_at) if lock_at else None,
             unlock_at=datetime.fromisoformat(unlock_at) if unlock_at else None,
-            user_id=data.get('user_id'),
-            docker_image_id=data.get('docker_image_id')
+            user_id=data.get('userId'),
+            docker_image_id=data.get('dockerImageId')
         )
 
         db.session.add(new_assignment)

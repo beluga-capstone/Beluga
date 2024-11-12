@@ -3,36 +3,50 @@
 import { useEffect, useState } from "react";
 import { Assignment } from "@/types";
 
-const loadAssignmentsFromStorage = (): Assignment[] => {
-  const data = localStorage.getItem("assignments");
-  if (data) {
-    const parsedData = JSON.parse(data);
-    return parsedData.map((assignment: any) => ({
-      ...assignment,
-      dueAt: new Date(assignment.dueAt),
-      lockAt: new Date(assignment.lockAt),
-      unlockAt: new Date(assignment.unlockAt),
-      publishAt: new Date(assignment.publishAt),
-    }));
-  } else {
-    return [];
-  }
-};
-
-const saveAssignmentsToStorage = (assignments: Assignment[]) => {
-  localStorage.setItem("assignments", JSON.stringify(assignments));
-};
-
 export const useAssignments = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
 
+  const fetchAssignments = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/assignments');
+      if (!response.ok) {
+        throw new Error('Failed to fetch assignments');
+      }
+      const data = await response.json();
+      setAssignments(data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   useEffect(() => {
-    const loadedAssignments = loadAssignmentsFromStorage();
-    setAssignments(loadedAssignments);
+    fetchAssignments();
   }, []);
 
-  const addAssignment = (
-    courseId: number,
+  // add an assignment to the db
+  const saveAssignment = async (newAssignment: Assignment) => {
+    try {
+      const response = await fetch('http://localhost:5000/assignments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newAssignment),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add assignment');
+      }
+
+      const data = await response.json();
+      setAssignments((prev) => [...prev, data]);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const addAssignment = async (
+    courseId: string,
     title: string,
     description: string,
     dueAt: Date,
@@ -40,29 +54,27 @@ export const useAssignments = () => {
     unlockAt: Date,
     publishAt: Date,
     allowsLateSubmissions: boolean,
-    containerId: number
+    imageId: number
   ) => {
     const newAssignment: Assignment = {
       assignmentId: Date.now(),
-      courseId: courseId,
-      title: title,
-      description: description,
-      dueAt: dueAt,
-      lockAt: lockAt,
-      unlockAt: unlockAt,
+      courseId,
+      title,
+      description,
+      dueAt,
+      lockAt,
+      unlockAt,
       isUnlocked: Date.now() >= unlockAt.getTime(),
       isPublished: Date.now() >= publishAt.getTime(),
-      publishAt: publishAt,
-      allowsLateSubmissions: allowsLateSubmissions,
-      imageId: containerId,
+      publishAt,
+      allowsLateSubmissions,
+      imageId: imageId,
     };
 
-    const updatedAssignments = [...assignments, newAssignment];
-    setAssignments(updatedAssignments);
-    saveAssignmentsToStorage(updatedAssignments);
+    await saveAssignment(newAssignment);
   };
 
-  const updateAssignment = (
+  const updateAssignment = async (
     assignmentId: number,
     title: string,
     description: string,
@@ -73,72 +85,114 @@ export const useAssignments = () => {
     allowsLateSubmissions: boolean,
     containerId: number
   ) => {
-    const assignment = assignments.find(
-      (assignment) => assignment.assignmentId === assignmentId
-    );
-
     const updatedAssignment = {
-      assignmentId: assignmentId,
-      courseId: assignment?.courseId || -1,
-      title: title,
-      description: description,
-      dueAt: dueAt,
-      lockAt: lockAt,
-      unlockAt: unlockAt,
+      assignmentId,
+      title,
+      description,
+      dueAt,
+      lockAt,
+      unlockAt,
       isUnlocked: Date.now() >= unlockAt.getTime(),
       isPublished: Date.now() >= publishAt.getTime(),
-      publishAt: publishAt,
-      allowsLateSubmissions: allowsLateSubmissions,
-      containerId: containerId,
+      publishAt,
+      allowsLateSubmissions,
+      imageId: containerId,
     };
 
-    const updatedAssignments = assignments.map((assignment) => {
-      if (assignment.assignmentId === updatedAssignment.assignmentId) {
-        return { ...assignment, ...updatedAssignment };
-      } else {
-        return assignment;
+    try {
+      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedAssignment),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update assignment');
       }
-    });
 
-    setAssignments(updatedAssignments);
-    saveAssignmentsToStorage(updatedAssignments);
+      setAssignments((prev) =>
+        prev.map((assignment) =>
+          assignment.assignmentId === assignmentId ? updatedAssignment : assignment
+        )
+      );
+    } catch (err) {
+      console.log(err);
+    }
   };
 
-  const deleteAssignment = (assignmentId: number) => {
-    const updatedAssignments = assignments.filter(
-      (assignment) => assignment.assignmentId !== assignmentId
-    );
-    setAssignments(updatedAssignments);
-    saveAssignmentsToStorage(updatedAssignments);
-  };
+  const deleteAssignment = async (assignmentId: number) => {
+    try {
+      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`, {
+        method: 'DELETE',
+      });
 
-  const setPublished = (assignmentId: number, isPublished: boolean) => {
-    const updatedAssignments = assignments.map((assignment) => {
-      if (assignment.assignmentId === assignmentId) {
-        return { ...assignment, isPublished: isPublished };
-      } else {
-        return assignment;
+      if (!response.ok) {
+        throw new Error('Failed to delete assignment');
       }
-    });
 
-    setAssignments(updatedAssignments);
-    saveAssignmentsToStorage(updatedAssignments);
+      setAssignments((prev) =>
+        prev.filter((assignment) => assignment.assignmentId !== assignmentId)
+      );
+    } catch (err) {
+      console.log(err);
+    }
   };
 
-  const setLateSubmissions = (
+  const setPublished = async (assignmentId: number, isPublished: boolean) => {
+    try {
+      const updatedAssignment = { isPublished };
+
+      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}/publish`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedAssignment),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update publish status');
+      }
+
+      setAssignments((prev) =>
+        prev.map((assignment) =>
+          assignment.assignmentId === assignmentId ? { ...assignment, isPublished } : assignment
+        )
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const setLateSubmissions = async (
     assignmentId: number,
     allowsLateSubmissions: boolean
   ) => {
-    const updatedAssignments = assignments.map((assignment) => {
-      if (assignment.assignmentId === assignmentId) {
-        return { ...assignment, allowsLateSubmissions: allowsLateSubmissions };
-      } else {
-        return assignment;
-      }
-    });
+    try {
+      const updatedAssignment = { allowsLateSubmissions };
 
-    setAssignments(updatedAssignments);
-    saveAssignmentsToStorage(updatedAssignments);
+      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}/late-submissions`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedAssignment),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update late submissions setting');
+      }
+
+      setAssignments((prev) =>
+        prev.map((assignment) =>
+          assignment.assignmentId === assignmentId ? { ...assignment, allowsLateSubmissions } : assignment
+        )
+      );
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return {
@@ -150,3 +204,4 @@ export const useAssignments = () => {
     setLateSubmissions,
   };
 };
+

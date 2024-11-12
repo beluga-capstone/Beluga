@@ -37,7 +37,7 @@ export interface Student {
 
 export interface Assignment {
   assignmentId: number;
-  courseId: number;
+  courseId: string;
   title: string;
   description: string;
   dueAt: Date;
