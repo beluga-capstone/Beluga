@@ -3,41 +3,30 @@
 import { useEffect, useState } from "react";
 import { useContainers } from "@/hooks/useContainers";
 import { Container } from "@/types";
+
 import ContainerPageInfo from "@/components/ContainerPageInfo";
 import ContainerPageTerminal from "@/components/ContainerPageTerminal";
 
-const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
+const ContainerPage = ({ params }: { params: { id: string } }) => {
     const { containers } = useContainers();
     const [container, setContainer] = useState<Container | null>(null);
     const [loading, setLoading] = useState(true); 
     const [notFound, setNotFound] = useState(false); 
-    const [containerId, setContainerId] = useState<number | null>(null);
-
-    // type handling for containerid
-    useEffect(() => {
-        const fetchParams = async () => {
-            const unwrappedParams = await params;
-            const id = parseInt(unwrappedParams.id, 10);
-            setContainerId(id);
-        };
-        fetchParams();
-    }, [params]);
+    const containerId = parseInt(params.id, 10);
 
     useEffect(() => {
-        if (containerId !== null) {
-            const foundContainer = containers.find((c) => c.id === containerId);
+        const foundContainer = containers.find((c) => c.id === containerId);
 
-            if (foundContainer) {
-                setContainer(foundContainer);
+        if (foundContainer) {
+            setContainer(foundContainer);
+            setLoading(false);
+        } else {
+            const timeout = setTimeout(() => {
                 setLoading(false);
-            } else {
-                const timeout = setTimeout(() => {
-                    setLoading(false);
-                    setNotFound(true);
-                }, 5000);
+                setNotFound(true);
+            }, 5000);
 
-                return () => clearTimeout(timeout);
-            }
+            return () => clearTimeout(timeout);
         }
     }, [containerId, containers]);
 
@@ -63,12 +52,10 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 <h1 className="font-bold text-4xl mb-6">Container "{container.name}"</h1>
                 <ContainerPageInfo container={container} />
                 <br/>
-                <ContainerPageTerminal containerId={containerId}/>
+                <ContainerPageTerminal socketAddr="ws://localhost:8080"/>
             </div>
         );
     }
-
-    return null;
 };
 
 export default ContainerPage;

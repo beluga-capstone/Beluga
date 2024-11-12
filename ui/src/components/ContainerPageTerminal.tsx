@@ -4,12 +4,10 @@ import React, { useEffect, useRef } from 'react';
 import { Terminal, ITerminalOptions, ITerminalInitOnlyOptions } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
-import { io, Socket } from 'socket.io-client';
 import '@xterm/xterm/css/xterm.css';
 
 const terminalOptions: ITerminalOptions & ITerminalInitOnlyOptions = {
   // terminal init options
-  // none
 
   // terminal options
   cursorBlink: true,
@@ -24,9 +22,10 @@ const terminalOptions: ITerminalOptions & ITerminalInitOnlyOptions = {
   scrollback: 1000,
 };
 
-const ContainerPageTerminal: React.FC<{ containerId: number | null }> = ({ containerId }) => {
+const ContainerPageTerminal: React.FC<{ socketAddr: string }> = ({ socketAddr }) => {
   const terminalRef = useRef<HTMLDivElement | null>(null);
-  const socketRef = useRef<Socket | null>(null);
+  const xtermRef = useRef<Terminal | null>(null);
+  const socketRef = useRef<WebSocket | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
 
   useEffect(() => {
@@ -34,64 +33,65 @@ const ContainerPageTerminal: React.FC<{ containerId: number | null }> = ({ conta
 
     // init terminal
     const term = new Terminal(terminalOptions);
+    xtermRef.current = term;
     const fitAddon = new FitAddon();
+    fitAddonRef.current = fitAddon;
     const webLinksAddon = new WebLinksAddon();
     term.loadAddon(fitAddon);
     term.loadAddon(webLinksAddon);
-    
-    const connectToContainer = async () => {
-      // try {
-      //   const response = await fetch('http://localhost:3001/container/connect', {
-      //     method: 'POST',
-      //     headers: {
-      //       'Content-Type': 'application/json'
-      //     },
-      //     body: JSON.stringify({ 'container_id': 7})
-      //   });
 
-      //   if (response.ok) {
-      //     const data = await response.json();
-      //     console.log('Container connection info:', data);
+    // define websocket
+    const ws = new WebSocket(socketAddr);
+    socketRef.current = ws;
 
-          // Connect to WebSocket using the returned port
-          // const socket = io(`http://localhost:${data.port}/pty`);
-          const socket = io(`ws://localhost:5656/pty`);
-          socketRef.current=socket;
-          
-          if (!terminalRef.current) return;
-          term.open(terminalRef.current);
-    
-          // host sends terminal data
-          term.onData((data) => {
-            socket.emit("pty-input", { input: data });
-          });
-          
-          socketRef.current.on('connect', () => {
-            term.writeln('\x1b[32mConnected to your virtual environment.\x1b[0m');
-            socket.emit("pty-input", {input: "\n"})
-          });
-          socketRef.current.on('disconnect', () => {
-            term.writeln('\x1b[32mDisconnected from your virtual environment.\x1b[0m');
-          });
+    // Open terminal
+    term.open(terminalRef.current);
+    setTimeout(() => fitAddon.fit(), 0);
 
-          // host receive terminal data
-          socketRef.current.on("pty-output", function (data) {
-            term.write(data.output);
-          });
-          
-      //   } else {
-      //     console.error('Failed to connect container:', response.statusText);
-      //   }
-      // } catch (error) {
-      //   console.error('Error connecting to container:', error);
-      // }
+    ws.onopen = () => {
+      term.writeln('\x1b[32mConnected to your virtual environment.\x1b[0m');
+      
+      // Handle terminal input
+      term.onData((data: string) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(data);
+        }
+      });
+
+      // Handle terminal resize
+      term.onResize(({ cols, rows }) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'resize', cols, rows }));
+        }
+      });
     };
 
-    connectToContainer();
-    
+    ws.onmessage = (event: MessageEvent) => {
+      term.write(event.data);
+    };
+
+    ws.onerror = () => {
+      term.writeln('\x1b[31mWebSocket error occurred\x1b[0m');
+    };
+
+    ws.onclose = (event: CloseEvent) => {
+      term.writeln(`\x1b[31mDisconnected from terminal server (${event.code})\x1b[0m`);
+    };
+
+    // Handle window resize
+    const handleResize = (): void => {
+      fitAddonRef.current?.fit();
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
     return () => {
+      if (socketRef.current?.readyState === WebSocket.OPEN) {
+        socketRef.current.close();
+      }
       term.dispose();
-      socketRef.current?.disconnect();
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 

@@ -10,12 +10,8 @@ export interface Profile {
   firstName: string;
   lastName: string;
   middleName?: string;
-  username:string;
   email: string;
-  role_id: number;
-  user_id:string;
-  created_at:string;
-  updated_at:string;
+  role: string;
 }
 
 export interface Course {
@@ -59,9 +55,12 @@ export interface Container {
 }
 
 export interface Image {
-  docker_image_id: number;
-  user_id: number;
-  description: string;
+  id: number;
+  title: string;
+  courses: string[];
+  packages: string[];
+  dockerfileContent: string;
+  name: string;
 }
 
 export interface User {

@@ -6,19 +6,16 @@ import TopNavbar from "@/components/TopNavbar";
 import PageWrapper from "@/components/PageWrapper";
 import MarginWidthWrapper from "@/components/MarginWidthWrapper";
 
-// Define metadata
 export const metadata: Metadata = {
   title: "BELUGA",
   description: "Bode Raymond, Deric Le, Jeffrey Li, Drew Pusey, Nitesh Duraivel"
 };
 
-// Root layout component
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <html lang="en">
       <body>

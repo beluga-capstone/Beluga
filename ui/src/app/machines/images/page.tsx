@@ -58,12 +58,12 @@ export default function Images() {
           key={image.id}
           className="cursor-pointer"
           onClick={() => {
-            router.push(`/machines/images/details?id=${image.docker_image_id}`);
+            router.push(`/machines/images/details?id=${image.id}`);
           }}
         >
           <ImageItem
             image={image}
-            isSelected={selectedImageIds.includes(image.docker_image_id)}
+            isSelected={selectedImageIds.includes(image.id)}
             onToggleSelect={toggleSelectImage}
           />
         </div>

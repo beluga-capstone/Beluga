@@ -2,15 +2,7 @@
 
 "use client";
 
-<<<<<<< HEAD
 import React from "react";
-=======
-import React, {useState, useEffect} from "react";
-import { useDashboard } from "@/hooks/useDashboard";
-import { useProfile } from "@/hooks/useProfile";
-import StudentCoursesTable from "@/components/StudentCoursesTable";
-import ProfessorCoursesTable from "@/components/ProfessorCoursesTable";
->>>>>>> api-ui-user
 import { ROLES } from "@/constants";
 import { useProfile } from "@/hooks/useProfile";
 import AdminCoursesTable from "@/components/AdminCoursesTable";
@@ -21,7 +13,6 @@ import { Plus } from "lucide-react";
 
 const Dashboard: React.FC = () => {
   const { profile } = useProfile();
-<<<<<<< HEAD
 
   return (
     <div className="container mx-auto p-4">
@@ -38,19 +29,6 @@ const Dashboard: React.FC = () => {
       {profile?.role === ROLES.ADMIN && <AdminCoursesTable />}
       {profile?.role === ROLES.PROFESSOR && <ProfessorCoursesTable />}
       {profile?.role === ROLES.STUDENT && <StudentCoursesTable />}
-=======
-  const { courses, setPublished } = useDashboard();
-  
-  return (
-    <div>
-      <div className="container mx-auto p-4">
-        {profile?.role_id == 8 ? (
-          <StudentCoursesTable />
-        ) : (
-          <ProfessorCoursesTable />
-        )}
-      </div>
->>>>>>> api-ui-user
     </div>
   );
 };
