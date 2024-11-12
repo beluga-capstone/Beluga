@@ -37,10 +37,12 @@ const ProfessorAssignmentsTable = () => {
               })}
             </td>
             <td className="text-center py-2">
-              {assignment.dueAt.toLocaleDateString("en-US", {
-                dateStyle: "short",
-                timeZone: "UTC",
-              })}
+              {assignment.dueAt.getTime() === new Date(0).getTime()
+                ? "-"
+                : assignment.dueAt.toLocaleDateString("en-US", {
+                    dateStyle: "short",
+                    timeZone: "UTC",
+                  })}
             </td>
             <td className="text-center py-2">0</td>
             <td className="py-2">

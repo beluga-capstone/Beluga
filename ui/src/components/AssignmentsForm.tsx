@@ -1,8 +1,9 @@
 import { useContainers } from "@/hooks/useContainers";
-import { ToggleLeft, ToggleRight } from "lucide-react";
 import FormInput from "./FormInput";
 import FormTextArea from "./FormTextArea";
 import FormDateInput from "./FormDateInput";
+import React from "react";
+import LabeledToggleSwitch from "./LabeledToggleSwitch";
 
 interface AssignmentFormProps {
   title: string;
@@ -42,6 +43,9 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   setContainerId,
 }) => {
   const { containers } = useContainers();
+  const [isVisibleBeforeRelease, setIsVisibleBeforeRelease] =
+    React.useState(false);
+  const [isPublishedLater, setIsPublishedLater] = React.useState(false);
 
   return (
     <>
@@ -53,36 +57,57 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         onChange={setDescription}
       />
 
-      <FormDateInput
-        title="Unlock at"
-        value={unlockAt}
-        onChange={setUnlockAt}
-      />
-
-      <FormDateInput
-        title="Publish at"
-        value={publishAt}
-        onChange={setPublishAt}
-      />
-
       <FormDateInput title="Due at" value={dueAt} onChange={setDueAt} />
 
-      <div className="flex items-center pb-8">
-        {allowsLateSubmissions ? (
-          <ToggleRight
-            size={32}
-            className="text-green-500"
-            onClick={() => setAllowsLateSubmissions(false)}
-          />
-        ) : (
-          <ToggleLeft
-            size={32}
-            className="text-red-500"
-            onClick={() => setAllowsLateSubmissions(true)}
-          />
-        )}
-        <h2 className="px-4">Allow late submissions</h2>
-      </div>
+      <LabeledToggleSwitch
+        title="Publish later"
+        value={isPublishedLater}
+        onChange={() => {
+          setIsPublishedLater(!isPublishedLater);
+          if (!isPublishedLater) {
+            setPublishAt(new Date().toISOString());
+          }
+        }}
+      />
+
+      {isPublishedLater && (
+        <FormDateInput
+          title="Publish at"
+          value={publishAt}
+          onChange={setPublishAt}
+        />
+      )}
+
+      <LabeledToggleSwitch
+        title="Make visible before releasing"
+        value={isVisibleBeforeRelease}
+        onChange={() => {
+          setIsVisibleBeforeRelease(!isVisibleBeforeRelease);
+          if (!isVisibleBeforeRelease) {
+            setUnlockAt(new Date().toISOString());
+          }
+        }}
+      />
+
+      {isVisibleBeforeRelease && (
+        <FormDateInput
+          title="Unlock at"
+          value={unlockAt}
+          onChange={setUnlockAt}
+        />
+      )}
+
+      <LabeledToggleSwitch
+        title="Allow late submissions"
+        value={allowsLateSubmissions}
+        onChange={() => {
+          setAllowsLateSubmissions(!allowsLateSubmissions);
+          if (!allowsLateSubmissions) {
+            setLockAt(new Date().toISOString());
+          }
+        }}
+      />
+
       {allowsLateSubmissions && (
         <FormDateInput title="Lock at" value={lockAt} onChange={setLockAt} />
       )}
