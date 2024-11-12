@@ -41,7 +41,8 @@ const ImageItem: React.FC<ImageItemProps> = ({ image, isSelected, onToggleSelect
                                 <span className="text-gray-400">Loading image data...</span>
                             </>
                         ) : (
-                            imageData?.tag[0] || "Unnamed Image"
+                            imageData?.tag[0] || `Image not found in repository. Image ID: ${image.docker_image_id || "Unknown"}`
+
                         )}
                     </h2>
                     {!loading && imageData && (
