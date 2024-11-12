@@ -48,8 +48,8 @@ def create_app(config_name="default"):
 
         db.create_all()
 
-        admin_user_id = init_admin_user()
-        init_roles(admin_user_id)
+        init_roles()
+        init_admin_user()
         
         return app
 
@@ -64,14 +64,14 @@ def init_admin_user():
             email='admin@example.com',
             first_name='Admin',
             last_name='User',
-            role_id=None
+            role_id=1
         )
         db.session.add(admin_user)
         db.session.commit()
     
     return admin_user.user_id
 
-def init_roles(admin_user_id):
+def init_roles():
     from src.util.db import Role
     # List of default roles to be added
     default_roles = [

@@ -5,6 +5,7 @@ python-dotenv
 sqlalchemy-utils
 requests
 pytest
+pytest-mock
 flask_login
 docker
 pytest

@@ -21,6 +21,20 @@ def test_client():
         yield testing_client  
 
 @pytest.fixture
+def admin_id(test_client):
+    create_data = {
+        'username': 'testadminuser',
+        'email': 'testadminuser@tamu.edu'
+        'role_id': '1'
+    }
+    response = test_client.post('/users', json=create_data)
+    assert response.status_code == 201
+    assert b'User created successfully' in response.data
+
+    # Return the user ID for use in tests
+    return response.get_json()['user_id']
+
+@pytest.fixture
 def user_id(test_client):
     # Create User
     create_data = {
