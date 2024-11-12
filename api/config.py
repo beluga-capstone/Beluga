@@ -19,6 +19,8 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = environ.get("SQLALCHEMY_ECHO")
 
+    LOGIN_REDIRECT = '/'
+
     OAUTH2_PROVIDERS = {
         'google': {
             'client_id': environ.get('GOOGLE_CLIENT_ID'),
@@ -43,6 +45,7 @@ class TestingConfig:
     SQLALCHEMY_DATABASE_URI = environ.get('DATABASE_URI', 'postgresql://postgres:temppassword@db:5432/your_db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     TESTING = True
+    LOGIN_REDIRECT='http://localhost:3000'
 
 config_options = {
     'default': Config,
