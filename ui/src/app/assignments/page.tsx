@@ -2,7 +2,6 @@
 
 import Button from "@/components/Button";
 import { ROLES } from "@/constants";
-import { useAssignments } from "@/hooks/useAssignments";
 import { useProfile } from "@/hooks/useProfile";
 import { Plus } from "lucide-react";
 import Link from "next/link";
@@ -11,7 +10,6 @@ import StudentAssignmentsTable from "@/components/StudentAssignmentsTable";
 
 const Assignments: React.FC = () => {
   const { profile } = useProfile();
-  const { assignments, setPublished, setLateSubmissions } = useAssignments();
 
   return (
     <div className="container mx-auto p-4">

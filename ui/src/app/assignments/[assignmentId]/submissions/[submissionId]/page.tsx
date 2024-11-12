@@ -1,27 +1,39 @@
 "use client";
 
+import FilesPreview from "@/components/FilesPreview";
 import { DEFAULT_FILES } from "@/constants";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  materialDark,
-  materialLight,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
+import { useAssignments } from "@/hooks/useAssignments";
 
-const SubmissionPage = () => {
+const SubmissionPage = ({
+  params,
+}: {
+  params: { assignmentId: string; submissionId: string };
+}) => {
+  const { assignments } = useAssignments();
+  const assignment = assignments.find(
+    (assignment) =>
+      assignment.assignmentId === parseInt(params.assignmentId, 10)
+  );
+  const studentFirstName = "Bode";
+  const studentLastName = "Raymond";
   return (
     <div className="container mx-auto p-4">
-      <SyntaxHighlighter
-        language="python"
-        style={
-          window.matchMedia &&
-          window.matchMedia("(prefers-color-scheme: dark)").matches
-            ? materialDark
-            : materialLight
-        }
-        showLineNumbers
-      >
-        {DEFAULT_FILES[0]}
-      </SyntaxHighlighter>
+      <div className="mb-4 flex justify-between items-center">
+        <h1 className="font-bold text-4xl mb-6">{assignment?.title}</h1>
+        <h2>
+          Due:{" "}
+          {assignment?.dueAt.toLocaleDateString("en-US", {
+            dateStyle: "short",
+            timeZone: "UTC",
+          })}
+        </h2>
+      </div>
+      <h2 className="text-2xl pb-8">
+        {studentFirstName} {studentLastName}
+      </h2>
+      <FilesPreview
+        files={DEFAULT_FILES.map((file) => new File([file], "file.py"))}
+      />
     </div>
   );
 };

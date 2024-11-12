@@ -36,15 +36,18 @@ export interface Student {
 }
 
 export interface Assignment {
-  id: number;
+  assignmentId: number;
   courseId: number;
   title: string;
   description: string;
+  dueAt: Date;
+  lockAt: Date;
+  unlockAt: Date;
+  isUnlocked: boolean;
   isPublished: boolean;
-  releaseDate: Date;
-  dueDate: Date;
+  publishAt: Date;
   allowsLateSubmissions: boolean;
-  containerId: number;
+  imageId: number;
 }
 
 export interface Container {
