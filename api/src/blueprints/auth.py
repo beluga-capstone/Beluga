@@ -106,11 +106,11 @@ def oauth_callback(provider):
     if user:
         login_user(user)
         flash('Login successful', 'success')
-        return redirect('/')
+        return redirect('http://localhost:3000')
     else:
         user = User(username=username, email=email, first_name=fname, last_name=lname, role_id=role)
         db.session.add(user)
         db.session.commit()
         login_user(user)
         flash('Login successful', 'success')
-        return redirect('/')
+        return redirect('http://localhost:3000')

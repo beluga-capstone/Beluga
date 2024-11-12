@@ -1,6 +1,5 @@
 import os
 from src import create_app, socketio
-
 config_name = os.getenv("CONFIG", "default")
 app = create_app(config_name)
 

@@ -10,8 +10,12 @@ export interface Profile {
   firstName: string;
   lastName: string;
   middleName?: string;
+  username:string;
   email: string;
-  role: string;
+  role_id: number;
+  user_id:string;
+  created_at:string;
+  updated_at:string;
 }
 
 export interface Course {
