@@ -1,0 +1,36 @@
+### setup
+install pip requirements
+
+### step 1. create inventory
+```
+Inventories organize managed nodes in centralized files that provide Ansible with system information and network locations. 
+Using an inventory file, Ansible can manage a large number of hosts with a single command.
+```
+
+### step 2. verify it 
+```
+ansible-inventory -i inventory.ini --list
+ansible myhosts -m ping -i inventory.ini -u <username on targets>
+```
+
+### step 3. create playbook
+```
+Playbooks are automation blueprints, in YAML format, that Ansible uses to deploy and configure managed nodes.
+
+Playbook
+- A list of plays that define the order in which Ansible performs operations, from top to bottom, to achieve an overall goal.
+
+Play
+- An ordered list of tasks that maps to managed nodes in an inventory.
+
+Task
+- A reference to a single module that defines the operations that Ansible performs.
+
+Module
+- A unit of code or binary that Ansible runs on managed nodes. Ansible modules are grouped in collections with a Fully Qualified Collection Name (FQCN) for each module.
+```
+
+### step4. verify it
+```
+ansible-playbook -i inventory.ini playbook.yaml -u <username on targets>
+```

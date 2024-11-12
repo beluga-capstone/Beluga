@@ -5,14 +5,16 @@ import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { Icon } from "@iconify/react";
 import useScroll from "@/hooks/useScroll";
-import { cn } from "@/lib/utils";
+import { useProfile } from "@/hooks/useProfile";
 import UserSettingsPopup from "./UserSettingsPopup";
+import { cn } from "@/lib/utils";
 
 const TopNavbar = () => {
   const [menuIsOpen, setMenuIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const scrolled = useScroll(5);
   const selectedLayout = useSelectedLayoutSegment();
+  const { profile } = useProfile();
 
   const toggleMenu = () => {
     setMenuIsOpen(!menuIsOpen);
@@ -52,11 +54,14 @@ const TopNavbar = () => {
           </Link>
         </div>
 
-        <div className="hidden md:flex space-x-4 relative">
+        <div className="hidden md:flex space-x-2 items-center relative">
+          <button onClick={toggleMenu} title="Profile Button" className="flex items-center space-x-2">
+            <Icon icon="lucide:user" width="24" height="24" />
+            <span>
+              {profile?.firstName} {profile?.lastName}
+            </span>
+          </button>
           <div className="relative" ref={menuRef}>
-            <button onClick={toggleMenu} title="Profile Button">
-              <Icon icon="lucide:user" width="24" height="24" />
-            </button>
             {menuIsOpen && <UserSettingsPopup setMenuIsOpen={setMenuIsOpen} />}
           </div>
         </div>

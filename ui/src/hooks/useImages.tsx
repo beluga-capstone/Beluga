@@ -1,91 +1,147 @@
 import { useState, useEffect } from 'react';
-import { Image } from '@/types';
+import { Image } from '@/types'
 
 export const useImages = () => {
-    const [images, setImages] = useState<Image[]>([]);
-    const [selectedImageIds, setSelectedImageIds] = useState<number[]>([]);
+  const [images, setImages] = useState<Image[]>([]);
+  const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const storedImages = localStorage.getItem("images");
-        if (storedImages) {
-            console.log("Loading images from localStorage:", JSON.parse(storedImages));
-            setImages(JSON.parse(storedImages));
-        }
-    }, []);
+  // Fetch images from the database
+  const fetchImages = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('http://localhost:5000/images');
+      if (!response.ok) {
+        throw new Error('Failed to fetch images');
+      }
+      const data = await response.json();
+      setImages(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    useEffect(() => {
-        if (images.length > 0) {
-            console.log("Saving images to localStorage:", images);
-            localStorage.setItem("images", JSON.stringify(images));
-        }
-    }, [images]);
+  // Initial fetch
+  useEffect(() => {
+    fetchImages();
+  }, []);
 
-    useEffect(() => {
-        if (selectedImageIds.length === 0) {
-            const deleteButton = document.getElementById("delete-button");
-            if (deleteButton) {
-                deleteButton.classList.add("hidden");
-            }
-        }
-      }, [selectedImageIds]);
+  const addImage = async (newImage: Image) => {
+    try {
+      const response = await fetch('http://localhost:5000/images', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newImage),
+      });
 
-    const addImage = (newImage: Image) => {
-        setImages([...images, newImage]);
-    };
+      if (!response.ok) {
+        throw new Error('Failed to add image');
+      }
 
-    const editImage = (updatedImage: Image) => {
-        setImages((prevImages) =>
-            prevImages.map((img) =>
-                img.id === updatedImage.id ? updatedImage : img
-            )
-        );
-    };
+      const data = await response.json();
+      setImages(prevImages => [...prevImages, { ...newImage, docker_image_id: data.docker_image_id }]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add image');
+      throw err;
+    }
+  };
 
-    const deleteImage = (id: number) => {
-        setImages(images.filter((image) => image.id !== id));
-    };
+  const editImage = async (updatedImage: Image) => {
+    try {
+      const response = await fetch(`http://localhost:5000/images/${updatedImage.docker_image_id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedImage),
+      });
 
-    const toggleSelectImage = (id: number) => {
-        setSelectedImageIds((prev) =>
-            prev.includes(id) ? prev.filter((imageId) => imageId !== id) : [...prev, id]
-        );
-    };
+      if (!response.ok) {
+        throw new Error('Failed to update image');
+      }
 
-    const selectAllImages = (select: boolean) => {
-        if (selectedImageIds.length === images.length) {
-            setSelectedImageIds([]);
-        } else {
-            setSelectedImageIds(images.map(image => image.id));
-        }
-    };
+      setImages(prevImages =>
+        prevImages.map(img =>
+          img.docker_image_id === updatedImage.docker_image_id ? updatedImage : img
+        )
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update image');
+      throw err;
+    }
+  };
 
-    const deleteSelectedImages = async () => {
-        try {
-            await fetch("/api/deleteImages", {
-                method: "POST",
-                body: JSON.stringify({ imageIds: selectedImageIds }),
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-    
-            const updatedImages = images.filter((image) => !selectedImageIds.includes(image.id));
-            setImages(updatedImages);
-            setSelectedImageIds([]);
-            localStorage.setItem("images", JSON.stringify(updatedImages));
-        } catch (error) {
-            console.error("Error deleting images:", error);
-        }
-    };
+  const deleteImage = async (docker_image_id: string) => {
+    try {
+      const response = await fetch(`http://localhost:5000/images/${docker_image_id}`, {
+        method: 'DELETE',
+      });
 
-    return {
-        images,
-        selectedImageIds,
-        addImage,
-        editImage,
-        deleteImage,
-        toggleSelectImage,
-        deleteSelectedImages,
-        selectAllImages,
-    };
+      if (!response.ok) {
+        throw new Error('Failed to delete image');
+      }
+
+      setImages(prevImages => prevImages.filter(img => img.docker_image_id !== docker_image_id));
+      setSelectedImageIds(prevSelected => prevSelected.filter(id => id !== docker_image_id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete image');
+      throw err;
+    }
+  };
+
+  const toggleSelectImage = (docker_image_id: string) => {
+    setSelectedImageIds(prev =>
+      prev.includes(docker_image_id)
+        ? prev.filter(id => id !== docker_image_id)
+        : [...prev, docker_image_id]
+    );
+  };
+
+  const selectAllImages = () => {
+    if (selectedImageIds.length === images.length) {
+      setSelectedImageIds([]);
+    } else {
+      setSelectedImageIds(images.map(image => image.docker_image_id));
+    }
+  };
+
+  const deleteSelectedImages = async () => {
+    try {
+      await Promise.all(
+        selectedImageIds.map(docker_image_id =>
+          fetch(`http://localhost:5000/images/${docker_image_id}`, {
+            method: 'DELETE',
+          })
+        )
+      );
+
+      setImages(prevImages =>
+        prevImages.filter(image => !selectedImageIds.includes(image.docker_image_id))
+      );
+      setSelectedImageIds([]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete selected images');
+      throw err;
+    }
+  };
+
+  return {
+    images,
+    selectedImageIds,
+    isLoading,
+    error,
+    addImage,
+    editImage,
+    deleteImage,
+    toggleSelectImage,
+    deleteSelectedImages,
+    selectAllImages,
+    refreshImages: fetchImages,
+  };
 };
