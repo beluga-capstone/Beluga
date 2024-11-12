@@ -1,5 +1,8 @@
 import { useContainers } from "@/hooks/useContainers";
 import { ToggleLeft, ToggleRight } from "lucide-react";
+import FormInput from "./FormInput";
+import FormTextArea from "./FormTextArea";
+import FormDateInput from "./FormDateInput";
 
 interface AssignmentFormProps {
   title: string;
@@ -42,61 +45,28 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
 
   return (
     <>
-      <h2>Assignment Name</h2>
-      <div className="pt-2 pb-8">
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          type="text"
-          className="border rounded p-1 bg-surface"
-          placeholder="Assignment name"
-          aria-label="Assignment name"
-        />
-      </div>
-      <h2>Description</h2>
-      <div className="pt-2 pb-8">
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="border rounded p-1 bg-surface w-3/4"
-          placeholder="Description"
-          aria-label="Description"
-          rows={5}
-        />
-      </div>
-      <h2>Unlock at:</h2>
-      <div className="pt-2 pb-8">
-        <input
-          value={unlockAt}
-          onChange={(e) => setUnlockAt(e.target.value)}
-          type="date"
-          className="border rounded p-1 bg-surface dark:[color-scheme:dark]"
-          placeholder="Unlock at"
-          aria-label="Unlock at"
-        />
-      </div>
-      <h2>Publish at:</h2>
-      <div className="pt-2 pb-8">
-        <input
-          value={publishAt}
-          onChange={(e) => setPublishAt(e.target.value)}
-          type="date"
-          className="border rounded p-1 bg-surface dark:[color-scheme:dark]"
-          placeholder="Release at"
-          aria-label="Release at"
-        />
-      </div>
-      <h2>Due at:</h2>
-      <div className="pt-2 pb-8">
-        <input
-          value={dueAt}
-          onChange={(e) => setDueAt(e.target.value)}
-          type="date"
-          className="border rounded p-1 bg-surface dark:[color-scheme:dark]"
-          placeholder="Due at"
-          aria-label="Due at"
-        />
-      </div>
+      <FormInput title="Assignment Name" value={title} onChange={setTitle} />
+
+      <FormTextArea
+        title="Description"
+        value={description}
+        onChange={setDescription}
+      />
+
+      <FormDateInput
+        title="Unlock at"
+        value={unlockAt}
+        onChange={setUnlockAt}
+      />
+
+      <FormDateInput
+        title="Publish at"
+        value={publishAt}
+        onChange={setPublishAt}
+      />
+
+      <FormDateInput title="Due at" value={dueAt} onChange={setDueAt} />
+
       <div className="flex items-center pb-8">
         {allowsLateSubmissions ? (
           <ToggleRight
@@ -114,20 +84,9 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         <h2 className="px-4">Allow late submissions</h2>
       </div>
       {allowsLateSubmissions && (
-        <>
-          <h2>Lock at:</h2>
-          <div className="pt-2 pb-8">
-            <input
-              value={lockAt}
-              onChange={(e) => setLockAt(e.target.value)}
-              type="date"
-              className="border rounded p-1 bg-surface dark:[color-scheme:dark]"
-              placeholder="Lock at"
-              aria-label="Lock at"
-            />
-          </div>
-        </>
+        <FormDateInput title="Lock at" value={lockAt} onChange={setLockAt} />
       )}
+
       <h2>Container</h2>
       <div className="pt-2 pb-8">
         <select
