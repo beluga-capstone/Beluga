@@ -43,7 +43,7 @@ export interface Assignment {
   isPublished: boolean;
   publishAt: Date;
   allowsLateSubmissions: boolean;
-  containerId: number;
+  imageId: number;
 }
 
 export interface Container {

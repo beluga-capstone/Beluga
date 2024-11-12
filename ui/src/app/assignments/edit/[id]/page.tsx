@@ -20,10 +20,9 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
   const [isUnlocked, setIsUnlocked] = React.useState(false);
   const [isPublished, setIsPublished] = React.useState(false);
   const [publishAt, setPublishAt] = React.useState("");
-  const [allowsLateSubmissions, setAllowsLateSubmissions] = React.useState(false);
-  const [containerId, setContainerId] = React.useState(
-    assignment?.containerId || -1
-  );
+  const [allowsLateSubmissions, setAllowsLateSubmissions] =
+    React.useState(false);
+  const [imageId, setImageId] = React.useState(assignment?.imageId || -1);
 
   React.useEffect(() => {
     if (assignment) {
@@ -34,11 +33,9 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
       setUnlockAt(new Date(assignment.unlockAt).toISOString().split("T")[0]);
       setIsUnlocked(isUnlocked);
       setIsPublished(isPublished);
-      setPublishAt(
-        new Date(assignment.publishAt).toISOString().split("T")[0]
-      );
+      setPublishAt(new Date(assignment.publishAt).toISOString().split("T")[0]);
       setAllowsLateSubmissions(assignment.allowsLateSubmissions);
-      setContainerId(assignment.containerId);
+      setImageId(assignment.imageId);
     }
   }, [assignment]);
 
@@ -61,8 +58,8 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         setUnlockAt={setUnlockAt}
         allowsLateSubmissions={allowsLateSubmissions}
         setAllowsLateSubmissions={setAllowsLateSubmissions}
-        containerId={containerId}
-        setContainerId={setContainerId}
+        imageId={imageId}
+        setImageId={setImageId}
       />
 
       <div className="flex flex-column justify-between">
@@ -97,7 +94,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
                   new Date(unlockAt),
                   new Date(publishAt),
                   allowsLateSubmissions,
-                  containerId
+                  imageId
                 )
               }
               href="/assignments"

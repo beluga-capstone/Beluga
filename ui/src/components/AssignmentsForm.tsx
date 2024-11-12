@@ -4,6 +4,7 @@ import FormTextArea from "./FormTextArea";
 import FormDateInput from "./FormDateInput";
 import React from "react";
 import LabeledToggleSwitch from "./LabeledToggleSwitch";
+import { useImages } from "@/hooks/useImages";
 
 interface AssignmentFormProps {
   title: string;
@@ -20,8 +21,8 @@ interface AssignmentFormProps {
   setUnlockAt: (value: string) => void;
   allowsLateSubmissions: boolean;
   setAllowsLateSubmissions: (value: boolean) => void;
-  containerId: number;
-  setContainerId: (value: number) => void;
+  imageId: number;
+  setImageId: (value: number) => void;
 }
 
 const AssignmentForm: React.FC<AssignmentFormProps> = ({
@@ -39,10 +40,10 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   setUnlockAt: setUnlockAt,
   allowsLateSubmissions,
   setAllowsLateSubmissions,
-  containerId,
-  setContainerId,
+  imageId,
+  setImageId,
 }) => {
-  const { containers } = useContainers();
+  const { images } = useImages();
   const [isVisibleBeforeRelease, setIsVisibleBeforeRelease] =
     React.useState(false);
   const [isPublishedLater, setIsPublishedLater] = React.useState(false);
@@ -112,18 +113,18 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         <FormDateInput title="Lock at" value={lockAt} onChange={setLockAt} />
       )}
 
-      <h2>Container</h2>
+      <h2>Image</h2>
       <div className="pt-2 pb-8">
         <select
-          title="Container"
-          value={containerId}
-          onChange={(e) => setContainerId(parseInt(e.target.value))}
+          title="Image"
+          value={imageId}
+          onChange={(e) => setImageId(parseInt(e.target.value))}
           className="border rounded p-1 bg-surface"
         >
-          <option value={-1}>Select a container</option>
-          {containers.map((container) => (
-            <option key={container.id} value={container.id}>
-              {container.name}
+          <option value={-1}>Select an image</option>
+          {images.map((image) => (
+            <option key={image.id} value={image.id}>
+              {image.title}
             </option>
           ))}
         </select>

@@ -54,7 +54,7 @@ export const useAssignments = () => {
       isPublished: Date.now() >= publishAt.getTime(),
       publishAt: publishAt,
       allowsLateSubmissions: allowsLateSubmissions,
-      containerId: containerId,
+      imageId: containerId,
     };
 
     const updatedAssignments = [...assignments, newAssignment];

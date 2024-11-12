@@ -19,7 +19,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   );
   const { containers } = useContainers();
   const containerName = containers.find(
-    (container) => container.id === assignment?.containerId
+    (container) => container.id === assignment?.imageId
   )?.name;
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
@@ -97,10 +97,10 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
             })}
           </h2>
         </div>
-        {assignment?.containerId && assignment.containerId !== -1 && (
+        {assignment?.imageId && assignment.imageId !== -1 && (
           <h2 className="font-bold pb-4">
             Container:{" "}
-            <Link href={`/machines/containers/${assignment.containerId}`}>
+            <Link href={`/machines/containers/${assignment.imageId}`}>
               {containerName}
             </Link>
           </h2>

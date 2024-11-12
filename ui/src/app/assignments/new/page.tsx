@@ -16,7 +16,7 @@ const NewAssignment: React.FC = () => {
   const [unlockAt, setUnlockAt] = React.useState("");
   const [allowsLateSubmissions, setAllowsLateSubmissions] =
     React.useState(false);
-  const [containerId, setContainerId] = React.useState(-1);
+  const [imageId, setImageId] = React.useState(-1);
 
   return (
     <div className="container mx-auto p-4">
@@ -37,8 +37,8 @@ const NewAssignment: React.FC = () => {
         setUnlockAt={setUnlockAt}
         allowsLateSubmissions={allowsLateSubmissions}
         setAllowsLateSubmissions={setAllowsLateSubmissions}
-        containerId={containerId}
-        setContainerId={setContainerId}
+        imageId={imageId}
+        setImageId={setImageId}
       />
 
       <div className="flex flex-column justify-end">
@@ -63,7 +63,7 @@ const NewAssignment: React.FC = () => {
                 new Date(unlockAt),
                 new Date(publishAt),
                 allowsLateSubmissions,
-                containerId
+                imageId
               )
             }
             href="/assignments"

@@ -41,7 +41,7 @@ const NewContainer: React.FC = () => {
         >
           {DEFAULT_IMAGES.map((image) => (
             <option key={image.id} value={image.id}>
-              {image.name}
+              {image.title}
             </option>
           ))}
         </select>
