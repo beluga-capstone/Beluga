@@ -1,21 +1,62 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Button from "@/components/Button";
-import { DEFAULT_IMAGES } from "@/constants";
 import { useContainers } from "@/hooks/useContainers";
-import { useState } from "react";
+import { Image } from "@/types";
+import { useImages } from "@/hooks/useImages";
+import { useAllImagesData } from "@/hooks/useImageData";
 
 const NewContainer: React.FC = () => {
   const { addContainer } = useContainers();
   const [containerName, setContainerName] = useState("");
-  const [image, setImage] = useState(DEFAULT_IMAGES[0]);
   const [cpuCores, setCpuCores] = useState(1);
   const [memoryGBs, setMemoryGBs] = useState(1);
   const [storageGBs, setStorageGBs] = useState(16);
+  const [error, setError] = useState<string | null>(null);
+
+  const { images } = useImages();
+  const imageIds = images.map(img => img.docker_image_id);
+  const { imagesData } = useAllImagesData(imageIds);
+
+  const [selectedImage, setSelectedImage] = useState<Image | null>(null);
+
+  useEffect(() => {
+    if (images.length > 0) {
+      setSelectedImage(images[0]);
+    }
+  }, [images]);
+
+  const handleCreateContainer = () => {
+    setError(null);
+
+    if (!selectedImage) {
+      setError("No image selected");
+      return;
+    }
+
+    if (!imagesData[selectedImage.docker_image_id]) {
+      setError("Selected image data not found");
+      return;
+    }
+
+    try {
+      addContainer(
+        containerName,
+        selectedImage,
+        cpuCores,
+        memoryGBs,
+        storageGBs
+      );
+    } catch (err) {
+      setError("Failed to create container: " + (err instanceof Error ? err.message : String(err)));
+    }
+  };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="font-bold text-4xl mb-6">New Container</h1>
+      {error && <div className="text-red-500 mb-4">{error}</div>}
       <h2>Container Name</h2>
       <div className="pt-2 pb-8">
         <input
@@ -30,18 +71,18 @@ const NewContainer: React.FC = () => {
       <h2>Select Image</h2>
       <div className="pt-2 pb-8">
         <select
-          value={image.id}
+          value={selectedImage?.docker_image_id}
           onChange={(e) =>
-            setImage(
-              DEFAULT_IMAGES.find((i) => i.id === parseInt(e.target.value))!
+            setSelectedImage(
+              images.find((i) => i.docker_image_id === e.target.value) || null
             )
           }
           className="border rounded p-1 bg-surface"
           aria-label="Select image"
         >
-          {DEFAULT_IMAGES.map((image) => (
-            <option key={image.id} value={image.id}>
-              {image.name}
+          {images.map((image) => (
+            <option key={image.docker_image_id} value={image.docker_image_id}>
+              {imagesData[image.docker_image_id]?.tag[0] || 'Loading...'}
             </option>
           ))}
         </select>
@@ -94,21 +135,11 @@ const NewContainer: React.FC = () => {
             Cancel
           </Button>
         </div>
-
         <div className="p-2">
           <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={() =>
-              addContainer(
-                containerName,
-                image,
-                cpuCores,
-                memoryGBs,
-                storageGBs
-              )
-            }
-            href="/machines/containers"
-            disabled={!containerName}
+            onClick={handleCreateContainer}
+            disabled={!containerName || !selectedImage}
           >
             Create
           </Button>
