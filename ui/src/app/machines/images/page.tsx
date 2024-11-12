@@ -45,8 +45,8 @@ export default function Images() {
           <CheckBox
             checked={selectedImageIds.length === images.length}
             onChange={() => {
-              const shouldSelectAll = selectedImageIds.length !== images.length;
-              selectAllImages(shouldSelectAll);
+              // const shouldSelectAll = selectedImageIds.length !== images.length;
+              selectAllImages();
             }}
             label="Select All"
           />
@@ -55,15 +55,15 @@ export default function Images() {
 
       {images.map((image) => (
         <div
-          key={image.id}
+          key={image.docker_image_id}
           className="cursor-pointer"
           onClick={() => {
-            router.push(`/machines/images/details?id=${image.id}`);
+            router.push(`/machines/images/details?id=${image.docker_image_id}`);
           }}
         >
           <ImageItem
             image={image}
-            isSelected={selectedImageIds.includes(image.id)}
+            isSelected={selectedImageIds.includes(image.docker_image_id)}
             onToggleSelect={toggleSelectImage}
           />
         </div>

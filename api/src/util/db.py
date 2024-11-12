@@ -17,7 +17,7 @@ class Role(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now)
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = 'user'
     user_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     username = db.Column(db.String(100), nullable=False)
@@ -119,6 +119,6 @@ class Container(db.Model):
 
 class Image(db.Model):
     __tablename__ = 'image'
-    docker_image_id = db.Column(db.String(64), primary_key=True)
+    docker_image_id = db.Column(db.String(80), primary_key=True)
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
     description = db.Column(db.String(255))

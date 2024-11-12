@@ -116,7 +116,7 @@ def delete_user(user_id):
 @users_bp.route('/users/profile', methods=['GET'])
 @login_required
 def get_current_user():
-    user = db.session.get(User, user_id)
+    user = db.session.get(User, current_user.user_id)
     if user is None:
         return jsonify({'error': 'User not found'}), 404
       
@@ -128,7 +128,7 @@ def get_current_user():
         'middle_name': user.middle_name,
         'last_name': user.last_name,
         'role_id': user.role_id,
-        'created_at': user.created_at,
+        'created_at': user.created_at,  
         'updated_at': user.update_at
     }
     return jsonify(user_data), 200

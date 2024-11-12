@@ -55,7 +55,7 @@ const ContainerPageTerminal: React.FC<{ containerId: number | null }> = ({ conta
 
           // Connect to WebSocket using the returned port
           // const socket = io(`http://localhost:${data.port}/pty`);
-          const socket = io(`ws://localhost:5000/pty`);
+          const socket = io(`ws://localhost:5656/pty`);
           socketRef.current=socket;
           
           if (!terminalRef.current) return;
