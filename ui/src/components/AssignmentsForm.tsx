@@ -21,7 +21,7 @@ interface AssignmentFormProps {
   setUnlockAt: (value: string) => void;
   allowsLateSubmissions: boolean;
   setAllowsLateSubmissions: (value: boolean) => void;
-  imageId: number;
+  imageId: string;
   setImageId: (value: number) => void;
 }
 

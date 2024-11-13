@@ -14,7 +14,7 @@ const Dashboard: React.FC = () => {
   return (
     <div>
       <div className="container mx-auto p-4">
-        {profile?.role_id == 8 ? (
+        {profile?.role_id == ROLES.STUDENT ? (
           <StudentCoursesTable />
         ) : (
           <ProfessorCoursesTable />

@@ -23,7 +23,7 @@ export const useAssignments = () => {
         lockAt: assignment.lock_at ? new Date(assignment.lock_at) : null,
         unlockAt: assignment.unlock_at ? new Date(assignment.unlock_at) : null,
         userId: assignment.user_id,
-        dockerImageId: assignment.docker_image_id,
+        imageId: assignment.docker_image_id,
       }));
 
       setAssignments(transformedData);
@@ -67,10 +67,10 @@ export const useAssignments = () => {
     unlockAt: Date,
     publishAt: Date,
     allowsLateSubmissions: boolean,
-    imageId: number
+    imageId: string
   ) => {
     const newAssignment: Assignment = {
-      assignmentId: Date.now(),
+      assignmentId: Date.now().toString(),
       courseId,
       title,
       description,
@@ -135,14 +135,15 @@ export const useAssignments = () => {
     }
   };
 
-  const deleteAssignment = async (assignmentId: number) => {
+  const deleteAssignment = async (assignmentId: string) => {
     try {
       const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`, {
         method: 'DELETE',
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete assignment');
+        console.log("failed del",assignmentId);
+        throw new Error('Failed to delete assignment ');
       }
 
       setAssignments((prev) =>

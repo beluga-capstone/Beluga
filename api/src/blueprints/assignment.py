@@ -55,7 +55,7 @@ def create_assignment():
             lock_at=lock_at,
             unlock_at=unlock_at,
             user_id=data.get('userId'),
-            docker_image_id=data.get('dockerImageId')
+            docker_image_id=data.get('imageId')
         )
 
         db.session.add(new_assignment)

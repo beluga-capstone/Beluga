@@ -36,7 +36,7 @@ export interface Student {
 }
 
 export interface Assignment {
-  assignmentId: number;
+  assignmentId: string;
   courseId: string;
   title: string;
   description: string;
@@ -47,7 +47,7 @@ export interface Assignment {
   isPublished: boolean;
   publishAt: Date;
   allowsLateSubmissions: boolean;
-  imageId: number;
+  imageId: string;
 }
 
 export interface Container {
