@@ -13,6 +13,19 @@ def validate_uuid(id_str):
     except ValueError:
         return False
 
+def parse_date(date_str):
+    if not date_str:
+        return None
+        
+    try:
+        date = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%fZ")
+        # Optional: Add validation for reasonable date range
+        if date.year > 9999 or date.year < 1900:
+            raise ValueError("Date must be between years 1900 and 9999")
+        return date.isoformat() + "Z"
+    except ValueError as e:
+        raise ValueError(f"Invalid date format or range: {str(e)}")
+
 # Create a new assignment (POST)
 @assignment_bp.route('/assignments', methods=['POST'])
 def create_assignment():
@@ -29,18 +42,18 @@ def create_assignment():
         return jsonify({'error': 'Invalid UUID format for userId'}), 400
 
     # Convert date fields if provided
-    due_at = data.get('dueAt')
-    lock_at = data.get('lockAt')
-    unlock_at = data.get('unlockAt')
+    due_at = parse_date(data.get('dueAt'))
+    lock_at = parse_date(data.get('lockAt'))
+    unlock_at = parse_date(data.get('unlockAt'))
 
     try:
         new_assignment = Assignment(
             course_id=data['courseId'],
             title=data['title'],
             description=data.get('description'),
-            due_at=datetime.fromisoformat(due_at) if due_at else None,
-            lock_at=datetime.fromisoformat(lock_at) if lock_at else None,
-            unlock_at=datetime.fromisoformat(unlock_at) if unlock_at else None,
+            due_at=due_at,
+            lock_at=lock_at,
+            unlock_at=unlock_at,
             user_id=data.get('userId'),
             docker_image_id=data.get('dockerImageId')
         )
@@ -109,7 +122,7 @@ def update_assignment(assignment_id):
     if 'lock_at' in data:
         assignment.lock_at = datetime.fromisoformat(data['lock_at']) if data['lock_at'] else None
     if 'unlock_at' in data:
-        assignment.unlock_at = datetime.fromisoformat(data['unlock_at']) if data['unlock_at'] else None
+        assignment.unlock_at = datetime.fromisoformat(data['unlock_at']) if data[')unlock_at'] else None
 
     assignment.user_id = data.get('user_id', assignment.user_id)
     assignment.docker_image_id = data.get('docker_image_id', assignment.docker_image_id)

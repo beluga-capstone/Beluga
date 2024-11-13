@@ -13,7 +13,20 @@ export const useAssignments = () => {
         throw new Error('Failed to fetch assignments');
       }
       const data = await response.json();
-      setAssignments(data);
+
+      const transformedData = data.map((assignment: any) => ({
+        assignmentId: assignment.assignment_id,
+        courseId: assignment.course_id,
+        title: assignment.title,
+        description: assignment.description,
+        dueAt: assignment.due_at ? new Date(assignment.due_at) : null,
+        lockAt: assignment.lock_at ? new Date(assignment.lock_at) : null,
+        unlockAt: assignment.unlock_at ? new Date(assignment.unlock_at) : null,
+        userId: assignment.user_id,
+        dockerImageId: assignment.docker_image_id,
+      }));
+
+      setAssignments(transformedData);
     } catch (err) {
       console.log(err);
     }

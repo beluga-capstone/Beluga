@@ -2,6 +2,12 @@ import { useAssignments } from "@/hooks/useAssignments";
 import { ToggleLeft, ToggleRight } from "lucide-react";
 import Link from "next/link";
 
+const format_date = (date:string) => new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+});
+
 const ProfessorAssignmentsTable = () => {
   const { assignments, setPublished, setLateSubmissions } = useAssignments();
 
@@ -31,18 +37,14 @@ const ProfessorAssignmentsTable = () => {
               </Link>
             </td>
             <td className="text-center py-2">
-              {assignment.publishAt.toLocaleDateString("en-US", {
-                dateStyle: "short",
-                timeZone: "UTC",
-              })}
+              {assignment.publishAt?
+                format_date(assignment.publishAt.toISOString()): "not found"
+              }
             </td>
             <td className="text-center py-2">
-              {assignment.dueAt.getTime() === new Date(0).getTime()
-                ? "-"
-                : assignment.dueAt.toLocaleDateString("en-US", {
-                    dateStyle: "short",
-                    timeZone: "UTC",
-                  })}
+              {assignment.dueAt?
+                format_date(assignment.dueAt.toISOString()): "not found"
+              }
             </td>
             <td className="text-center py-2">0</td>
             <td className="py-2">
