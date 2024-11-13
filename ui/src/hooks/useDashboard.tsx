@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { ROLES } from "@/constants";
+import { User } from "@/types";
 
 interface Course {
   id: number;
@@ -11,6 +13,9 @@ interface Course {
 }
 
 const loadCoursesFromStorage = (): Course[] => {
+  if (typeof window === "undefined") {
+    return [];
+  }
   const data = localStorage.getItem("courses");
   return data ? JSON.parse(data) : [];
 };
@@ -26,9 +31,32 @@ export const useDashboard = () => {
     saveCoursesToStorage(courses);
   }, [courses]);
 
-  const addCourse = (name: string, section: string, professor: string, term: string, studentsEnrolled: number) => {
+  const updateCourseEnrollment = (courseId: number, increment: number) => {
+    setCourses((prevCourses) => {
+      const updatedCourses = prevCourses.map((course) =>
+        course.id === courseId
+          ? { ...course, studentsEnrolled: course.studentsEnrolled + increment }
+          : course
+      );
+      saveCoursesToStorage(updatedCourses);
+      return updatedCourses;
+    });
+  };
+
+  const addCourse = (
+    name: string,
+    section: string,
+    professor: string,
+    term: string,
+    users: User[] = [] // Accept users as a parameter and ensure it's an array
+  ) => {
+    const courseId = Date.now();
+    const studentsEnrolled = Array.isArray(users)
+      ? users.filter((user) => user.role === ROLES.STUDENT && user.courseId === courseId).length
+      : 0; // If `users` is not an array, fallback to 0
+
     const newCourse: Course = {
-      id: Date.now(),
+      id: courseId,
       name,
       section,
       professor,
@@ -36,14 +64,16 @@ export const useDashboard = () => {
       studentsEnrolled,
       isPublished: false,
     };
-    
-    setCourses([...courses, newCourse]);
+
+    setCourses((prevCourses) => [...prevCourses, newCourse]);
     saveCoursesToStorage([...courses, newCourse]);
   };
 
   const setPublished = (id: number, status: boolean) => {
     setCourses((prevCourses) =>
-      prevCourses.map((course) => (course.id === id ? { ...course, isPublished: status } : course))
+      prevCourses.map((course) =>
+        course.id === id ? { ...course, isPublished: status } : course
+      )
     );
   };
 
@@ -61,6 +91,7 @@ export const useDashboard = () => {
 
   return {
     courses,
+    updateCourseEnrollment,
     setPublished,
     addCourse,
     deleteCourse,

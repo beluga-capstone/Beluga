@@ -15,6 +15,7 @@ const CourseAssignments = ({ params }: { params: { courseId: string } }) => {
   const initialCourseName = decodeURIComponent(
     searchParams.get("name") || `Course ${courseId}`
   );
+
   const [courseName, setCourseName] = useState(initialCourseName);
 
   useEffect(() => {
@@ -41,7 +42,7 @@ const CourseAssignments = ({ params }: { params: { courseId: string } }) => {
   return (
     <div className="container mx-auto p-4">
       <div className="mb-4 flex justify-between items-center">
-        <h1 className="font-bold text-3xl">Assignments for {courseName}</h1>
+        <h1 className="font-bold text-3xl">Assignments</h1>
         <Link href={`/assignments/new?courseId=${courseId}&name=${encodeURIComponent(courseName)}`}>
           <button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center">
             <Plus className="mr-2" /> Add Assignment
