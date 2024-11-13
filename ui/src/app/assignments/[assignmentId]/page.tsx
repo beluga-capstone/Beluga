@@ -4,7 +4,7 @@ import Button from "@/components/Button";
 import SubmissionZone from "@/components/SubmissionZone";
 import { ROLES } from "@/constants";
 import { useAssignments } from "@/hooks/useAssignments";
-import { useContainers } from "@/hooks/useContainers";
+import { useImages } from "@/hooks/useImages";
 import { useProfile } from "@/hooks/useProfile";
 import { ArrowUpFromLine, Edit2 } from "lucide-react";
 import Link from "next/link";
@@ -23,8 +23,8 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
       assignment.assignmentId === params.assignmentId
   );
 
-  const { containers } = useContainers();
-  const containerName="123";
+  const { images } = useImages();
+  const containerName=`${assignment?.imageId}`;
 
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
@@ -97,7 +97,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
         </div>
         {assignment?.imageId && (
           <h2 className="font-bold pb-4">
-            Container:{" "}
+            Image ID:{" "}
             <Link href={`/machines/containers/${assignment.imageId}`}>
               {containerName}
             </Link>
