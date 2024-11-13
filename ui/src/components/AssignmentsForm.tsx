@@ -22,7 +22,7 @@ interface AssignmentFormProps {
   allowsLateSubmissions: boolean;
   setAllowsLateSubmissions: (value: boolean) => void;
   imageId: string;
-  setImageId: (value: number) => void;
+  setImageId: (value: string) => void;
 }
 
 const AssignmentForm: React.FC<AssignmentFormProps> = ({
@@ -47,6 +47,10 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   const [isVisibleBeforeRelease, setIsVisibleBeforeRelease] =
     React.useState(false);
   const [isPublishedLater, setIsPublishedLater] = React.useState(false);
+
+  //useEffect(()=>{
+  //  console.log("due changed to ",dueAt);
+  //},[dueAt]);
 
   return (
     <>

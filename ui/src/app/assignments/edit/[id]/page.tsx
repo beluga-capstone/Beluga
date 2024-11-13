@@ -20,9 +20,8 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
   const [isPublished, setIsPublished] = React.useState(false);
   const [publishAt, setPublishAt] = React.useState("");
   const [allowsLateSubmissions, setAllowsLateSubmissions] = React.useState(false);
-  const [imageId, setImageId] = React.useState(assignment?.imageId || -1);
+  const [imageId, setImageId] = React.useState(assignment?.imageId || "");
 
-  // Helper function to safely format date
   const formatDate = (dateString: string | Date | null | undefined): string => {
     if (!dateString) return "";
     try {
@@ -46,7 +45,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
       setIsPublished(!!assignment.isPublished);
       setPublishAt(formatDate(assignment.publishAt));
       setAllowsLateSubmissions(!!assignment.allowsLateSubmissions);
-      setImageId(assignment.imageId || -1);
+      setImageId(assignment.imageId || "");
     }
   }, [assignment]);
 
@@ -57,6 +56,12 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
       throw new Error(`Invalid date: ${dateString}`);
     }
     return date;
+  };
+
+  const prettyDateToIso = (formattedDate: string): Date => {
+    return new Date(formattedDate);
+    //const date = new Date(formattedDate);
+    //return date.toISOString().split('T')[0]; 
   };
 
   const handleUpdate = () => {
@@ -71,20 +76,21 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         return;
       }
 
+      //console.log("update due with ",prettyDateToIso(dueAt));
       updateAssignment(
         assignment.assignmentId,
+        assignment.courseId,
         title.trim(),
         description.trim(),
-        createSafeDate(dueAt),
-        allowsLateSubmissions ? createSafeDate(lockAt) : createSafeDate(dueAt),
-        createSafeDate(unlockAt),
-        createSafeDate(publishAt),
+        prettyDateToIso(dueAt),
+        allowsLateSubmissions ? prettyDateToIso(lockAt) : prettyDateToIso(dueAt),
+        prettyDateToIso(unlockAt),
+        prettyDateToIso(publishAt),
         allowsLateSubmissions,
         imageId
       );
     } catch (error) {
       console.error("Error updating assignment:", error);
-      // You might want to show an error message to the user here
     }
   };
 

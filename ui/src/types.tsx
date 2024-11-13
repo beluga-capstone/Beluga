@@ -40,14 +40,15 @@ export interface Assignment {
   courseId: string;
   title: string;
   description: string;
-  dueAt: Date;
-  lockAt: Date;
-  unlockAt: Date;
-  isUnlocked: boolean;
-  isPublished: boolean;
-  publishAt: Date;
+  dueAt: Date | null;
+  lockAt: Date | null;
+  unlockAt: Date | null;
+  publishAt?: Date | null;
+  isUnlocked?: boolean;
+  isPublished?: boolean;
   allowsLateSubmissions: boolean;
   imageId: string;
+  userId?: string;
 }
 
 export interface Container {

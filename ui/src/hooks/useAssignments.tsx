@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Assignment } from "@/types";
+import { desc } from "framer-motion/client";
 
 export const useAssignments = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -88,7 +89,8 @@ export const useAssignments = () => {
   };
 
   const updateAssignment = async (
-    assignmentId: number,
+    assignmentId: string,
+    courseId: string,
     title: string,
     description: string,
     dueAt: Date,
@@ -96,21 +98,23 @@ export const useAssignments = () => {
     unlockAt: Date,
     publishAt: Date,
     allowsLateSubmissions: boolean,
-    containerId: number
+    imageId: string
   ) => {
     const updatedAssignment = {
-      assignmentId,
-      title,
-      description,
-      dueAt,
-      lockAt,
-      unlockAt,
+      assignmentId: assignmentId,
+      courseId: courseId,
+      title:title,
+      description:description,
+      dueAt:dueAt,
+      lockAt:lockAt,
+      unlockAt:unlockAt,
       isUnlocked: Date.now() >= unlockAt.getTime(),
       isPublished: Date.now() >= publishAt.getTime(),
-      publishAt,
-      allowsLateSubmissions,
-      imageId: containerId,
+      publishAt:publishAt,
+      allowsLateSubmissions:allowsLateSubmissions,
+      imageId:imageId,  
     };
+    //console.log("updating with",assignmentId,courseId,title,description,dueAt,lockAt,unlockAt,imageId)
 
     try {
       const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`, {
@@ -154,7 +158,7 @@ export const useAssignments = () => {
     }
   };
 
-  const setPublished = async (assignmentId: number, isPublished: boolean) => {
+  const setPublished = async (assignmentId: string, isPublished: boolean) => {
     try {
       const updatedAssignment = { isPublished };
 
@@ -181,7 +185,7 @@ export const useAssignments = () => {
   };
 
   const setLateSubmissions = async (
-    assignmentId: number,
+    assignmentId: string,
     allowsLateSubmissions: boolean
   ) => {
     try {
