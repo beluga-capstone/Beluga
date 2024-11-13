@@ -22,8 +22,10 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
     (assignment) =>
       assignment.assignmentId === params.assignmentId
   );
+
   const { containers } = useContainers();
   const containerName="123";
+
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
   const [zipFile, setZipFile] = useState<File | null>(null);

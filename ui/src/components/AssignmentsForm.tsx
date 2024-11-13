@@ -1,10 +1,11 @@
-import { useContainers } from "@/hooks/useContainers";
 import FormInput from "./FormInput";
 import FormTextArea from "./FormTextArea";
 import FormDateInput from "./FormDateInput";
 import React from "react";
 import LabeledToggleSwitch from "./LabeledToggleSwitch";
 import { useImages } from "@/hooks/useImages";
+import { useImageData } from "@/hooks/useImageData";
+import ImageOption from "./ImageOption";
 
 interface AssignmentFormProps {
   title: string;
@@ -122,14 +123,12 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         <select
           title="Image"
           value={imageId}
-          onChange={(e) => setImageId(parseInt(e.target.value))}
+          onChange={(e) => setImageId(e.target.value)} 
           className="border rounded p-1 bg-surface"
         >
           <option value={-1}>Select an image</option>
           {images.map((image) => (
-            <option key={image.id} value={image.id}>
-              {image.title}
-            </option>
+            <ImageOption image={image}/>
           ))}
         </select>
       </div>

@@ -7,7 +7,7 @@ import AssignmentForm from "../../../components/AssignmentsForm";
 
 const NewAssignment: React.FC = () => {
   const { addAssignment } = useAssignments();
-  const courseId = "b1adf7fc-a7a6-4604-98f1-426b0f01c6d6";
+  const courseId = "ce687712-c07d-4cf0-b07b-369fc8e993dd";
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [publishAt, setPublishAt] = React.useState("");
@@ -16,7 +16,7 @@ const NewAssignment: React.FC = () => {
   const [unlockAt, setUnlockAt] = React.useState("");
   const [allowsLateSubmissions, setAllowsLateSubmissions] =
     React.useState(false);
-  const [imageId, setImageId] = React.useState(-1);
+  const [imageId, setImageId] = React.useState("");
 
   return (
     <div className="container mx-auto p-4">
