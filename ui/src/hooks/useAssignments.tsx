@@ -24,7 +24,7 @@ export const useAssignments = () => {
         lock_at: assignment.lock_at ? new Date(assignment.lock_at) : null,
         unlock_at: assignment.unlock_at ? new Date(assignment.unlock_at) : null,
         user_id: assignment.user_id,
-        image_id: assignment.image_id,
+        docker_image_id: assignment.docker_image_id,
       }));
 
       setAssignments(transformedData);
@@ -68,7 +68,7 @@ export const useAssignments = () => {
     unlock_at: Date,
     publish_at: Date,
     allows_late_submissions: boolean,
-    image_id: string
+    docker_image_id: string
   ) => {
     const newAssignment: Assignment = {
       assignment_id: Date.now().toString(),
@@ -82,7 +82,7 @@ export const useAssignments = () => {
       is_published: Date.now() >= publish_at.getTime(),
       publish_at,
       allows_late_submissions,
-      image_id: image_id,
+      docker_image_id: docker_image_id,
     };
 
     await saveAssignment(newAssignment);
@@ -98,7 +98,7 @@ export const useAssignments = () => {
     unlock_at: Date,
     publish_at: Date,
     allows_late_submissions: boolean,
-    image_id: string
+    docker_image_id: string
   ) => {
     const updatedAssignment = {
       assignment_id: assignment_id,
@@ -112,7 +112,7 @@ export const useAssignments = () => {
       is_published: Date.now() >= publish_at.getTime(),
       publish_at:publish_at,
       allows_late_submissions:allows_late_submissions,
-      image_id:image_id,  
+      docker_image_id:docker_image_id,  
     };
     //console.log("updating with",assignmentId,courseId,title,description,dueAt,lockAt,unlockAt,imageId)
 

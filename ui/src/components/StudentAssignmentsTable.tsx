@@ -21,9 +21,9 @@ const StudentAssignmentsTable = () => {
           </td>
         </tr>
         {assignments.map((assignment) => (
-          <tr key={assignment.assignmentId}>
+          <tr key={assignment.assignment_id}>
             <td className="text-center py-2">
-              <Link href={`/assignments/${assignment.assignmentId}`}>
+              <Link href={`/assignments/${assignment.assignment_id}`}>
                 {assignment.title}
               </Link>
             </td>

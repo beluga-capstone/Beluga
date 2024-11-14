@@ -55,7 +55,7 @@ def create_assignment():
             lock_at=lock_at,
             unlock_at=unlock_at,
             user_id=data.get('user_id'),
-            docker_image_id=data.get('image_id')
+            docker_image_id=data.get('docker_image_id')
         )
 
         db.session.add(new_assignment)
@@ -129,14 +129,14 @@ def update_assignment(assignment_id):
         if 'user_id' in data:
             assignment.user_id = data.get('user_id')
 
-        assignment.docker_image_id = data.get('image_id')
+        assignment.docker_image_id = data.get('docker_image_id')
 
         # Commit changes to the database
         db.session.commit()
 
         # Prepare updated assignment data to return
         updated_assignment = {
-            'assignment_id': str(assignment.id),
+            'assignment_id': str(assignment.assignment_id),
             'course_id': str(assignment.course_id),
             'title': assignment.title,
             'description': assignment.description,
@@ -144,11 +144,10 @@ def update_assignment(assignment_id):
             'lock_at': assignment.lock_at.isoformat() if assignment.lock_at else None,
             'unlock_at': assignment.unlock_at.isoformat() if assignment.unlock_at else None,
             'user_id': assignment.user_id,
-            'image_id': assignment.docker_image_id,
-            'isUnlocked': Date.now() >= assignment.unlock_at.getTime() if assignment.unlock_at else False,
-            'isPublished': Date.now() >= assignment.due_at.getTime() if assignment.due_at else False,
-            'publishAt': assignment.due_at.isoformat() if assignment.publish_at else None,
-            'allowsLateSubmissions': assignment.allows_late_submissions
+            'docker_image_id': assignment.docker_image_id,
+            'isUnlocked': datetime.now() >= assignment.unlock_at if assignment.unlock_at else False,
+            'isPublished': datetime.now() >= assignment.due_at if assignment.due_at else False,
+            'publishAt': assignment.due_at.isoformat() if assignment.lock_at else None,
         }
 
         return jsonify({

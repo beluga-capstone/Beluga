@@ -48,7 +48,7 @@ const NewContainer: React.FC = () => {
         memoryGBs,
         storageGBs
       );
-    } catch (err) {
+d    } catch (err) {
       setError("Failed to create container: " + (err instanceof Error ? err.message : String(err)));
     }
   };

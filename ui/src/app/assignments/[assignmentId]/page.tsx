@@ -24,7 +24,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   );
 
   const { images } = useImages();
-  const containerName=`${assignment?.image_id}`;
+  const containerName=`${assignment?.docker_image_id}`;
 
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
