@@ -20,11 +20,11 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   const { assignments } = useAssignments();
   const assignment = assignments.find(
     (assignment) =>
-      assignment.assignmentId === params.assignmentId
+      assignment.assignment_id === params.assignmentId
   );
 
   const { images } = useImages();
-  const containerName=`${assignment?.imageId}`;
+  const containerName=`${assignment?.image_id}`;
 
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
@@ -40,7 +40,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
         <h1 className="font-bold text-4xl">{assignment?.title}</h1>
         {profile?.role_id !== ROLES.STUDENT && (
           <Link
-            href={`/assignments/edit/${assignment?.assignmentId}`}
+            href={`/assignments/edit/${assignment?.assignment_id}`}
             className="px-6"
           >
             <Edit2 size={24} />

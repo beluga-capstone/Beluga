@@ -32,30 +32,30 @@ def create_assignment():
     data = request.get_json()
 
     # Validate required fields
-    if not data or not data.get('title') or not data.get('courseId'):
+    if not data or not data.get('title') or not data.get('course_id'):
         return jsonify({'error': 'Title and course ID are required'}), 400
 
     # Validate UUID format for course_id and user_id if provided
-    if not validate_uuid(data['courseId']):
+    if not validate_uuid(data['course_id']):
         return jsonify({'error': 'Invalid UUID format for courseId'}), 400
-    if 'userId' in data and not validate_uuid(data['userId']):
+    if 'user_id' in data and not validate_uuid(data['user_id']):
         return jsonify({'error': 'Invalid UUID format for userId'}), 400
 
     # Convert date fields if provided
-    due_at = parse_date(data.get('dueAt'))
-    lock_at = parse_date(data.get('lockAt'))
-    unlock_at = parse_date(data.get('unlockAt'))
+    due_at = parse_date(data.get('due_at'))
+    lock_at = parse_date(data.get('lock_at'))
+    unlock_at = parse_date(data.get('unlock_at'))
 
     try:
         new_assignment = Assignment(
-            course_id=data['courseId'],
+            course_id=data['course_id'],
             title=data['title'],
             description=data.get('description'),
             due_at=due_at,
             lock_at=lock_at,
             unlock_at=unlock_at,
-            user_id=data.get('userId'),
-            docker_image_id=data.get('imageId')
+            user_id=data.get('user_id'),
+            docker_image_id=data.get('image_id')
         )
 
         db.session.add(new_assignment)
@@ -119,12 +119,12 @@ def update_assignment(assignment_id):
         assignment.description = data.get('description')
 
         # Update date fields
-        if 'dueAt' in data:
-            assignment.due_at = parse_date(data.get('dueAt'))
-        if 'lockAt' in data:
-            assignment.lock_at = parse_date(data.get('lockAt'))
-        if 'unlockAt' in data:
-            assignment.unlock_at = parse_date(data.get('unlockAt'))
+        if 'due_at' in data:
+            assignment.due_at = parse_date(data.get('due_at'))
+        if 'lock_at' in data:
+            assignment.lock_at = parse_date(data.get('lock_at'))
+        if 'unlock_at' in data:
+            assignment.unlock_at = parse_date(data.get('unlock_at'))
 
         if 'user_id' in data:
             assignment.user_id = data.get('user_id')
@@ -136,15 +136,15 @@ def update_assignment(assignment_id):
 
         # Prepare updated assignment data to return
         updated_assignment = {
-            'assignmentId': str(assignment.id),
-            'courseId': str(assignment.course_id),
+            'assignment_id': str(assignment.id),
+            'course_id': str(assignment.course_id),
             'title': assignment.title,
             'description': assignment.description,
-            'dueAt': assignment.due_at.isoformat() if assignment.due_at else None,
-            'lockAt': assignment.lock_at.isoformat() if assignment.lock_at else None,
-            'unlockAt': assignment.unlock_at.isoformat() if assignment.unlock_at else None,
-            'userId': assignment.user_id,
-            'imageId': assignment.docker_image_id,
+            'due_at': assignment.due_at.isoformat() if assignment.due_at else None,
+            'lock_at': assignment.lock_at.isoformat() if assignment.lock_at else None,
+            'unlock_at': assignment.unlock_at.isoformat() if assignment.unlock_at else None,
+            'user_id': assignment.user_id,
+            'image_id': assignment.docker_image_id,
             'isUnlocked': Date.now() >= assignment.unlock_at.getTime() if assignment.unlock_at else False,
             'isPublished': Date.now() >= assignment.due_at.getTime() if assignment.due_at else False,
             'publishAt': assignment.due_at.isoformat() if assignment.publish_at else None,
