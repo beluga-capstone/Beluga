@@ -119,6 +119,16 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
               : "not found"}
           </h2>
 
+          {assignment?.description && (
+            <h2 className="font-bold py-4">Description:{" "}
+              {assignment?.description.split("\n").map((line, index) => (
+                <span key={index}>
+                  {line}
+                  <br />
+                </span>
+              ))}
+            </h2>
+          )}
           {assignment?.imageId && (
             <>
               <h2 className="font-bold pb-4">
@@ -138,25 +148,12 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
         </div>
       </div>
 
+
       <div className="flex justify-between items-center">
       {assignment?(
         <ContainerPageTerminal imageId={assignment.imageId}/>
       ):null}
       </div>
-
-      {assignment?.description && (
-        <>
-          <h2 className="font-bold py-4">Description</h2>
-          <p>
-            {assignment?.description.split("\n").map((line, index) => (
-              <span key={index}>
-                {line}
-                <br />
-              </span>
-            ))}
-          </p>
-        </>
-      )}
 
       {profile?.role_id !== ROLES.STUDENT && (
         <p className="text-blue-500 py-8">

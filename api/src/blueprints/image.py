@@ -40,65 +40,30 @@ def build_image():
     description = data.get('description', '')
     image_tag = data.get('image_tag', f'image_{datetime.utcnow().isoformat()}')
 
+    # append the base image that has the dockerfile pty server
+    updated_dockerfile = f"FROM beluga_base\n{dockerfile_content}"
+
     try:
-        # Parse the original Dockerfile content to extract the base image
-        dockerfile_lines = dockerfile_content.split('\n')
-        base_image = None
-        modified_dockerfile = []
-        
-        for line in dockerfile_lines:
-            if line.strip().upper().startswith('FROM '):
-                base_image = line.strip()
-                # Create a multi-stage build
-                modified_dockerfile.extend([
-                    "# Stage 1: Python environment",
-                    "FROM python:3.10 as python_base",
-                    "WORKDIR /app",
-                    "COPY websocket-pty.py requirements.txt /app/",
-                    "RUN pip install -r requirements.txt",
-                    "",
-                    "# Stage 2: Final image",
-                    base_image,
-                    "# Copy Python and its dependencies from python_base",
-                    "COPY --from=python_base /usr/local/lib/python3.10 /usr/local/lib/python3.10",
-                    "COPY --from=python_base /usr/local/bin/python3 /usr/local/bin/python3",
-                    "COPY --from=python_base /usr/local/bin/pip3 /usr/local/bin/pip3",
-                    "COPY --from=python_base /app /app",
-                    "",
-                    "# Set working directory and expose port",
-                    "WORKDIR /app",
-                    "EXPOSE 5000",
-                ])
-            elif line.strip():  # Add any non-empty lines from original Dockerfile
-                modified_dockerfile.append(line)
-        
-        # Add the CMD at the end if it wasn't in the original Dockerfile
-        if not any(line.strip().upper().startswith('CMD') for line in dockerfile_lines):
-            modified_dockerfile.append('CMD ["python","websocket-pty.py"]')
-        
-        # Join the modified Dockerfile contents
-        final_dockerfile = '\n'.join(modified_dockerfile)
-        
         # Use the low-level API client for more granular log handling
         api_client = docker.APIClient()
         
         # Start building the image and stream logs
         logs = api_client.build(
-            fileobj=io.BytesIO(final_dockerfile.encode('utf-8')),
+            fileobj=io.BytesIO(updated_dockerfile.encode('utf-8')),
             tag=image_tag,
             rm=True,
-            decode=True
+            decode=True  # Ensures each log entry is JSON-decoded
         )
-        
+
         for log in logs:
             # Emit each line of the build log to the frontend
             message = log.get('stream') or log.get('status', '').strip()
             if message:
                 socketio.emit('build_status', {'status': message})
-        
+
         # After successful build, retrieve the image by tag
         image = docker_client.images.get(image_tag)
-        
+
         # Save image information to the database
         new_image = Image(
             docker_image_id=image.id,
@@ -107,19 +72,17 @@ def build_image():
         )
         db.session.add(new_image)
         db.session.commit()
-        
+
         # Notify the frontend of completion
         socketio.emit('build_complete', {'docker_image_id': image.id})
-        return jsonify({
-            'message': 'Image built successfully',
-            'docker_image_id': image.id,
-            'modified_dockerfile': final_dockerfile 
-        }), 201
-        
+
+        return jsonify({'message': 'Image built successfully', 'docker_image_id': image.id}), 201
+
     except Exception as e:
         db.session.rollback()
         socketio.emit('build_error', {'error': str(e)})
         return jsonify({'error': str(e)}), 500
+
 
 # Get all images (GET)
 @image_bp.route('/images', methods=['GET'])
