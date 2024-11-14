@@ -14,7 +14,7 @@ from src.util.db import db
 
 @pytest.fixture(scope='module')
 def test_client():
-    app = create_app('testing')
+    app = create_app('default')
     with app.test_client() as testing_client:
         with app.app_context():
             db.create_all()  
@@ -24,7 +24,7 @@ def test_client():
 def admin_id(test_client):
     create_data = {
         'username': 'testadminuser',
-        'email': 'testadminuser@tamu.edu'
+        'email': 'testadminuser@tamu.edu',
         'role_id': '1'
     }
     response = test_client.post('/users', json=create_data)
@@ -104,16 +104,29 @@ def enrollment_id(test_client, user_id, course_id):
     return response.get_json()['enrollment_id']
 
 
+# @pytest.fixture
+# def docker_image_id(test_client, user_id):
+#     create_data = {
+#         'docker_image_id': str(uuid4()),  # Generate a unique ID for each test
+#         'user_id': user_id,
+#         'description': 'This is a test image'
+#     }
+#     response = test_client.post('/images', json=create_data)
+#     assert response.status_code == 201, f"Error: {response.get_json().get('error')}"
+#     return response.get_json()['docker_image_id']
+
+
 @pytest.fixture
 def docker_image_id(test_client, user_id):
+    fake_docker_image_id = str(uuid4())  # Generate a unique ID
     create_data = {
-        'docker_image_id': str(uuid4()),  # Generate a unique ID for each test
+        'docker_image_id': fake_docker_image_id,
         'user_id': user_id,
         'description': 'This is a test image'
     }
     response = test_client.post('/images', json=create_data)
     assert response.status_code == 201, f"Error: {response.get_json().get('error')}"
-    return response.get_json()['docker_image_id']
+    return fake_docker_image_id
 
 ROLE_ID_COUNTER = 9 
 

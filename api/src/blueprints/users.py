@@ -54,7 +54,7 @@ def get_users():
     return jsonify(users_list), 200
 
 # Read User by ID (GET)
-@users_bp.route('/users/<int:user_id>', methods=['GET'])
+@users_bp.route('/users/<uuid:user_id>', methods=['GET'])
 @admin_required
 def get_user(user_id):
     user = db.session.get(User, user_id)

@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from src import socketio
 from src.util.db import db, Image
+from src.util.query_utils import apply_filters
 from flask_socketio import emit
 from datetime import datetime
 import docker
@@ -78,6 +79,29 @@ def build_image():
     except Exception as e:
         db.session.rollback()
         socketio.emit('build_error', {'error': str(e)})
+        return jsonify({'error': str(e)}), 500
+
+
+# Dynamic search for images (GET)
+@image_bp.route('/images/search', methods=['GET'])
+def search_images():
+    filters = request.args.to_dict()  # Get all query parameters as filters
+
+    try:
+        # Dynamically apply filters using the helper function `apply_filters`
+        query = apply_filters(Image, filters)
+        images = query.all()
+
+        # Format the response
+        images_list = [{
+            'docker_image_id': image.docker_image_id,
+            'user_id': str(image.user_id),
+            'description': image.description
+        } for image in images]
+
+        return jsonify(images_list), 200
+
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 

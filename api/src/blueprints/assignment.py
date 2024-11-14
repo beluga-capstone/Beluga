@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 import uuid
 from src.util.db import db, Assignment
+from src.util.query_utils import apply_filters
 
 assignment_bp = Blueprint('assignment', __name__)
 
@@ -53,6 +54,29 @@ def create_assignment():
         }), 201
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# Dynamic assignment search (GET)
+@assignment_bp.route('/assignments/search', methods=['GET'])
+def search_assignments():
+    filters = request.args.to_dict()  # Get all query parameters as filters
+    try:
+        query = apply_filters(Assignment, filters)
+        assignments = query.all()
+        assignments_list = [{
+            'assignment_id': str(assignment.assignment_id),
+            'course_id': str(assignment.course_id),
+            'title': assignment.title,
+            'description': assignment.description,
+            'due_at': assignment.due_at.isoformat() if assignment.due_at else None,
+            'lock_at': assignment.lock_at.isoformat() if assignment.lock_at else None,
+            'unlock_at': assignment.unlock_at.isoformat() if assignment.unlock_at else None,
+            'user_id': str(assignment.user_id) if assignment.user_id else None,
+            'docker_image_id': assignment.docker_image_id
+        } for assignment in assignments]
+
+        return jsonify(assignments_list), 200
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 # Get all assignments (GET)

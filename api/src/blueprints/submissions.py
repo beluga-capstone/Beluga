@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from src.util.db import db, Submission
+from src.util.query_utils import apply_filters
 from datetime import datetime
 import uuid
 
@@ -28,6 +29,27 @@ def create_submission():
         return jsonify({'message': 'Submission created successfully', 'submission_id': str(new_submission.submission_id)}), 201
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# Dynamic submission search (GET)
+@submission_bp.route('/submissions/search', methods=['GET'])
+def search_submissions():
+    filters = request.args.to_dict()
+    try:
+        query = apply_filters(Submission, filters)
+        submissions = query.all()
+        submissions_list = [{
+            'submission_id': str(submission.submission_id),
+            'user_id': str(submission.user_id),
+            'assignment_id': str(submission.assignment_id),
+            'submission_date': submission.submission_date.isoformat() if submission.submission_date else None,
+            'grade': submission.grade,
+            'status': submission.status,
+            'data': submission.data
+        } for submission in submissions]
+
+        return jsonify(submissions_list), 200
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 # Get all submissions (GET)

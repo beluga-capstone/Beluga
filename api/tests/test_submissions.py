@@ -37,3 +37,28 @@ def test_create_submission_missing_fields(test_client):
     response = test_client.post('/submissions', json=data)
     assert response.status_code == 400
     assert b'User ID and Assignment ID are required' in response.data
+
+def test_search_submissions(test_client, user_id, assignment_id, submission_id):
+    # Search by user_id
+    response = test_client.get(f'/submissions/search?user_id={user_id}')
+    assert response.status_code == 200
+    json_data = response.get_json()
+    assert any(submission['user_id'] == str(user_id) for submission in json_data)
+
+    # Search by assignment_id
+    response = test_client.get(f'/submissions/search?assignment_id={assignment_id}')
+    assert response.status_code == 200
+    json_data = response.get_json()
+    assert any(submission['assignment_id'] == str(assignment_id) for submission in json_data)
+
+    # Search by submission_id
+    response = test_client.get(f'/submissions/search?submission_id={submission_id}')
+    assert response.status_code == 200
+    json_data = response.get_json()
+    assert any(submission['submission_id'] == str(submission_id) for submission in json_data)
+
+    # Search with non-matching criteria
+    response = test_client.get('/submissions/search?status=NonExistentStatus')
+    assert response.status_code == 200
+    json_data = response.get_json()
+    assert len(json_data) == 0

@@ -1,25 +1,25 @@
 version: '3.8'
 
 services:
-  # web:
-  #   build:
-  #     context: ./  
-  #     dockerfile: Dockerfile
-  #   container_name: flaskapi
-  #   ports:
-  #     - "5000:5000"
-  #   environment:
-  #     - CONFIG=testing
-  #     - POSTGRES_DB=your_db
-  #     - POSTGRES_USER=postgres
-  #     - POSTGRES_PASSWORD=temppassword
-  #     - DATABASE_URI=postgresql://postgres:temppassword@db:5432/your_db
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   volumes:
-  #     - ./api:/app
-  #   command: python3 app.py
+  web:
+    build:
+      context: ./  
+      dockerfile: Dockerfile
+    container_name: flaskapi
+    ports:
+      - "5000:5000"
+    environment:
+      - CONFIG=testing
+      - POSTGRES_DB=your_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=temppassword
+      - DATABASE_URI=postgresql://postgres:temppassword@db:5432/your_db
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./api:/app
+    command: python3 app.py
 
   db:
     image: postgres:13
@@ -38,19 +38,19 @@ services:
       timeout: 5s
       retries: 5
 
-  # test: 
-  #   build:
-  #     context: ./  
-  #     dockerfile: Dockerfile
-  #   container_name: flaskapi_test
-  #   environment:
-  #     - PYTHONPATH=/app/src
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   volumes:
-  #     - ./api:/app
-  #   command: pytest
+  test: 
+    build:
+      context: ./  
+      dockerfile: Dockerfile
+    container_name: flaskapi_test
+    environment:
+      - PYTHONPATH=/app/src
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./api:/app
+    command: pytest
 
 volumes:
   postgres_data:

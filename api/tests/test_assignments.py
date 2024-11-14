@@ -34,3 +34,28 @@ def test_create_update_delete_assignment(test_client, assignment_id, docker_imag
     # Step 4: Verify Deletion
     verified_delete_response = test_client.get(f'/assignments/{assignment_id}')
     assert verified_delete_response.status_code == 404
+
+def test_search_assignments(test_client, course_id, assignment_id, docker_image_id):
+    # Search by course_id
+    response = test_client.get(f'/assignments/search?course_id={course_id}')
+    assert response.status_code == 200
+    json_data = response.get_json()
+    assert any(assignment['course_id'] == str(course_id) for assignment in json_data)
+
+    # Search by assignment_id
+    response = test_client.get(f'/assignments/search?assignment_id={assignment_id}')
+    assert response.status_code == 200
+    json_data = response.get_json()
+    assert any(assignment['assignment_id'] == str(assignment_id) for assignment in json_data)
+
+    # Search by docker_image_id
+    response = test_client.get(f'/assignments/search?docker_image_id={docker_image_id}')
+    assert response.status_code == 200
+    json_data = response.get_json()
+    assert any(assignment['docker_image_id'] == docker_image_id for assignment in json_data)
+
+    # Search with non-matching criteria
+    response = test_client.get('/assignments/search?title=NonExistentAssignment')
+    assert response.status_code == 200
+    json_data = response.get_json()
+    assert len(json_data) == 0
