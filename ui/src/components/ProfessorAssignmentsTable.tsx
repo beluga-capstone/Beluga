@@ -2,6 +2,12 @@ import { useAssignments } from "@/hooks/useAssignments";
 import { ToggleLeft, ToggleRight } from "lucide-react";
 import Link from "next/link";
 
+const format_date = (date:string) => new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+});
+
 const ProfessorAssignmentsTable = () => {
   const { assignments, setPublished, setLateSubmissions } = useAssignments();
 
@@ -24,25 +30,21 @@ const ProfessorAssignmentsTable = () => {
           </td>
         </tr>
         {assignments.map((assignment) => (
-          <tr key={assignment.assignmentId}>
+          <tr key={assignment.assignment_id}>
             <td className="text-center py-2">
-              <Link href={`/assignments/${assignment.assignmentId}`}>
+              <Link href={`/assignments/${assignment.assignment_id}`}>
                 {assignment.title}
               </Link>
             </td>
             <td className="text-center py-2">
-              {assignment.publishAt.toLocaleDateString("en-US", {
-                dateStyle: "short",
-                timeZone: "UTC",
-              })}
+              {assignment.publishAt?
+                format_date(assignment.publishAt.toISOString()): "not found"
+              }
             </td>
             <td className="text-center py-2">
-              {assignment.dueAt.getTime() === new Date(0).getTime()
-                ? "-"
-                : assignment.dueAt.toLocaleDateString("en-US", {
-                    dateStyle: "short",
-                    timeZone: "UTC",
-                  })}
+              {assignment.dueAt?
+                format_date(assignment.dueAt.toISOString()): "not found"
+              }
             </td>
             <td className="text-center py-2">0</td>
             <td className="py-2">
@@ -51,25 +53,25 @@ const ProfessorAssignmentsTable = () => {
                   <ToggleRight
                     size={32}
                     className="text-green-500"
-                    onClick={() => setPublished(assignment.assignmentId, false)}
+                    onClick={() => setPublished(assignment.assignment_id, false)}
                   />
                 ) : (
                   <ToggleLeft
                     size={32}
                     className="text-red-500"
-                    onClick={() => setPublished(assignment.assignmentId, true)}
+                    onClick={() => setPublished(assignment.assignment_id, true)}
                   />
                 )}
               </div>
             </td>
             <td className="py-2">
               <div className="flex justify-center items-center">
-                {assignment.allowsLateSubmissions ? (
+                {assignment.allows_late_submissions? (
                   <ToggleRight
                     size={32}
                     className="text-green-500"
                     onClick={() =>
-                      setLateSubmissions(assignment.assignmentId, false)
+                      setLateSubmissions(assignment.assignment_id, false)
                     }
                   />
                 ) : (
@@ -77,7 +79,7 @@ const ProfessorAssignmentsTable = () => {
                     size={32}
                     className="text-red-500"
                     onClick={() =>
-                      setLateSubmissions(assignment.assignmentId, true)
+                      setLateSubmissions(assignment.assignment_id, true)
                     }
                   />
                 )}

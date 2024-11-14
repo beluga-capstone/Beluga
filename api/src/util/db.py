@@ -99,7 +99,7 @@ class Assignment(db.Model):
     lock_at = db.Column(db.DateTime)
     unlock_at = db.Column(db.DateTime)
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
-    docker_image_id = db.Column(db.String(64), db.ForeignKey('image.docker_image_id'))
+    docker_image_id = db.Column(db.String(80), db.ForeignKey('image.docker_image_id'))
 
 class Submission(db.Model):
     __tablename__ = 'submission'

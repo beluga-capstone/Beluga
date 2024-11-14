@@ -1,10 +1,11 @@
-import { useContainers } from "@/hooks/useContainers";
 import FormInput from "./FormInput";
 import FormTextArea from "./FormTextArea";
 import FormDateInput from "./FormDateInput";
 import React from "react";
 import LabeledToggleSwitch from "./LabeledToggleSwitch";
 import { useImages } from "@/hooks/useImages";
+import { useImageData } from "@/hooks/useImageData";
+import ImageOption from "./ImageOption";
 
 interface AssignmentFormProps {
   title: string;
@@ -21,8 +22,8 @@ interface AssignmentFormProps {
   setUnlockAt: (value: string) => void;
   allowsLateSubmissions: boolean;
   setAllowsLateSubmissions: (value: boolean) => void;
-  imageId: number;
-  setImageId: (value: number) => void;
+  imageId: string;
+  setImageId: (value: string) => void;
 }
 
 const AssignmentForm: React.FC<AssignmentFormProps> = ({
@@ -47,6 +48,10 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   const [isVisibleBeforeRelease, setIsVisibleBeforeRelease] =
     React.useState(false);
   const [isPublishedLater, setIsPublishedLater] = React.useState(false);
+
+  //useEffect(()=>{
+  //  console.log("due changed to ",dueAt);
+  //},[dueAt]);
 
   return (
     <>
@@ -118,14 +123,12 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         <select
           title="Image"
           value={imageId}
-          onChange={(e) => setImageId(parseInt(e.target.value))}
+          onChange={(e) => setImageId(e.target.value)} 
           className="border rounded p-1 bg-surface"
         >
           <option value={-1}>Select an image</option>
           {images.map((image) => (
-            <option key={image.id} value={image.id}>
-              {image.title}
-            </option>
+            <ImageOption image={image}/>
           ))}
         </select>
       </div>
