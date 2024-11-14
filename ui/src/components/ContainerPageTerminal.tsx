@@ -24,7 +24,7 @@ const terminalOptions: ITerminalOptions & ITerminalInitOnlyOptions = {
   scrollback: 1000,
 };
 
-const ContainerPageTerminal: React.FC<{ containerId: number | null }> = ({ containerId }) => {
+const ContainerPageTerminal: React.FC<{ imageId: string | null }> = ({ imageId }) => {
   const terminalRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);

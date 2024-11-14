@@ -87,7 +87,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         prettyDateToIso(unlockAt),
         prettyDateToIso(publishAt),
         allowsLateSubmissions,
-        imageId
+        imageId,
       );
     } catch (error) {
       console.error("Error updating assignment:", error);

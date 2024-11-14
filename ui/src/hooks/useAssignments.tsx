@@ -17,7 +17,6 @@ export const useAssignments = () => {
 
       const transformedData = data.map((assignment: any) => ({
         assignmentId: assignment.assignment_id,
-        courseId: assignment.course_id,
         title: assignment.title,
         description: assignment.description,
         dueAt: assignment.due_at ? new Date(assignment.due_at) : null,
@@ -114,7 +113,7 @@ export const useAssignments = () => {
       allowsLateSubmissions:allowsLateSubmissions,
       imageId:imageId,  
     };
-    //console.log("updating with",assignmentId,courseId,title,description,dueAt,lockAt,unlockAt,imageId)
+    console.log("updating with",assignmentId,courseId,title,description,dueAt,lockAt,unlockAt,imageId)
 
     try {
       const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`, {

@@ -127,16 +127,16 @@ def update_assignment(assignment_id):
             assignment.unlock_at = parse_date(data.get('unlockAt'))
 
         if 'user_id' in data:
-            assignment.user_id = data.get('user_id')
+            assignment.user_id = data.get('userId')
 
-        assignment.docker_image_id = data.get('image_id')
+        assignment.docker_image_id = data.get('imageId')
 
         # Commit changes to the database
         db.session.commit()
 
         # Prepare updated assignment data to return
         updated_assignment = {
-            'assignmentId': str(assignment.id),
+            'assignmentId': str(assignment.assignment_id),
             'courseId': str(assignment.course_id),
             'title': assignment.title,
             'description': assignment.description,
@@ -145,10 +145,10 @@ def update_assignment(assignment_id):
             'unlockAt': assignment.unlock_at.isoformat() if assignment.unlock_at else None,
             'userId': assignment.user_id,
             'imageId': assignment.docker_image_id,
-            'isUnlocked': Date.now() >= assignment.unlock_at.getTime() if assignment.unlock_at else False,
-            'isPublished': Date.now() >= assignment.due_at.getTime() if assignment.due_at else False,
-            'publishAt': assignment.due_at.isoformat() if assignment.publish_at else None,
-            'allowsLateSubmissions': assignment.allows_late_submissions
+            'isUnlocked': datetime.now() >= assignment.unlock_at if assignment.unlock_at else False,
+            'isPublished': datetime.now() >= assignment.due_at if assignment.due_at else False,
+            'publishAt': assignment.due_at.isoformat() if assignment.unlock_at else None,
+            'allowsLateSubmissions': ""
         }
 
         return jsonify({

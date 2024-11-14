@@ -2,67 +2,61 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import EditImageModal from "@/components/EditImageModal";
+import { Image } from "@/types";
+import { useImages } from "@/hooks/useImages"; 
 
 export default function EditImagePage() {
-    const [isModalOpen, setIsModalOpen] = useState(true);
     const router = useRouter();
     const searchParams = useSearchParams();
-    const imageId = searchParams.get("id"); // Assuming the image ID is passed via query params
+    const imageId = searchParams.get("id");
 
-    const [selectedImage, setSelectedImage] = useState<any | null>(null);
-
-    const handleClose = () => {
-        setIsModalOpen(false);
-        setTimeout(() => {
-            router.push('/machines/images'); 
-        }, 300);
-    };
+    const { images, editImage, deleteImage, refreshImages, error, isLoading } = useImages();
+    const [selectedImage, setSelectedImage] = useState<Image | null>(null);
 
     useEffect(() => {
-        if (imageId) {
-            const storedImages = JSON.parse(localStorage.getItem("images") || "[]");
-            const imageToEdit = storedImages.find((image: any) => image.id === parseInt(imageId));
-            setSelectedImage(imageToEdit);
-        }
-    }, [imageId]);
+        // Refresh images and find the selected image by ID
+        refreshImages().then(() => {
+            const foundImage = images.find(img => img.docker_image_id === imageId);
+            setSelectedImage(foundImage || null);
+        });
+    }, []);
 
-    const handleUpdateImage = (updatedImage: {
-        id: number;
-        title: string;
-        courses: string[];
-        packages: string[];
-        dockerfileContent: string;
-    }) => {
-        const storedImages = JSON.parse(localStorage.getItem("images") || "[]");
-        const updatedImages = storedImages.map((image: any) =>
-            image.id === updatedImage.id ? updatedImage : image
-        );
-        localStorage.setItem("images", JSON.stringify(updatedImages));
-        router.push("/machines/images");
+    const handleUpdateImage = async (updatedImage: Image) => {
+        try {
+            await editImage(updatedImage);
+            router.back(); // Navigate back after successful edit
+        } catch (err) {
+            console.error("Failed to update image:", err);
+        }
     };
 
-    const handleDeleteImage = (imageId: number | null) => {
-        const storedImages = JSON.parse(localStorage.getItem("images") || "[]");
-        const updatedImages = storedImages.filter((image: any) => image.id !== imageId);
-        localStorage.setItem("images", JSON.stringify(updatedImages));
-        router.push("/machines/images");
+    const handleDeleteImage = async (docker_image_id: string) => {
+        try {
+            await deleteImage(docker_image_id);
+            router.back(); // Navigate back after deletion
+        } catch (err) {
+            console.error("Failed to delete image:", err);
+        }
     };
 
     return (
         <div className="container mx-auto p-4">
-            {selectedImage ? (
-                isModalOpen && (
-                    <EditImageModal
-                        onClose={() => router.back()}
-                        onUpdateImage={handleUpdateImage}
-                        onDeleteImage={handleDeleteImage}
-                        imageId={selectedImage.id}
-                        selectedImage={selectedImage}
-                    />
-                )
-            ) : (
+            {isLoading ? (
                 <p>Loading...</p>
+            ) : error ? (
+                <p className="text-red-500">{error}</p>
+            ) : selectedImage ? (
+                <EditImageModal
+                    onClose={() => router.back()}
+                    onUpdateImage={handleUpdateImage}
+                    onDeleteImage={() => handleDeleteImage(selectedImage.docker_image_id)}
+                    imageId={selectedImage.docker_image_id}
+                    selectedImage={selectedImage}
+                />
+            ) : (
+                <p>Image not found.</p>
             )}
         </div>
     );
 }
+

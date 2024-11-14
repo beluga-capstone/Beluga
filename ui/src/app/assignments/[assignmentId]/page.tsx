@@ -4,31 +4,54 @@ import Button from "@/components/Button";
 import SubmissionZone from "@/components/SubmissionZone";
 import { ROLES } from "@/constants";
 import { useAssignments } from "@/hooks/useAssignments";
-import { useImages } from "@/hooks/useImages";
 import { useProfile } from "@/hooks/useProfile";
 import { ArrowUpFromLine, Edit2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import ContainerPageTerminal from "@/components/ContainerPageTerminal";
 
-const format_date = (date:string) => new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-});
+// Function to format the date
+const format_date = (date: string) =>
+  new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
 const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   const { profile } = useProfile();
   const { assignments } = useAssignments();
   const assignment = assignments.find(
-    (assignment) =>
-      assignment.assignmentId === params.assignmentId
+    (assignment) => assignment.assignmentId === params.assignmentId
   );
-
-  const { images } = useImages();
-  const containerName=`${assignment?.imageId}`;
+  const imageName = `${assignment?.imageId}`;
 
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
   const [zipFile, setZipFile] = useState<File | null>(null);
+
+  const runContainer = async (imageId: string) => {
+    try {
+      const response = await fetch("http://localhost:5000/containers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ containerName:`${assignment?.title}_container` , imageId:imageId, userId:profile?.user_id }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(`Container started successfully with Image ID: ${imageId}`);
+      } else {
+        alert(`Error starting container: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error running container:", error);
+      alert("An error occurred while starting the container.");
+    }
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -80,30 +103,47 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
             </Button>
           ))}
       </div>
+
       <div className="flex justify-between items-center">
         <div className="flex-row">
           <h2 className="font-bold pb-4">
             Due Date:{" "}
-            {assignment?.dueAt?
-              format_date(assignment.dueAt.toISOString()): "not found"
-            }
+            {assignment?.dueAt
+              ? format_date(assignment.dueAt.toISOString())
+              : "not found"}
           </h2>
           <h2 className="font-bold pb-4">
             Available:{" "}
-            {assignment?.publishAt?
-              format_date(assignment.publishAt.toISOString()): "not found"
-            }
+            {assignment?.publishAt
+              ? format_date(assignment.publishAt.toISOString())
+              : "not found"}
           </h2>
+
+          {assignment?.imageId && (
+            <>
+              <h2 className="font-bold pb-4">
+                Image ID:{" "}
+                <Link href={`/machines/containers/${assignment.imageId}`}>
+                  {imageName}
+                </Link>
+              </h2>
+              <Button
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+                onClick={() => runContainer(assignment.imageId)}
+              >
+                Run Container
+              </Button>
+            </>
+          )}
         </div>
-        {assignment?.imageId && (
-          <h2 className="font-bold pb-4">
-            Image ID:{" "}
-            <Link href={`/machines/containers/${assignment.imageId}`}>
-              {containerName}
-            </Link>
-          </h2>
-        )}
       </div>
+
+      <div className="flex justify-between items-center">
+      {assignment?(
+        <ContainerPageTerminal imageId={assignment.imageId}/>
+      ):null}
+      </div>
+
       {assignment?.description && (
         <>
           <h2 className="font-bold py-4">Description</h2>
@@ -117,6 +157,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
           </p>
         </>
       )}
+
       {profile?.role_id !== ROLES.STUDENT && (
         <p className="text-blue-500 py-8">
           <Link href={`/assignments/${assignment?.assignmentId}/submissions`}>
@@ -124,6 +165,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
           </Link>
         </p>
       )}
+
       {profile?.role_id === ROLES.STUDENT && submissionWindowIsOpen && (
         <SubmissionZone
           setSubmitIsEnabled={setSubmitIsEnabled}
@@ -135,3 +177,4 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
 };
 
 export default AssignmentPage;
+
