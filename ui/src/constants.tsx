@@ -123,22 +123,3 @@ c = a + b
 print("%d + %d = %d" % (a, b, c))
 `,
 ];
-
-export const DEFAULT_IMAGES: Image[] = [
-  {
-    id: 1,
-    title: "Default title",
-    courses: ["csce101"],
-    packages: ["vim"],
-    dockerfileContent: "none",
-    name: "default image1",
-  },
-  {
-    id: 1,
-    title: "Default title",
-    courses: ["csce101"],
-    packages: ["bruh"],
-    dockerfileContent: "none",
-    name: "default image2",
-  },
-];

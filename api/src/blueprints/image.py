@@ -40,16 +40,13 @@ def build_image():
     description = data.get('description', '')
     image_tag = data.get('image_tag', f'image_{datetime.utcnow().isoformat()}')
 
-    # append the base image that has the dockerfile pty server
-    updated_dockerfile = f"FROM beluga_base\n{dockerfile_content}"
-
     try:
         # Use the low-level API client for more granular log handling
         api_client = docker.APIClient()
         
         # Start building the image and stream logs
         logs = api_client.build(
-            fileobj=io.BytesIO(updated_dockerfile.encode('utf-8')),
+            fileobj=io.BytesIO(dockerfile_content.encode('utf-8')),
             tag=image_tag,
             rm=True,
             decode=True  # Ensures each log entry is JSON-decoded

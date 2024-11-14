@@ -11,7 +11,7 @@ import logging
 socketio = SocketIO()
 
 login_manager = LoginManager()
-
+ADMIN_ID='dd85014a-edad-4298-b9c6-808268b3d15e'
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -48,9 +48,11 @@ def create_app(config_name="default"):
         app.register_blueprint(users.users_bp)
 
         db.create_all()
-
-        admin_user_id = init_admin_user()
-        init_roles(admin_user_id)
+    
+        # init the database
+        init_roles()
+        init_admin_user()
+        init_default_images()
         create_example_course()
         
         return app
@@ -66,14 +68,13 @@ def init_admin_user():
             email='admin@example.com',
             first_name='Admin',
             last_name='User',
-            role_id=None
+            role_id=1,
+            user_id=ADMIN_ID,
         )
         db.session.add(admin_user)
         db.session.commit()
     
-    return admin_user.user_id
-
-def init_roles(admin_user_id):
+def init_roles():
     from src.util.db import Role
     # List of default roles to be added
     default_roles = [
@@ -151,3 +152,60 @@ def create_example_course():
         )
         db.session.add(course)
         db.session.commit()
+
+
+from src.blueprints.image import Image
+import docker
+import os
+
+def init_default_images():
+    """Initialize default Docker images in the database if they do not exist."""
+    docker_client = docker.from_env()
+    default_images = [
+        {
+            'context_path': '../deployment/containers/beluga_ubuntu/', 
+            'dockerfile': 'Dockerfile',
+            'image_tag': 'beluga_base_ubuntu',
+            'description': 'Base image for ubuntu machines',
+            'user_id': ADMIN_ID
+        },
+        {
+            'context_path': '../deployment/containers/beluga_fedora/', 
+            'dockerfile': 'Dockerfile',
+            'image_tag': 'beluga_base_fedora',
+            'description': 'Base image for fedora machines',
+            'user_id': ADMIN_ID
+        },
+    ]
+
+    for image_info in default_images:
+
+        # Check if context_path exists
+        context_path = image_info['context_path']
+        if not os.path.isdir(context_path):
+            print(f"Error: The directory '{context_path}' does not exist.")
+            continue
+
+        try:
+            # Set build context to the specified directory
+            image, logs = docker_client.images.build(
+                path=image_info['context_path'],
+                dockerfile=image_info['dockerfile'],
+                tag=image_info['image_tag']
+            )
+
+            # Save image to database
+            new_image = Image(
+                docker_image_id=image.id,
+                description=image_info['description'],
+                user_id=image_info['user_id']
+            )
+            db.session.add(new_image)
+            db.session.commit()
+            print(f"Initialized default image: {image_info['image_tag']}")
+
+        except Exception as e:
+            db.session.rollback()
+            print(f"Failed to initialize default image {image_info['image_tag']}: {e}")
+
+
