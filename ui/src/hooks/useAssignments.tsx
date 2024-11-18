@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Assignment } from "@/types";
-import { desc } from "framer-motion/client";
 
 export const useAssignments = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -15,15 +14,16 @@ export const useAssignments = () => {
       }
       const data = await response.json();
 
-      const transformedData = data.map((assignment: any) => ({
-        assignmentId: assignment.assignment_id,
+      const transformedData = data.map((assignment: Assignment) => ({
+        assignment_id: assignment.assignment_id,
+        course_id: assignment.course_id,
         title: assignment.title,
         description: assignment.description,
-        dueAt: assignment.due_at ? new Date(assignment.due_at) : null,
-        lockAt: assignment.lock_at ? new Date(assignment.lock_at) : null,
-        unlockAt: assignment.unlock_at ? new Date(assignment.unlock_at) : null,
-        userId: assignment.user_id,
-        imageId: assignment.docker_image_id,
+        due_at: assignment.due_at ? new Date(assignment.due_at) : null,
+        lock_at: assignment.lock_at ? new Date(assignment.lock_at) : null,
+        unlock_at: assignment.unlock_at ? new Date(assignment.unlock_at) : null,
+        user_id: assignment.user_id,
+        docker_image_id: assignment.docker_image_id,
       }));
 
       setAssignments(transformedData);
@@ -59,64 +59,64 @@ export const useAssignments = () => {
   };
 
   const addAssignment = async (
-    courseId: string,
+    course_id: string,
     title: string,
     description: string,
-    dueAt: Date,
-    lockAt: Date,
-    unlockAt: Date,
-    publishAt: Date,
-    allowsLateSubmissions: boolean,
-    imageId: string
+    due_at: Date,
+    lock_at: Date,
+    unlock_at: Date,
+    publish_at: Date,
+    allows_late_submissions: boolean,
+    docker_image_id: string
   ) => {
     const newAssignment: Assignment = {
-      assignmentId: Date.now().toString(),
-      courseId,
+      assignment_id: Date.now().toString(),
+      course_id,
       title,
       description,
-      dueAt,
-      lockAt,
-      unlockAt,
-      isUnlocked: Date.now() >= unlockAt.getTime(),
-      isPublished: Date.now() >= publishAt.getTime(),
-      publishAt,
-      allowsLateSubmissions,
-      imageId: imageId,
+      due_at,
+      lock_at,
+      unlock_at,
+      is_unlocked: Date.now() >= unlock_at.getTime(),
+      is_published: Date.now() >= publish_at.getTime(),
+      publish_at,
+      allows_late_submissions,
+      docker_image_id: docker_image_id,
     };
 
     await saveAssignment(newAssignment);
   };
 
   const updateAssignment = async (
-    assignmentId: string,
-    courseId: string,
+    assignment_id: string,
+    course_id: string,
     title: string,
     description: string,
-    dueAt: Date,
-    lockAt: Date,
-    unlockAt: Date,
-    publishAt: Date,
-    allowsLateSubmissions: boolean,
-    imageId: string
+    due_at: Date,
+    lock_at: Date,
+    unlock_at: Date,
+    publish_at: Date,
+    allows_late_submissions: boolean,
+    docker_image_id: string
   ) => {
     const updatedAssignment = {
-      assignmentId: assignmentId,
-      courseId: courseId,
+      assignment_id: assignment_id,
+      course_id: course_id,
       title:title,
       description:description,
-      dueAt:dueAt,
-      lockAt:lockAt,
-      unlockAt:unlockAt,
-      isUnlocked: Date.now() >= unlockAt.getTime(),
-      isPublished: Date.now() >= publishAt.getTime(),
-      publishAt:publishAt,
-      allowsLateSubmissions:allowsLateSubmissions,
-      imageId:imageId,  
+      due_at:due_at,
+      lock_at:lock_at,
+      unlock_at:unlock_at,
+      is_unlocked: Date.now() >= unlock_at.getTime(),
+      is_published: Date.now() >= publish_at.getTime(),
+      publish_at:publish_at,
+      allows_late_submissions:allows_late_submissions,
+      docker_image_id:docker_image_id,  
     };
-    console.log("updating with",assignmentId,courseId,title,description,dueAt,lockAt,unlockAt,imageId)
+    console.log("updating with",assignment_id,course_id,title,description,due_at,lock_at,unlock_at,docker_image_id)
 
     try {
-      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`, {
+      const response = await fetch(`http://localhost:5000/assignments/${assignment_id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ export const useAssignments = () => {
 
       setAssignments((prev) =>
         prev.map((assignment) =>
-          assignment.assignmentId === assignmentId ? updatedAssignment : assignment
+          assignment.assignment_id === assignment_id ? updatedAssignment : assignment
         )
       );
     } catch (err) {
@@ -150,7 +150,7 @@ export const useAssignments = () => {
       }
 
       setAssignments((prev) =>
-        prev.filter((assignment) => assignment.assignmentId !== assignmentId)
+        prev.filter((assignment) => assignment.assignment_id !== assignmentId)
       );
     } catch (err) {
       console.log(err);
@@ -175,7 +175,7 @@ export const useAssignments = () => {
 
       setAssignments((prev) =>
         prev.map((assignment) =>
-          assignment.assignmentId === assignmentId ? { ...assignment, isPublished } : assignment
+          assignment.assignment_id === assignmentId ? { ...assignment, isPublished } : assignment
         )
       );
     } catch (err) {
@@ -204,7 +204,7 @@ export const useAssignments = () => {
 
       setAssignments((prev) =>
         prev.map((assignment) =>
-          assignment.assignmentId === assignmentId ? { ...assignment, allowsLateSubmissions } : assignment
+          assignment.assignment_id === assignmentId ? { ...assignment, allowsLateSubmissions } : assignment
         )
       );
     } catch (err) {

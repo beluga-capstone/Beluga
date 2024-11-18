@@ -5,6 +5,7 @@ import SubmissionZone from "@/components/SubmissionZone";
 import { ROLES } from "@/constants";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useProfile } from "@/hooks/useProfile";
+import { useImages } from "@/hooks/useImages";
 import { ArrowUpFromLine, Edit2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -22,9 +23,12 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   const { profile } = useProfile();
   const { assignments } = useAssignments();
   const assignment = assignments.find(
-    (assignment) => assignment.assignmentId === params.assignmentId
+    (assignment) =>
+      assignment.assignment_id === params.assignmentId
   );
-  const imageName = `${assignment?.imageId}`;
+
+  const { images } = useImages();
+  const imageName=`${assignment?.docker_image_id}`;
 
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
@@ -63,7 +67,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
         <h1 className="font-bold text-4xl">{assignment?.title}</h1>
         {profile?.role_id !== ROLES.STUDENT && (
           <Link
-            href={`/assignments/edit/${assignment?.assignmentId}`}
+            href={`/assignments/edit/${assignment?.assignment_id}`}
             className="px-6"
           >
             <Edit2 size={24} />
@@ -108,14 +112,14 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
         <div className="flex-row">
           <h2 className="font-bold pb-4">
             Due Date:{" "}
-            {assignment?.dueAt
-              ? format_date(assignment.dueAt.toISOString())
+            {assignment?.due_at
+              ? format_date(assignment.due_at.toISOString())
               : "not found"}
           </h2>
           <h2 className="font-bold pb-4">
             Available:{" "}
-            {assignment?.publishAt
-              ? format_date(assignment.publishAt.toISOString())
+            {assignment?.publish_at
+              ? format_date(assignment.publish_at.toISOString())
               : "not found"}
           </h2>
 
@@ -129,17 +133,17 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
               ))}
             </h2>
           )}
-          {assignment?.imageId && (
+          {assignment?.docker_image_id && (
             <>
               <h2 className="font-bold pb-4">
                 Image ID:{" "}
-                <Link href={`/machines/containers/${assignment.imageId}`}>
+                <Link href={`/machines/containers/${assignment.docker_image_id}`}>
                   {imageName}
                 </Link>
               </h2>
               <Button
                 className="bg-blue-500 text-white px-4 py-2 rounded"
-                onClick={() => runContainer(assignment.imageId)}
+                onClick={() => runContainer(assignment.docker_image_id)}
               >
                 Run Container
               </Button>
@@ -151,13 +155,13 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
 
       <div className="flex justify-between items-center">
       {assignment?(
-        <ContainerPageTerminal imageId={assignment.imageId}/>
+        <ContainerPageTerminal imageId={assignment.docker_image_id}/>
       ):null}
       </div>
 
       {profile?.role_id !== ROLES.STUDENT && (
         <p className="text-blue-500 py-8">
-          <Link href={`/assignments/${assignment?.assignmentId}/submissions`}>
+          <Link href={`/assignments/${assignment?.assignment_id}/submissions`}>
             View Submissions
           </Link>
         </p>

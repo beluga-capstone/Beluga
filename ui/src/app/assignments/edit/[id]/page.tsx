@@ -7,7 +7,7 @@ import AssignmentForm from "../../../../components/AssignmentsForm";
 const EditAssignment = ({ params }: { params: { id: string } }) => {
   const { assignments } = useAssignments();
   const assignment = assignments.find(
-    (assignment) => assignment.assignmentId === params.id
+    (assignment) => assignment.assignment_id === params.id
   );
   const { updateAssignment, deleteAssignment } = useAssignments();
   
@@ -20,7 +20,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
   const [isPublished, setIsPublished] = React.useState(false);
   const [publishAt, setPublishAt] = React.useState("");
   const [allowsLateSubmissions, setAllowsLateSubmissions] = React.useState(false);
-  const [imageId, setImageId] = React.useState(assignment?.imageId || "");
+  const [imageId, setImageId] = React.useState(assignment?.docker_image_id || "");
 
   const formatDate = (dateString: string | Date | null | undefined): string => {
     if (!dateString) return "";
@@ -38,14 +38,14 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
     if (assignment) {
       setTitle(assignment.title || "");
       setDescription(assignment.description || "");
-      setDueAt(formatDate(assignment.dueAt));
-      setLockAt(formatDate(assignment.lockAt));
-      setUnlockAt(formatDate(assignment.unlockAt));
-      setIsUnlocked(!!assignment.isUnlocked);
-      setIsPublished(!!assignment.isPublished);
-      setPublishAt(formatDate(assignment.publishAt));
-      setAllowsLateSubmissions(!!assignment.allowsLateSubmissions);
-      setImageId(assignment.imageId || "");
+      setDueAt(formatDate(assignment.due_at));
+      setLockAt(formatDate(assignment.lock_at));
+      setUnlockAt(formatDate(assignment.unlock_at));
+      setIsUnlocked(!!assignment.is_unlocked);
+      setIsPublished(!!assignment.is_published);
+      setPublishAt(formatDate(assignment.publish_at));
+      setAllowsLateSubmissions(!!assignment.allows_late_submissions);
+      setImageId(assignment.docker_image_id || "");
     }
   }, [assignment]);
 
@@ -66,7 +66,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
 
   const handleUpdate = () => {
     try {
-      if (!assignment?.assignmentId) {
+      if (!assignment?.assignment_id) {
         console.error("No assignment ID found");
         return;
       }
@@ -78,8 +78,8 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
 
       //console.log("update due with ",prettyDateToIso(dueAt));
       updateAssignment(
-        assignment.assignmentId,
-        assignment.courseId,
+        assignment.assignment_id,
+        assignment.course_id,
         title.trim(),
         description.trim(),
         prettyDateToIso(dueAt),
@@ -95,11 +95,11 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
   };
 
   const handleDelete = () => {
-    if (!assignment?.assignmentId) {
+    if (!assignment?.assignment_id) {
       console.error("No assignment ID found");
       return;
     }
-    deleteAssignment(assignment.assignmentId);
+    deleteAssignment(assignment.assignment_id);
   };
 
   if (!assignment) {
