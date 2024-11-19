@@ -127,7 +127,7 @@ def update_assignment(assignment_id):
             assignment.unlock_at = parse_date(data.get('unlock_at'))
 
         if 'user_id' in data:
-            assignment.user_id = data.get('user_id')
+            assignment.user_id = data.get('userId')
 
         assignment.docker_image_id = data.get('docker_image_id')
 

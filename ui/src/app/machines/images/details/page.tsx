@@ -21,7 +21,6 @@ export default function ImageDetailsPage() {
             <div className="mb-4 flex justify-between items-center">
                 <h1 className="font-bold text-4xl mb-6">{imageData?.tag[0]}</h1>
                 <Link href={`/machines/images/edit?id=${dockerImageId}`}>
-                    <Edit2 size={24} />
                 </Link>
             </div>
 

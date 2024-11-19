@@ -20,6 +20,8 @@ class Config:
     SQLALCHEMY_ECHO = environ.get("SQLALCHEMY_ECHO")
 
     LOGIN_REDIRECT = '/'
+    CONTAINER_START_PORT = 8000
+    CONTAINER_END_PORT = 18000
 
     OAUTH2_PROVIDERS = {
         'google': {

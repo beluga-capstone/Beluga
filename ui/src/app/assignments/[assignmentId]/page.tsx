@@ -4,34 +4,207 @@ import Button from "@/components/Button";
 import SubmissionZone from "@/components/SubmissionZone";
 import { ROLES } from "@/constants";
 import { useAssignments } from "@/hooks/useAssignments";
-import { useImages } from "@/hooks/useImages";
 import { useProfile } from "@/hooks/useProfile";
-import { ArrowUpFromLine, Edit2 } from "lucide-react";
+import { ArrowUpFromLine, Edit2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import ContainerPageTerminal from "@/components/ContainerPageTerminal";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { Assignment } from "@/types";
+import { useImageData } from "@/hooks/useImageData";
 
-const format_date = (date:string) => new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-});
+// Function to format the date
+const format_date = (date: string) =>
+  new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
 const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   const { profile } = useProfile();
   const { assignments } = useAssignments();
-  const assignment = assignments.find(
-    (assignment) =>
-      assignment.assignment_id === params.assignmentId
-  );
+  const [isContainerRunning, setIsContainerRunning] = useState(false);
+  const [containerPort, setContainerPort] = useState<number | null>(null);
+  const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const [containerName, setContainerName] = useState<string | null>(null);
+  const [imageName, setImageName] = useState<string | null>(null);
+  const router = useRouter();
 
-  const { images } = useImages();
-  const containerName=`${assignment?.docker_image_id}`;
+  // New state for container stop loading
+  const [isStoppingContainer, setIsStoppingContainer] = useState(false);
+  const [isRunningContainer, setIsRunningContainer] = useState(false);
 
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
   const [zipFile, setZipFile] = useState<File | null>(null);
 
+  const checkContainerExists = async (containerName: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/containers/${containerName}`,
+        {
+          method: "GET",
+        }
+      );
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("Container exists");
+        return { exists: true, port: data.port }; 
+      } else {
+        console.log("Container does not exist");
+        return { exists: false, port: 0 };  
+      }
+    } catch (error) {
+      console.error("Error checking container existence:", error);
+      return { exists: false, port: 0 };
+    }
+  };
+
+  const normalizeDockerName = (name: string) => {
+    return name
+      .toLowerCase() // Convert to lowercase
+      .replace(/[^a-z0-9_.-]+/g, "_") // Replace invalid characters with '_'
+      .replace(/^[_.-]+|[_.-]+$/g, ""); // Remove leading or trailing '_', '.', '-'
+  };
+
+  // get the assignment and check if the container is running on startup
+  useEffect(() => {
+    const { assignmentId } = params;  
+    if (assignmentId) {
+      const found = assignments.find(
+        (assignment) =>
+          assignment.assignment_id === params.assignmentId
+      );
+      setAssignment(found || null);
+
+      const name = normalizeDockerName(`${found?.title}_con`);
+      setContainerName(name);
+
+      // check if container exist
+      if (found && name) {
+        const check_exist_startup = async() =>{
+          if (!name) return;
+          let {exists, port}= await checkContainerExists(name);
+          if (exists) {
+            setIsContainerRunning(true);
+            setContainerPort(port);
+          }
+        };
+        check_exist_startup();
+      }
+    }
+  }, [assignments, params]);
+
+  const { imageData } = useImageData(assignment?.docker_image_id ?? null);
+
+  useEffect(() => {
+    if (!assignment) return;
+
+    const name = normalizeDockerName(`${assignment.title}_con`);
+    setContainerName(name);
+
+    const checkContainer = async () => {
+      if (!name) return;
+      const { exists, port } = await checkContainerExists(name);
+      if (exists) {
+        setIsContainerRunning(true);
+        setContainerPort(port);
+      }
+    };
+
+    checkContainer();
+  }, [assignment]);
+
+  useEffect(()=>{
+    if (imageData?.tag?.[0]) {
+      setImageName(imageData.tag[0]);
+    }
+  },[imageData]);
+
+  const runContainer = async (imageId: string|null) => {
+    if (!imageId) return;
+    
+    setIsRunningContainer(true);
+
+    try {
+      // If container not exist, create a new container
+      const response = await fetch("http://localhost:5000/containers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          container_name: containerName,
+          docker_image_id: imageId,
+          user_id: profile?.user_id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setContainerPort(data.port);
+        setIsContainerRunning(true);
+        //alert(`Container started successfully on port ${data.port}`);
+      } else {
+        //alert(`Error starting container: ${data.error}`);
+        console.error("error starting container");
+      }
+    } catch (error) {
+      console.error("Error running container:", error);
+      //alert("An error occurred while starting the container.");
+    } finally {
+      setIsRunningContainer(false);
+    }
+  };
+
+  const stopContainer = async (containerName: string |null)=> {
+    if (!containerName) return;
+    
+    // Set loading state before making the request
+    setIsStoppingContainer(true);
+
+    try {
+      const response = await fetch(`http://localhost:5000/containers/${containerName}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        setIsContainerRunning(false);
+        setContainerPort(null);
+        //alert("Container stopped successfully.");
+        router.refresh();
+      } else {
+        const data = await response.json();
+        //alert(`Error stopping container: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error stopping container:", error);
+      //alert("An error occurred while stopping the container.");
+    } finally {
+      // Always reset loading state
+      setIsStoppingContainer(false);
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
+      {/* Overlay when stopping container */}
+      {isStoppingContainer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-gray-500 p-6 rounded-lg shadow-xl flex items-center">
+            <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+            <p>Stopping container...</p>
+          </div>
+        </div>
+      )}
+
       <div
         className={`mb-8 flex items-center ${
           profile?.role_id === ROLES.STUDENT ? "justify-between" : ""
@@ -80,50 +253,88 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
             </Button>
           ))}
       </div>
+
       <div className="flex justify-between items-center">
         <div className="flex-row">
           <h2 className="font-bold pb-4">
             Due Date:{" "}
-            {assignment?.dueAt?
-              format_date(assignment.dueAt.toISOString()): "not found"
-            }
+            {assignment?.due_at
+              ? format_date(assignment.due_at.toISOString())
+              : "not found"}
           </h2>
           <h2 className="font-bold pb-4">
             Available:{" "}
-            {assignment?.publishAt?
-              format_date(assignment.publishAt.toISOString()): "not found"
+            {assignment?.publish_at
+              ? format_date(assignment.publish_at.toISOString())
+              : "not found"}
+          </h2>
+
+          {assignment?.description && (
+            <h2 className="font-bold pb-4">Description:{" "}
+              {assignment?.description.split("\n").map((line, index) => (
+                <span key={index}>
+                  {line}
+                  <br />
+                </span>
+              ))}
+            </h2>
+          )}
+
+          <h2 className="font-bold pb-4">
+            {assignment?.docker_image_id
+              ? `Image name: ${imageName}`
+              : null
             }
           </h2>
+
+          {assignment?.docker_image_id ? (
+            <Button
+              className={`${
+                isContainerRunning ? "bg-red-500" : "bg-blue-500"
+              } text-white px-4 py-2 mb-4 rounded`}
+              onClick={() =>
+                isContainerRunning
+                  ? stopContainer(containerName)
+                  : runContainer(assignment.docker_image_id ?? null)
+              }
+              // Disable the button while stopping or running the container
+              disabled={isStoppingContainer || isRunningContainer}
+            >
+              {isStoppingContainer ? (
+                <div className="flex items-center">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Stopping...
+                </div>
+              ) : isRunningContainer ? (
+                <div className="flex items-center">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Starting...
+                </div>
+              ) : (
+                isContainerRunning ? "Stop Container" : "Run Container"
+              )}
+            </Button>
+          ):null}
         </div>
-        {assignment?.imageId && (
-          <h2 className="font-bold pb-4">
-            Image ID:{" "}
-            <Link href={`/machines/containers/${assignment.imageId}`}>
-              {containerName}
-            </Link>
-          </h2>
-        )}
       </div>
-      {assignment?.description && (
-        <>
-          <h2 className="font-bold py-4">Description</h2>
-          <p>
-            {assignment?.description.split("\n").map((line, index) => (
-              <span key={index}>
-                {line}
-                <br />
-              </span>
-            ))}
-          </p>
-        </>
-      )}
+
+      <div className="flex justify-between items-center">
+      {assignment ? (
+        <ContainerPageTerminal 
+          isRunning={isContainerRunning}
+          containerPort={containerPort}
+        />
+      ) : null}
+      </div>
+
       {profile?.role_id !== ROLES.STUDENT && (
         <p className="text-blue-500 py-8">
-          <Link href={`/assignments/${assignment?.assignmentId}/submissions`}>
+          <Link href={`/assignments/${assignment?.assignment_id}/submissions`}>
             View Submissions
           </Link>
         </p>
       )}
+
       {profile?.role_id === ROLES.STUDENT && submissionWindowIsOpen && (
         <SubmissionZone
           setSubmitIsEnabled={setSubmitIsEnabled}

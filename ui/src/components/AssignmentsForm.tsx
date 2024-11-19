@@ -22,7 +22,7 @@ interface AssignmentFormProps {
   setUnlockAt: (value: string) => void;
   allowsLateSubmissions: boolean;
   setAllowsLateSubmissions: (value: boolean) => void;
-  imageId: string;
+  imageId: string | null;
   setImageId: (value: string) => void;
 }
 

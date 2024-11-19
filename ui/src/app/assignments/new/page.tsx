@@ -2,12 +2,12 @@
 
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
-import React from "react";
+import React, {useState,useEffect} from "react";
 import AssignmentForm from "../../../components/AssignmentsForm";
 
 const NewAssignment: React.FC = () => {
   const { addAssignment } = useAssignments();
-  const courseId = "842ff298-6067-4d28-84c6-dafae1b06f31";
+  const courseId = "84d8445d-f12c-467a-8d2f-3ee03b5dd10e";
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [publishAt, setPublishAt] = React.useState("");
@@ -16,7 +16,12 @@ const NewAssignment: React.FC = () => {
   const [unlockAt, setUnlockAt] = React.useState("");
   const [allowsLateSubmissions, setAllowsLateSubmissions] =
     React.useState(false);
-  const [imageId, setImageId] = React.useState("");
+  const [imageId, setImageId] = useState<string | null>(null);
+
+  // if select image, then unselect,imageid will be -1, fix it
+  useEffect(()=>{
+    if (imageId === "-1") setImageId(null);
+  }, [imageId]);
 
   return (
     <div className="container mx-auto p-4">
@@ -63,7 +68,7 @@ const NewAssignment: React.FC = () => {
                 new Date(unlockAt),
                 new Date(publishAt),
                 allowsLateSubmissions,
-                imageId
+                imageId || null
               )
             }
             href="/assignments"
