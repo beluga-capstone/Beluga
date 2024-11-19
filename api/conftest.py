@@ -1,13 +1,15 @@
 import os
 import sys
+import pytest
+from unittest.mock import patch, MagicMock
+from flask_login import current_user
 from uuid import uuid4
-
+from src.util import auth
 os.chdir(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 
-import pytest
 from src import create_app 
 from src.util.db import db  
 
@@ -19,6 +21,20 @@ def test_client():
         with app.app_context():
             db.create_all()  
         yield testing_client  
+
+@pytest.fixture(autouse=True)
+def mock_admin_auth(request, admin_id):
+    if 'disable_auth_mock' in request.keywords:
+        yield
+    else:
+        """Mocks an authenticated user for Flask-Login."""
+        mock_user = MagicMock()
+        mock_user.user_id = admin_id
+        mock_user.email = 'mockadminuser@tamu.edu'
+        mock_user.role_id = '1'
+
+        with patch('flask_login.utils._get_user', return_value=mock_user):
+            yield mock_user
 
 @pytest.fixture
 def admin_id(test_client):
