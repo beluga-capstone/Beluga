@@ -5,6 +5,7 @@ from flask import Blueprint, current_app, request, jsonify
 import docker
 import io
 import socket
+from flask import current_app
 
 docker_client = docker.from_env()
 
@@ -17,13 +18,18 @@ def create_container():
     
     # get a port number to give to the container
     port = find_available_port(current_app.config["CONTAINER_START_PORT"], current_app.config["CONTAINER_END_PORT"])
-    
+
+    registry_ip = current_app.config['REGISTRY_IP']
+    registry_port = current_app.config['REGISTRY_PORT']
+
     if not data or not data.get('docker_image_id') or not data.get('user_id'):
         return jsonify({'error': 'Image ID and User ID are required'}), 400
     
     try:
+        image_tag_registry = f"{registry_ip}:{registry_port}/{data['docker_image_id']}"
         container = docker_client.containers.run(
-            data['docker_image_id'],
+            #data['docker_image_id'],
+            image_tag_registry,
             detach=True,
             name=data.get('container_name', f"container_{data['docker_image_id']}"),
 
