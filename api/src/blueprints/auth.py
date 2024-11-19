@@ -1,7 +1,7 @@
 #"""Flask blueprint for Authentication endpoint definitions"""
 from src.__init__ import db, login_manager
-from src.util.db import User
 
+from src.util.db import User
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for, current_app, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import login_required, current_user, login_user, logout_user
@@ -30,7 +30,7 @@ def logout():
 @auth_bp.route('/authorize/<provider>')
 def oauth_authorize(provider):
     if not current_user.is_anonymous:
-        return redirect('/')
+        return redirect(current_app.config["LOGIN_REDIRECT"])
 
     provider_config = current_app.config['OAUTH2_PROVIDERS'].get(provider)
     if provider_config is None:
@@ -52,7 +52,7 @@ def oauth_authorize(provider):
 @auth_bp.route('/callback/<provider>')
 def oauth_callback(provider):
     if not current_user.is_anonymous:
-        return redirect('/') # Change to users home
+        return redirect(current_app.config["LOGIN_REDIRECT"]) # Change to users home
 
     provider_config = current_app.config['OAUTH2_PROVIDERS'].get(provider)
     if provider_config is None:
@@ -106,11 +106,11 @@ def oauth_callback(provider):
     if user:
         login_user(user)
         flash('Login successful', 'success')
-        return redirect('http://localhost:3000')
+        return redirect(current_app.config["LOGIN_REDIRECT"])
     else:
         user = User(username=username, email=email, first_name=fname, last_name=lname, role_id=role)
         db.session.add(user)
         db.session.commit()
         login_user(user)
         flash('Login successful', 'success')
-        return redirect('http://localhost:3000')
+        return redirect(current_app.config["LOGIN_REDIRECT"])

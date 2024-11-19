@@ -14,6 +14,19 @@ def validate_uuid(id_str):
     except ValueError:
         return False
 
+def parse_date(date_str):
+    if not date_str:
+        return None
+        
+    try:
+        date = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%fZ")
+        # Optional: Add validation for reasonable date range
+        if date.year > 9999 or date.year < 1900:
+            raise ValueError("Date must be between years 1900 and 9999")
+        return date.isoformat() + "Z"
+    except ValueError as e:
+        raise ValueError(f"Invalid date format or range: {str(e)}")
+
 # Create a new assignment (POST)
 @assignment_bp.route('/assignments', methods=['POST'])
 def create_assignment():
@@ -25,23 +38,23 @@ def create_assignment():
 
     # Validate UUID format for course_id and user_id if provided
     if not validate_uuid(data['course_id']):
-        return jsonify({'error': 'Invalid UUID format for course_id'}), 400
+        return jsonify({'error': 'Invalid UUID format for courseId'}), 400
     if 'user_id' in data and not validate_uuid(data['user_id']):
-        return jsonify({'error': 'Invalid UUID format for user_id'}), 400
+        return jsonify({'error': 'Invalid UUID format for userId'}), 400
 
     # Convert date fields if provided
-    due_at = data.get('due_at')
-    lock_at = data.get('lock_at')
-    unlock_at = data.get('unlock_at')
+    due_at = parse_date(data.get('due_at'))
+    lock_at = parse_date(data.get('lock_at'))
+    unlock_at = parse_date(data.get('unlock_at'))
 
     try:
         new_assignment = Assignment(
             course_id=data['course_id'],
             title=data['title'],
             description=data.get('description'),
-            due_at=datetime.fromisoformat(due_at) if due_at else None,
-            lock_at=datetime.fromisoformat(lock_at) if lock_at else None,
-            unlock_at=datetime.fromisoformat(unlock_at) if unlock_at else None,
+            due_at=due_at,
+            lock_at=lock_at,
+            unlock_at=unlock_at,
             user_id=data.get('user_id'),
             docker_image_id=data.get('docker_image_id')
         )
@@ -116,7 +129,6 @@ def get_assignment(assignment_id):
         'docker_image_id': assignment.docker_image_id
     }), 200
 
-# Update an assignment (PUT)
 @assignment_bp.route('/assignments/<uuid:assignment_id>', methods=['PUT'])
 def update_assignment(assignment_id):
     assignment = db.session.get(Assignment, assignment_id)
@@ -124,23 +136,49 @@ def update_assignment(assignment_id):
         return jsonify({'error': 'Assignment not found'}), 404
 
     data = request.get_json()
-    assignment.title = data.get('title', assignment.title)
-    assignment.description = data.get('description', assignment.description)
-    
-    # Update date fields
-    if 'due_at' in data:
-        assignment.due_at = datetime.fromisoformat(data['due_at']) if data['due_at'] else None
-    if 'lock_at' in data:
-        assignment.lock_at = datetime.fromisoformat(data['lock_at']) if data['lock_at'] else None
-    if 'unlock_at' in data:
-        assignment.unlock_at = datetime.fromisoformat(data['unlock_at']) if data['unlock_at'] else None
-
-    assignment.user_id = data.get('user_id', assignment.user_id)
-    assignment.docker_image_id = data.get('docker_image_id', assignment.docker_image_id)
 
     try:
+        # Update assignment fields
+        assignment.title = data.get('title')
+        assignment.description = data.get('description')
+
+        # Update date fields
+        if 'due_at' in data:
+            assignment.due_at = parse_date(data.get('due_at'))
+        if 'lock_at' in data:
+            assignment.lock_at = parse_date(data.get('lock_at'))
+        if 'unlock_at' in data:
+            assignment.unlock_at = parse_date(data.get('unlock_at'))
+
+        if 'user_id' in data:
+            assignment.user_id = data.get('user_id')
+
+        assignment.docker_image_id = data.get('docker_image_id')
+
+        # Commit changes to the database
         db.session.commit()
-        return jsonify({'message': 'Assignment updated successfully'}), 200
+
+        # Prepare updated assignment data to return
+        updated_assignment = {
+            'assignment_id': str(assignment.assignment_id),
+            'course_id': str(assignment.course_id),
+            'title': assignment.title,
+            'description': assignment.description,
+            'due_at': assignment.due_at.isoformat() if assignment.due_at else None,
+            'lock_at': assignment.lock_at.isoformat() if assignment.lock_at else None,
+            'unlock_at': assignment.unlock_at.isoformat() if assignment.unlock_at else None,
+            'user_id': assignment.user_id,
+            'docker_image_id': assignment.docker_image_id,
+            'isUnlocked': datetime.now() >= assignment.unlock_at if assignment.unlock_at else False,
+            'isPublished': datetime.now() >= assignment.due_at if assignment.due_at else False,
+            'publishAt': assignment.due_at.isoformat() if assignment.lock_at else None,
+        }
+
+        return jsonify({
+            'message': 'Assignment updated successfully',
+            'updatedAssignment': updated_assignment
+        }), 200
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500

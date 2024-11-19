@@ -2,7 +2,6 @@
 
 import Button from "@/components/Button";
 import { ROLES } from "@/constants";
-import { useAssignments } from "@/hooks/useAssignments";
 import { useProfile } from "@/hooks/useProfile";
 import { Plus } from "lucide-react";
 import Link from "next/link";
@@ -11,13 +10,12 @@ import StudentAssignmentsTable from "@/components/StudentAssignmentsTable";
 
 const Assignments: React.FC = () => {
   const { profile } = useProfile();
-  const { assignments, setPublished, setLateSubmissions } = useAssignments();
 
   return (
     <div className="container mx-auto p-4">
       <div className="mb-4 flex justify-between items-center">
         <h1 className="font-bold text-4xl mb-6">Assignments</h1>
-        {profile?.role !== ROLES.STUDENT && (
+        {profile?.role_id !== ROLES.STUDENT && (
           <Link href="/assignments/new">
             <Button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center">
               <Plus className="mr-2" /> Add Assignment
@@ -25,7 +23,7 @@ const Assignments: React.FC = () => {
           </Link>
         )}
       </div>
-      {profile?.role === ROLES.STUDENT ? (
+      {profile?.role_id === ROLES.STUDENT ? (
         <StudentAssignmentsTable />
       ) : (
         <ProfessorAssignmentsTable />

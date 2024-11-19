@@ -1,16 +1,29 @@
-import { useContainers } from "@/hooks/useContainers";
+import FormInput from "./FormInput";
+import FormTextArea from "./FormTextArea";
+import FormDateInput from "./FormDateInput";
+import React from "react";
+import LabeledToggleSwitch from "./LabeledToggleSwitch";
+import { useImages } from "@/hooks/useImages";
+import { useImageData } from "@/hooks/useImageData";
+import ImageOption from "./ImageOption";
 
 interface AssignmentFormProps {
   title: string;
   setTitle: (value: string) => void;
   description: string;
   setDescription: (value: string) => void;
-  releaseDate: string;
-  setReleaseDate: (value: string) => void;
-  dueDate: string;
-  setDueDate: (value: string) => void;
-  containerId: number;
-  setContainerId: (value: number) => void;
+  publishAt: string;
+  setPublishAt: (value: string) => void;
+  dueAt: string;
+  setDueAt: (value: string) => void;
+  lockAt: string;
+  setLockAt: (value: string) => void;
+  unlockAt: string;
+  setUnlockAt: (value: string) => void;
+  allowsLateSubmissions: boolean;
+  setAllowsLateSubmissions: (value: boolean) => void;
+  imageId: string;
+  setImageId: (value: string) => void;
 }
 
 const AssignmentForm: React.FC<AssignmentFormProps> = ({
@@ -18,74 +31,104 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   setTitle,
   description,
   setDescription,
-  releaseDate,
-  setReleaseDate,
-  dueDate,
-  setDueDate,
-  containerId,
-  setContainerId,
+  publishAt: publishAt,
+  setPublishAt: setPublishAt,
+  dueAt: dueAt,
+  setDueAt: setDueAt,
+  lockAt: lockAt,
+  setLockAt: setLockAt,
+  unlockAt: unlockAt,
+  setUnlockAt: setUnlockAt,
+  allowsLateSubmissions,
+  setAllowsLateSubmissions,
+  imageId,
+  setImageId,
 }) => {
-  const { containers } = useContainers();
-  
+  const { images } = useImages();
+  const [isVisibleBeforeRelease, setIsVisibleBeforeRelease] =
+    React.useState(false);
+  const [isPublishedLater, setIsPublishedLater] = React.useState(false);
+
+  //useEffect(()=>{
+  //  console.log("due changed to ",dueAt);
+  //},[dueAt]);
+
   return (
     <>
-      <h2>Assignment Name</h2>
-      <div className="pt-2 pb-8">
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          type="text"
-          className="border rounded p-1 bg-surface"
-          placeholder="Assignment name"
-          aria-label="Assignment name"
+      <FormInput title="Assignment Name" value={title} onChange={setTitle} />
+
+      <FormTextArea
+        title="Description"
+        value={description}
+        onChange={setDescription}
+      />
+
+      <FormDateInput title="Due at" value={dueAt} onChange={setDueAt} />
+
+      <LabeledToggleSwitch
+        title="Publish later"
+        value={isPublishedLater}
+        onChange={() => {
+          setIsPublishedLater(!isPublishedLater);
+          if (!isPublishedLater) {
+            setPublishAt(new Date().toISOString());
+          }
+        }}
+      />
+
+      {isPublishedLater && (
+        <FormDateInput
+          title="Publish at"
+          value={publishAt}
+          onChange={setPublishAt}
         />
-      </div>
-      <h2>Description</h2>
-      <div className="pt-2 pb-8">
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="border rounded p-1 bg-surface w-3/4"
-          placeholder="Description"
-          aria-label="Description"
-          rows={5}
+      )}
+
+      <LabeledToggleSwitch
+        title="Make visible before releasing"
+        value={isVisibleBeforeRelease}
+        onChange={() => {
+          setIsVisibleBeforeRelease(!isVisibleBeforeRelease);
+          if (!isVisibleBeforeRelease) {
+            setUnlockAt(new Date().toISOString());
+          }
+        }}
+      />
+
+      {isVisibleBeforeRelease && (
+        <FormDateInput
+          title="Unlock at"
+          value={unlockAt}
+          onChange={setUnlockAt}
         />
-      </div>
-      <h2>Release Date</h2>
-      <div className="pt-2 pb-8">
-        <input
-          value={releaseDate}
-          onChange={(e) => setReleaseDate(e.target.value)}
-          type="date"
-          className="border rounded p-1 bg-surface dark:[color-scheme:dark]"
-          placeholder="Release Date"
-          aria-label="Release Date"
-        />
-      </div>
-      <h2>Due Date</h2>
-      <div className="pt-2 pb-8">
-        <input
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          type="date"
-          className="border rounded p-1 bg-surface dark:[color-scheme:dark]"
-          placeholder="Due Date"
-          aria-label="Due Date"
-        />
-      </div>
-      <h2>Container</h2>
+      )}
+
+      <LabeledToggleSwitch
+        title="Allow late submissions"
+        value={allowsLateSubmissions}
+        onChange={() => {
+          setAllowsLateSubmissions(!allowsLateSubmissions);
+          if (!allowsLateSubmissions) {
+            setLockAt(new Date().toISOString());
+          }
+        }}
+      />
+
+      {allowsLateSubmissions && (
+        <FormDateInput title="Lock at" value={lockAt} onChange={setLockAt} />
+      )}
+
+      <h2>Image</h2>
       <div className="pt-2 pb-8">
         <select
-          title="Container"
-          value={containerId}
-          onChange={(e) => setContainerId(parseInt(e.target.value))}
+          title="Image"
+          value={imageId}
+          onChange={(e) => setImageId(e.target.value)} 
           className="border rounded p-1 bg-surface"
         >
-          <option value={-1}>Select a container</option>
-          {containers.map((container) => (
-            <option key={container.id} value={container.id}>
-              {container.name}
-            </option>
+          <option value={-1}>Select an image</option>
+          {images.map((image) => (
+            <ImageOption image={image}/>
           ))}
         </select>
       </div>

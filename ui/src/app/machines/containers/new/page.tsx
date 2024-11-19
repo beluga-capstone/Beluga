@@ -67,24 +67,16 @@ const NewContainer: React.FC = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/containers/run", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          docker_image_id: selectedImage.docker_image_id,
-          user_id: "0a2ad6c8-5ea8-4190-a725-c5739c8093e8", // Replace with actual user ID
-          container_name: containerName || undefined,
-        }),
-      });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        setError(`Failed to create container: ${errorData.error}`);
-      }
-    } catch (err) {
-      setError(`Failed to create container: ${err}`);
+      addContainer(
+        containerName,
+        selectedImage,
+        cpuCores,
+        memoryGBs,
+        storageGBs
+      );
+d    } catch (err) {
+      setError("Failed to create container: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 

@@ -36,15 +36,19 @@ export interface Student {
 }
 
 export interface Assignment {
-  id: number;
-  courseId: number;
+  assignment_id: string;
+  course_id: string;
   title: string;
   description: string;
-  isPublished: boolean;
-  releaseDate: Date;
-  dueDate: Date;
-  allowsLateSubmissions: boolean;
-  containerId: number;
+  due_at: Date | null;
+  lock_at: Date | null;
+  unlock_at: Date | null;
+  publish_at?: Date | null;
+  is_unlocked?: boolean;
+  is_published?: boolean;
+  allows_late_submissions: boolean;
+  docker_image_id: string;
+  user_id?: string;
 }
 
 export interface Container {

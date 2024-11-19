@@ -1,11 +1,18 @@
 import { Home, Users, Folder, Monitor } from "lucide-react";
-import { SideNavItem, Container, Image, Student, Course, Assignment } from "./types";
+import {
+  SideNavItem,
+  Container,
+  Image,
+  Student,
+  Course,
+  Assignment,
+} from "./types";
 
 export const ROLES = {
-  ADMIN: "Admin",
-  PROFESSOR: "Professor",
-  TA: "TA",
-  STUDENT: "Student",
+  ADMIN: 1,
+  PROFESSOR: 2,
+  TA: 4,
+  STUDENT: 2,
 };
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
@@ -135,4 +142,3 @@ export const DEFAULT_IMAGES: Image[] = [
     name: "default image2",
   },
 ];
-

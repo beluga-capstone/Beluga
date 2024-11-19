@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import io from 'socket.io-client';
 import { useRouter } from 'next/navigation';
+import { useProfile } from "@/hooks/useProfile";
 
 const socket = io('http://localhost:5000');
 
@@ -12,6 +13,7 @@ function NewImageForm() {
     const [dockerFileContent, setDockerFileContent] = useState("");
     const [buildStatus, setBuildStatus] = useState("");
     const [isBuilding, setIsBuilding] = useState(false);
+    const {profile}=useProfile();
 
     const statusRef = useRef<HTMLPreElement>(null);
     const [isUserScrolling, setIsUserScrolling] = useState(false);
@@ -86,7 +88,7 @@ function NewImageForm() {
                 },
                 body: JSON.stringify({
                     dockerfile_content: dockerfileContent,
-                    user_id: "0a2ad6c8-5ea8-4190-a725-c5739c8093e8",
+                    user_id: profile?.user_id,
                     description: `Image for ${imageName}`,
                     image_tag: imageName
                 })

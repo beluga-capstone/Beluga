@@ -21,20 +21,20 @@ const StudentAssignmentsTable = () => {
           </td>
         </tr>
         {assignments.map((assignment) => (
-          <tr key={assignment.id}>
+          <tr key={assignment.assignment_id}>
             <td className="text-center py-2">
-              <Link href={`/assignments/${assignment.id}`}>
+              <Link href={`/assignments/${assignment.assignment_id}`}>
                 {assignment.title}
               </Link>
             </td>
             <td className="text-center py-2">
-              {assignment.releaseDate.toLocaleDateString("en-US", {
+              {assignment.publishAt.toLocaleDateString("en-US", {
                 dateStyle: "short",
                 timeZone: "UTC",
               })}
             </td>
             <td className="text-center py-2">
-              {assignment.dueDate.toLocaleDateString("en-US", {
+              {assignment.dueAt.toLocaleDateString("en-US", {
                 dateStyle: "short",
                 timeZone: "UTC",
               })}

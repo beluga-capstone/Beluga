@@ -1,59 +1,137 @@
 "use client";
-
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
 import React from "react";
 import AssignmentForm from "../../../../components/AssignmentsForm";
 
 const EditAssignment = ({ params }: { params: { id: string } }) => {
-  const assignmentId = parseInt(params.id, 10);
   const { assignments } = useAssignments();
   const assignment = assignments.find(
-    (assignment) => assignment.id === assignmentId
+    (assignment) => assignment.assignment_id === params.id
   );
   const { updateAssignment, deleteAssignment } = useAssignments();
+  
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
-  const [releaseDate, setReleaseDate] = React.useState("");
-  const [dueDate, setDueDate] = React.useState("");
-  const [containerId, setContainerId] = React.useState(
-    assignment?.containerId || -1
-  );
+  const [dueAt, setDueAt] = React.useState("");
+  const [lockAt, setLockAt] = React.useState("");
+  const [unlockAt, setUnlockAt] = React.useState("");
+  const [isUnlocked, setIsUnlocked] = React.useState(false);
+  const [isPublished, setIsPublished] = React.useState(false);
+  const [publishAt, setPublishAt] = React.useState("");
+  const [allowsLateSubmissions, setAllowsLateSubmissions] = React.useState(false);
+  const [imageId, setImageId] = React.useState(assignment?.docker_image_id || "");
+
+  const formatDate = (dateString: string | Date | null | undefined): string => {
+    if (!dateString) return "";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return ""; // Invalid date
+      return date.toISOString().split("T")[0];
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "";
+    }
+  };
 
   React.useEffect(() => {
     if (assignment) {
-      setTitle(assignment.title);
-      setDescription(assignment.description);
-      setReleaseDate(
-        new Date(assignment.releaseDate).toISOString().split("T")[0]
-      );
-      setDueDate(new Date(assignment.dueDate).toISOString().split("T")[0]);
-      setContainerId(assignment.containerId);
+      setTitle(assignment.title || "");
+      setDescription(assignment.description || "");
+      setDueAt(formatDate(assignment.due_at));
+      setLockAt(formatDate(assignment.lock_at));
+      setUnlockAt(formatDate(assignment.unlock_at));
+      setIsUnlocked(!!assignment.is_unlocked);
+      setIsPublished(!!assignment.is_published);
+      setPublishAt(formatDate(assignment.publish_at));
+      setAllowsLateSubmissions(!!assignment.allows_late_submissions);
+      setImageId(assignment.docker_image_id || "");
     }
   }, [assignment]);
+
+  // Helper function to safely create Date object
+  const createSafeDate = (dateString: string): Date => {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      throw new Error(`Invalid date: ${dateString}`);
+    }
+    return date;
+  };
+
+  const prettyDateToIso = (formattedDate: string): Date => {
+    return new Date(formattedDate);
+    //const date = new Date(formattedDate);
+    //return date.toISOString().split('T')[0]; 
+  };
+
+  const handleUpdate = () => {
+    try {
+      if (!assignment?.assignment_id) {
+        console.error("No assignment ID found");
+        return;
+      }
+
+      if (!title.trim()) {
+        console.error("Title is required");
+        return;
+      }
+
+      //console.log("update due with ",prettyDateToIso(dueAt));
+      updateAssignment(
+        assignment.assignment_id,
+        assignment.course_id,
+        title.trim(),
+        description.trim(),
+        prettyDateToIso(dueAt),
+        allowsLateSubmissions ? prettyDateToIso(lockAt) : prettyDateToIso(dueAt),
+        prettyDateToIso(unlockAt),
+        prettyDateToIso(publishAt),
+        allowsLateSubmissions,
+        imageId
+      );
+    } catch (error) {
+      console.error("Error updating assignment:", error);
+    }
+  };
+
+  const handleDelete = () => {
+    if (!assignment?.assignment_id) {
+      console.error("No assignment ID found");
+      return;
+    }
+    deleteAssignment(assignment.assignment_id);
+  };
+
+  if (!assignment) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="font-bold text-4xl mb-6">Edit Assignment</h1>
-
       <AssignmentForm
         title={title}
         setTitle={setTitle}
         description={description}
         setDescription={setDescription}
-        releaseDate={releaseDate}
-        setReleaseDate={setReleaseDate}
-        dueDate={dueDate}
-        setDueDate={setDueDate}
-        containerId={containerId}
-        setContainerId={setContainerId}
+        publishAt={publishAt}
+        setPublishAt={setPublishAt}
+        dueAt={dueAt}
+        setDueAt={setDueAt}
+        lockAt={lockAt}
+        setLockAt={setLockAt}
+        unlockAt={unlockAt}
+        setUnlockAt={setUnlockAt}
+        allowsLateSubmissions={allowsLateSubmissions}
+        setAllowsLateSubmissions={setAllowsLateSubmissions}
+        imageId={imageId}
+        setImageId={setImageId}
       />
-
       <div className="flex flex-column justify-between">
         <div className="p-2">
           <Button
             className="bg-red-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={() => deleteAssignment(assignmentId)}
+            onClick={handleDelete}
             href="/assignments"
           >
             Delete
@@ -71,18 +149,9 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
           <div className="p-2">
             <Button
               className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-              onClick={() =>
-                updateAssignment(
-                  assignmentId,
-                  title,
-                  description,
-                  new Date(releaseDate),
-                  new Date(dueDate),
-                  containerId
-                )
-              }
+              onClick={handleUpdate}
               href="/assignments"
-              disabled={!title || !releaseDate || !dueDate}
+              disabled={!title.trim()}
             >
               Save
             </Button>
