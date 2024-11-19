@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import io from 'socket.io-client';
 import { useRouter } from 'next/navigation';
 import { useProfile } from "@/hooks/useProfile";
+import { useImageData } from "@/hooks/useImageData";
 
 const socket = io('http://localhost:5000');
 
@@ -100,6 +101,9 @@ function NewImageForm() {
             }
 
             const result = await response.json();
+            if (result.message === "Image already exists"){
+              alert(`This image already exists!`);
+            }
             setBuildStatus((prevStatus) => `${prevStatus}\n${result.message}`);
 
             router.back();
