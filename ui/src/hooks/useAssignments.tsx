@@ -67,7 +67,7 @@ export const useAssignments = () => {
     unlock_at: Date,
     publish_at: Date,
     allows_late_submissions: boolean,
-    docker_image_id: string
+    docker_image_id: string | null
   ) => {
     const newAssignment: Assignment = {
       assignment_id: Date.now().toString(),

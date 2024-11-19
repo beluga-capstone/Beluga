@@ -89,7 +89,8 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   }, [assignment, assignments]);
 
 
-  const runContainer = async (imageId: string) => {
+  const runContainer = async (imageId: string|null) => {
+    if (!imageId) return;
     try {
       // If container not exist, create a new container
       const response = await fetch("http://localhost:5000/containers", {
@@ -119,7 +120,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
     }
   };
 
-  const stopContainer = async (containerName: string | null) => {
+  const stopContainer = async (containerName: string | null | undefined) => {
     try {
       const response = await fetch(`http://localhost:5000/containers/${containerName}`, {
         method: "DELETE",
@@ -219,7 +220,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
               ))}
             </h2>
           )}
-          {assignment?.docker_image_id && (
+          {assignment?.docker_image_id ? (
             <Button
               className={`${
                 isContainerRunning ? "bg-red-500" : "bg-blue-500"
@@ -227,12 +228,12 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
               onClick={() =>
                 isContainerRunning
                   ? stopContainer(containerName)
-                  : runContainer(assignment.docker_image_id)
+                  : runContainer(assignment.docker_image_id ?? null)
               }
             >
               {isContainerRunning ? "Stop Container" : "Run Container"}
             </Button>
-          )}
+          ):null}
         </div>
       </div>
 
