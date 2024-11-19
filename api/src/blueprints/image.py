@@ -5,10 +5,15 @@ from flask_socketio import emit
 from datetime import datetime
 import docker
 import io
+from flask import current_app
 
 docker_client = docker.from_env()
 
 image_bp = Blueprint('image', __name__)
+
+registry_ip = current_app.config['REGISTRY_IP']
+registry_port = current_app.config['REGISTRY_PORT']
+
 
 # Create a new image (POST)
 @image_bp.route('/images', methods=['POST'])
@@ -82,6 +87,27 @@ def build_image():
         db.session.add(new_image)
         db.session.commit()
 
+        # Push to registry
+        image_tag_registry = f"{registry_ip}:{registry_port}/{image_tag}"
+        api_client.tag(image=image.id, repository=image_tag_registry)
+
+        push_logs = api_client.push(f"{registry_ip}:{registry_port}/{image_tag}", stream=True, decode=True)
+
+        # print("image_id:", image_id)
+        for push_log in push_logs:
+            push_message = push_log.get('status') or push_log.get('error', '').strip()
+            if push_message:
+                socketio.emit('push_status', {'status': push_message})
+                # print(push_message)
+
+        # Remove image locally
+        try:
+            api_client.remove_image(image=image_tag, force=True)
+            socketio.emit('cleanup_status', {'status': f"Image {image_tag} removed locally"})
+            # print("done deleted locally")
+        except Exception as e:
+            socketio.emit('cleanup_status', {'status': f"Failed to remove image {image.id}: {str(e)}"})
+
         # Notify the frontend of completion
         socketio.emit('build_complete', {'docker_image_id': image.id})
 
@@ -149,6 +175,12 @@ def delete_image(docker_image_id):
     try:
         db.session.delete(image)
         db.session.commit()
+
+        # TO DO: add delete image from the registry
+        # 1. Make sure configure the docker registry to delete image
+        # 2. Get the manifest tag through http request
+        # 3. Delete through http request
+
         return jsonify({'message': 'Image deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
