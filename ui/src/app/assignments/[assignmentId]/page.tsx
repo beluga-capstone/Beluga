@@ -148,13 +148,14 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
       if (response.ok) {
         setContainerPort(data.port);
         setIsContainerRunning(true);
-        alert(`Container started successfully on port ${data.port}`);
+        //alert(`Container started successfully on port ${data.port}`);
       } else {
-        alert(`Error starting container: ${data.error}`);
+        //alert(`Error starting container: ${data.error}`);
+        console.error("error starting container");
       }
     } catch (error) {
       console.error("Error running container:", error);
-      alert("An error occurred while starting the container.");
+      //alert("An error occurred while starting the container.");
     } finally {
       setIsRunningContainer(false);
     }
@@ -177,15 +178,15 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
       if (response.ok) {
         setIsContainerRunning(false);
         setContainerPort(null);
-        alert("Container stopped successfully.");
+        //alert("Container stopped successfully.");
         router.refresh();
       } else {
         const data = await response.json();
-        alert(`Error stopping container: ${data.error}`);
+        //alert(`Error stopping container: ${data.error}`);
       }
     } catch (error) {
       console.error("Error stopping container:", error);
-      alert("An error occurred while stopping the container.");
+      //alert("An error occurred while stopping the container.");
     } finally {
       // Always reset loading state
       setIsStoppingContainer(false);
