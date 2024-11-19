@@ -9,6 +9,7 @@ import { ArrowUpFromLine, Edit2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import ContainerPageTerminal from "@/components/ContainerPageTerminal";
+import { useRouter } from "next/navigation";
 
 // Function to format the date
 const format_date = (date: string) =>
@@ -23,30 +24,57 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   const { assignments } = useAssignments();
   const [isContainerRunning, setIsContainerRunning] = useState(false);
   const [containerPort, setContainerPort] = useState<number | null>(null);
+  const router = useRouter();
 
   const assignment = assignments.find(
     (assignment) =>
       assignment.assignment_id === params.assignmentId
   );
 
+  // todo, get the tag from the api
   const imageName=`${assignment?.docker_image_id}`;
 
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
   const [zipFile, setZipFile] = useState<File | null>(null);
 
-  const runContainer = async (imageId: string) => {
+  const checkContainerExists = async (containerName: string) => {
     try {
+      const response = await fetch(
+        `http://localhost:5000/containers/${containerName}`,
+        {
+          method: "GET",
+        }
+      );
+      const data = await response.json();
+      return response.ok && data.exists; 
+    } catch (error) {
+      console.error("Error checking container existence:", error);
+      return false;
+    }
+  };
+
+  const runContainer = async (imageId: string) => {
+    const containerName = `${assignment?.title}_container`;
+    try {
+      // Check if the container exists
+      const exists = await checkContainerExists(containerName);
+      if (exists) {
+        alert("Container already exists and is running.");
+        setIsContainerRunning(true);
+        return;
+      }
+
+      // If not, create a new container
       const response = await fetch("http://localhost:5000/containers", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          // todo, add date to make it more unique?
-          container_name: `${assignment?.title}_container`,
+        body: JSON.stringify({
+          container_name: containerName,
           docker_image_id: imageId,
-          user_id: profile?.user_id 
+          user_id: profile?.user_id,
         }),
       });
 
@@ -55,13 +83,37 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
       if (response.ok) {
         setContainerPort(data.port);
         setIsContainerRunning(true);
-        alert(`Container started successfully with Image ID: ${imageId} and port ${data.port}`);
+        alert(`Container started successfully on port ${data.port}`);
       } else {
         alert(`Error starting container: ${data.error}`);
       }
     } catch (error) {
       console.error("Error running container:", error);
       alert("An error occurred while starting the container.");
+    }
+  };
+
+  const stopContainer = async (containerName: string) => {
+    try {
+      const response = await fetch(`http://localhost:5000/containers/${containerName}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        setIsContainerRunning(false);
+        setContainerPort(null);
+        alert("Container stopped successfully.");
+        router.refresh();
+      } else {
+        const data = await response.json();
+        alert(`Error stopping container: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error stopping container:", error);
+      alert("An error occurred while stopping the container.");
     }
   };
 
@@ -142,20 +194,18 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
             </h2>
           )}
           {assignment?.docker_image_id && (
-            <>
-              <h2 className="font-bold pb-4">
-                Image ID:{" "}
-                <Link href={`/machines/images/details?id=${assignment.docker_image_id}`}>
-                  {imageName}
-                </Link>
-              </h2>
-              <Button
-                className="bg-blue-500 text-white px-4 py-2 mb-4 rounded"
-                onClick={() => runContainer(assignment.docker_image_id)}
-              >
-                Run Container
-              </Button>
-            </>
+            <Button
+              className={`${
+                isContainerRunning ? "bg-red-500" : "bg-blue-500"
+              } text-white px-4 py-2 mb-4 rounded`}
+              onClick={() =>
+                isContainerRunning
+                  ? stopContainer(`${assignment?.title}_container`)
+                  : runContainer(assignment.docker_image_id)
+              }
+            >
+              {isContainerRunning ? "Stop Container" : "Run Container"}
+            </Button>
           )}
         </div>
       </div>
