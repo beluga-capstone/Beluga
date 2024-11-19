@@ -11,9 +11,6 @@ docker_client = docker.from_env()
 
 image_bp = Blueprint('image', __name__)
 
-registry_ip = current_app.config['REGISTRY_IP']
-registry_port = current_app.config['REGISTRY_PORT']
-
 
 # Create a new image (POST)
 @image_bp.route('/images', methods=['POST'])
@@ -45,6 +42,9 @@ def build_image():
     user_id = data['user_id']
     description = data.get('description', '')
     image_tag = data.get('image_tag', f'image_{datetime.utcnow().isoformat()}')
+
+    registry_ip = current_app.config['REGISTRY_IP']
+    registry_port = current_app.config['REGISTRY_PORT']
 
     try:
 
