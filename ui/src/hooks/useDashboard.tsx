@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { DEFAULT_COURSES } from "@/constants";
 
-
 interface Course {
   id: number;
   name: string;
@@ -22,8 +21,15 @@ export const useDashboard = () => {
     );
   };
 
+  const deleteCourse = (id: number) => {
+    setCourses((prevCourses) =>
+      prevCourses.filter((course) => course.id !== id)
+    );
+  };
+
   return {
     courses,
     setPublished,
+    deleteCourse,
   };
 };

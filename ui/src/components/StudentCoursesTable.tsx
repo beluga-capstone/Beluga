@@ -16,7 +16,7 @@ const StudentCoursesTable: React.FC = () => {
         <tr>
           <td colSpan={3}>
             <hr />
-          </td>
+          </td> 
         </tr>
         {courses.map((course) => (
           <tr key={course.id}>

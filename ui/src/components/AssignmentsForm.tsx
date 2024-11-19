@@ -49,10 +49,6 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
     React.useState(false);
   const [isPublishedLater, setIsPublishedLater] = React.useState(false);
 
-  //useEffect(()=>{
-  //  console.log("due changed to ",dueAt);
-  //},[dueAt]);
-
   return (
     <>
       <FormInput title="Assignment Name" value={title} onChange={setTitle} />

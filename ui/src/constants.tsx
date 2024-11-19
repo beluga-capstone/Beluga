@@ -9,10 +9,10 @@ import {
 } from "./types";
 
 export const ROLES = {
-  ADMIN: 1,
+  ADMIN: 8,
   PROFESSOR: 2,
   TA: 4,
-  STUDENT: 2,
+  STUDENT: 1,
 };
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
@@ -28,7 +28,7 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
   },
   {
     title: "Assignments",
-    path: "/assignments",
+    path: "/assignments/courses/${courseId}",
     icon: <Folder size={24} />,
   },
   {

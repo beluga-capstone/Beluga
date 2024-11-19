@@ -2,34 +2,41 @@
 
 import { useEffect, useState } from "react";
 import { Assignment } from "@/types";
-import { desc } from "framer-motion/client";
 
 export const useAssignments = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
 
   const fetchAssignments = async () => {
     try {
-      const response = await fetch('http://localhost:5000/assignments');
+      const response = await fetch("http://localhost:5000/assignments");
       if (!response.ok) {
-        throw new Error('Failed to fetch assignments');
+        throw new Error("Failed to fetch assignments");
       }
       const data = await response.json();
-
-      const transformedData = data.map((assignment: Assignment) => ({
-        assignment_id: assignment.assignment_id,
-        course_id: assignment.course_id,
-        title: assignment.title,
-        description: assignment.description,
+  
+      console.log("Raw assignments data from API:", data);
+  
+      const transformedData = data.map((assignment: any) => ({
+        assignment_id: assignment.assignment_id || "",
+        course_id: assignment.course_id || "",
+        title: assignment.title || "",
+        description: assignment.description || "",
         due_at: assignment.due_at ? new Date(assignment.due_at) : null,
         lock_at: assignment.lock_at ? new Date(assignment.lock_at) : null,
         unlock_at: assignment.unlock_at ? new Date(assignment.unlock_at) : null,
-        user_id: assignment.user_id,
-        docker_image_id: assignment.docker_image_id,
+        publish_at: assignment.publish_at ? new Date(assignment.publish_at) : null,
+        is_unlocked: assignment.is_unlocked || false,
+        is_published: assignment.is_published || false,
+        allows_late_submissions: assignment.allows_late_submissions || false,
+        docker_image_id: assignment.docker_image_id || "",
+        user_id: assignment.user_id || "",
       }));
-
+  
+      console.log("Transformed assignments data:", transformedData);
+  
       setAssignments(transformedData);
     } catch (err) {
-      console.log(err);
+      console.error("Error fetching assignments:", err);
     }
   };
 
@@ -37,25 +44,25 @@ export const useAssignments = () => {
     fetchAssignments();
   }, []);
 
-  // add an assignment to the db
   const saveAssignment = async (newAssignment: Assignment) => {
     try {
-      const response = await fetch('http://localhost:5000/assignments', {
-        method: 'POST',
+      const response = await fetch("http://localhost:5000/assignments", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(newAssignment),
       });
-
+  
       if (!response.ok) {
-        throw new Error('Failed to add assignment');
+        throw new Error("Failed to add assignment");
       }
-
+  
       const data = await response.json();
+      console.log("Saved Assignment:", data); // Log the response to ensure it's saved correctly
       setAssignments((prev) => [...prev, data]);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -67,8 +74,8 @@ export const useAssignments = () => {
     lock_at: Date,
     unlock_at: Date,
     publish_at: Date,
-    allows_late_submissions: boolean,
-    docker_image_id: string
+    allowsLateSubmissions: boolean,
+    dockerImageId: string
   ) => {
     const newAssignment: Assignment = {
       assignment_id: Date.now().toString(),
@@ -78,15 +85,22 @@ export const useAssignments = () => {
       due_at,
       lock_at,
       unlock_at,
+      publish_at,
       is_unlocked: Date.now() >= unlock_at.getTime(),
       is_published: Date.now() >= publish_at.getTime(),
-      publish_at,
-      allows_late_submissions,
-      docker_image_id: docker_image_id,
+      allows_late_submissions: allowsLateSubmissions,
+      docker_image_id: dockerImageId,
     };
-
-    await saveAssignment(newAssignment);
+  
+    try {
+      await saveAssignment(newAssignment);
+      setAssignments((prev) => [...prev, newAssignment]);
+      await fetchAssignments();
+    } catch (err) {
+      console.error("Failed to add assignment:", err);
+    }
   };
+  
 
   const updateAssignment = async (
     assignment_id: string,
@@ -101,32 +115,31 @@ export const useAssignments = () => {
     docker_image_id: string
   ) => {
     const updatedAssignment = {
-      assignment_id: assignment_id,
-      course_id: course_id,
-      title:title,
-      description:description,
-      due_at:due_at,
-      lock_at:lock_at,
-      unlock_at:unlock_at,
+      assignment_id,
+      course_id,
+      title,
+      description,
+      due_at,
+      lock_at,
+      unlock_at,
+      publish_at,
       is_unlocked: Date.now() >= unlock_at.getTime(),
       is_published: Date.now() >= publish_at.getTime(),
-      publish_at:publish_at,
-      allows_late_submissions:allows_late_submissions,
-      docker_image_id:docker_image_id,  
+      allows_late_submissions,
+      docker_image_id,
     };
-    //console.log("updating with",assignmentId,courseId,title,description,dueAt,lockAt,unlockAt,imageId)
 
     try {
       const response = await fetch(`http://localhost:5000/assignments/${assignment_id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(updatedAssignment),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update assignment');
+        throw new Error("Failed to update assignment");
       }
 
       setAssignments((prev) =>
@@ -142,12 +155,11 @@ export const useAssignments = () => {
   const deleteAssignment = async (assignmentId: string) => {
     try {
       const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        console.log("failed del",assignmentId);
-        throw new Error('Failed to delete assignment ');
+        throw new Error("Failed to delete assignment");
       }
 
       setAssignments((prev) =>
@@ -163,15 +175,15 @@ export const useAssignments = () => {
       const updatedAssignment = { isPublished };
 
       const response = await fetch(`http://localhost:5000/assignments/${assignmentId}/publish`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(updatedAssignment),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update publish status');
+        throw new Error("Failed to update publish status");
       }
 
       setAssignments((prev) =>
@@ -192,15 +204,15 @@ export const useAssignments = () => {
       const updatedAssignment = { allowsLateSubmissions };
 
       const response = await fetch(`http://localhost:5000/assignments/${assignmentId}/late-submissions`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(updatedAssignment),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update late submissions setting');
+        throw new Error("Failed to update late submissions setting");
       }
 
       setAssignments((prev) =>
@@ -215,6 +227,7 @@ export const useAssignments = () => {
 
   return {
     assignments,
+    fetchAssignments, // Add fetchAssignments here
     addAssignment,
     updateAssignment,
     deleteAssignment,
@@ -222,4 +235,3 @@ export const useAssignments = () => {
     setLateSubmissions,
   };
 };
-

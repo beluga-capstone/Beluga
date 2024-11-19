@@ -1,16 +1,30 @@
-import { useAssignments } from "@/hooks/useAssignments";
 import { ToggleLeft, ToggleRight } from "lucide-react";
 import Link from "next/link";
+import { Assignment } from "@/types";
 
-const format_date = (date:string) => new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-});
+interface ProfessorAssignmentsTableProps {
+  assignments: Assignment[];
+  setPublished: (assignmentId: string, isPublished: boolean) => Promise<void>;
+  setLateSubmissions: (
+    assignmentId: string,
+    allowsLateSubmissions: boolean
+  ) => Promise<void>;
+}
 
-const ProfessorAssignmentsTable = () => {
-  const { assignments, setPublished, setLateSubmissions } = useAssignments();
+const formatDate = (date: Date | null) =>
+  date
+    ? new Date(date).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "not found";
 
+const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({
+  assignments = [], // Default to empty array
+  setPublished,
+  setLateSubmissions,
+}) => {
   return (
     <table className="table w-full">
       <thead>
@@ -37,19 +51,15 @@ const ProfessorAssignmentsTable = () => {
               </Link>
             </td>
             <td className="text-center py-2">
-              {assignment.publishAt?
-                format_date(assignment.publishAt.toISOString()): "not found"
-              }
+              {formatDate(assignment.publish_at ?? null)}
             </td>
             <td className="text-center py-2">
-              {assignment.dueAt?
-                format_date(assignment.dueAt.toISOString()): "not found"
-              }
+              {formatDate(assignment.due_at ?? null)}
             </td>
             <td className="text-center py-2">0</td>
             <td className="py-2">
               <div className="flex justify-center items-center">
-                {assignment.isPublished ? (
+                {assignment.is_published ? (
                   <ToggleRight
                     size={32}
                     className="text-green-500"
@@ -66,7 +76,7 @@ const ProfessorAssignmentsTable = () => {
             </td>
             <td className="py-2">
               <div className="flex justify-center items-center">
-                {assignment.allows_late_submissions? (
+                {assignment.allows_late_submissions ? (
                   <ToggleRight
                     size={32}
                     className="text-green-500"
