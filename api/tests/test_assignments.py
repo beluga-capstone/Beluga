@@ -1,12 +1,15 @@
 import pytest
 from datetime import datetime
 
+import pytest
+from datetime import datetime
+
 def test_create_update_delete_assignment(test_client, assignment_id, docker_image_id):
     # Step 1: Update Assignment
     update_data = {
         'title': 'Updated Test Assignment',
         'description': 'This is an updated test assignment',
-        'due_at': '2024-11-05T23:59:59'
+        'due_at': '2024-11-05T23:59:59.000Z'  # Ensure correct date format
     }
     update_response = test_client.put(f'/assignments/{assignment_id}', json=update_data)
     assert update_response.status_code == 200
@@ -19,9 +22,9 @@ def test_create_update_delete_assignment(test_client, assignment_id, docker_imag
     assert json_data['title'] == 'Updated Test Assignment'
     assert json_data['description'] == 'This is an updated test assignment'
 
-    # Parse the expected and actual 'due_at' values into datetime objects using ISO format
+    # Parse the expected and actual 'due_at' values into datetime objects
     expected_due_at = datetime.fromisoformat('2024-11-05T23:59:59')
-    returned_due_at = datetime.fromisoformat(json_data['due_at'])
+    returned_due_at = datetime.fromisoformat(json_data['due_at'].replace('Z', ''))  # Strip 'Z' for parsing
 
     # Compare the datetime objects
     assert expected_due_at == returned_due_at
@@ -34,6 +37,7 @@ def test_create_update_delete_assignment(test_client, assignment_id, docker_imag
     # Step 4: Verify Deletion
     verified_delete_response = test_client.get(f'/assignments/{assignment_id}')
     assert verified_delete_response.status_code == 404
+
 
 def test_search_assignments(test_client, course_id, assignment_id, docker_image_id):
     # Search by course_id

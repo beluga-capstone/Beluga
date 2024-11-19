@@ -71,9 +71,9 @@ def assignment_id(test_client, course_id, docker_image_id, user_id):
         'course_id': course_id,
         'title': 'Test Assignment',
         'description': 'This is a test assignment',
-        'due_at': '2024-10-31T23:59:59',
-        'lock_at': '2024-10-31T23:59:59',
-        'unlock_at': '2024-10-01T00:00:00',
+        'due_at': '2024-10-31T23:59:59.000Z',
+        'lock_at': '2024-10-31T23:59:59.000Z',
+        'unlock_at': '2024-10-01T00:00:00.000Z',
         'user_id': user_id,
         'docker_image_id': docker_image_id
     }
