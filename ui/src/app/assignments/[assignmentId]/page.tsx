@@ -58,6 +58,14 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
     }
   };
 
+  const normalizeDockerName = (name: string) => {
+    return name
+      .toLowerCase() // Convert to lowercase
+      .replace(/[^a-z0-9_.-]+/g, "_") // Replace invalid characters with '_'
+      .replace(/^[_.-]+|[_.-]+$/g, ""); // Remove leading or trailing '_', '.', '-'
+  };
+
+
   // get the assignment and check if the container is running on startup
   useEffect(() => {
     const { assignmentId } = params;  
@@ -67,7 +75,9 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
           assignment.assignment_id === params.assignmentId
       );
       setAssignment(found || null);
-      setContainerName(`${assignment?.title}_con`)
+
+      const name = normalizeDockerName(`${assignment?.title}_con`);
+      setContainerName(name);
 
       // check if container exist
       if (assignment && containerName) {
