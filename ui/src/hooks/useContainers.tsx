@@ -4,25 +4,62 @@ import { useEffect, useState } from "react";
 import { Container, Image } from "@/types";
 import { DEFAULT_CONTAINERS } from "@/constants";
 
-const loadContainersFromStorage = (): Container[] => {
-  const data = localStorage.getItem("containers");
-  return data ? JSON.parse(data) : DEFAULT_CONTAINERS;
+const fetchContainers = async (): Promise<Container[]> => {
+  try {
+    const response = await fetch("http://localhost:5000/api/containers");
+    if (!response.ok) {
+      throw new Error("Failed to fetch containers");
+    }
+    const data = await response.json();
+    return data.containers; 
+  } catch (error) {
+    console.error("Error fetching containers:", error);
+    return DEFAULT_CONTAINERS;
+  }
 };
 
-const saveContainersToStorage = (containers: Container[]) => {
-  localStorage.setItem("containers", JSON.stringify(containers));
+const saveContainer = async (newContainer: Container) => {
+  try {
+    const response = await fetch("http://localhost:5000/api/containers", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newContainer),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to add container");
+    }
+    const data = await response.json();
+    return data.container; // Assuming the API returns the newly created container
+  } catch (error) {
+    console.error("Error saving container:", error);
+  }
 };
 
 export const useContainers = () => {
   const [containers, setContainers] = useState<Container[]>([]);
   const [selectedContainers, setSelectedContainers] = useState<number[]>([]);
 
+  const fetchContainers = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/containers');
+      if (!response.ok) {
+        throw new Error('Failed to fetch images');
+      }
+      const data = await response.json();
+      setContainers(data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // Initial fetch
   useEffect(() => {
-    const loadedContainers = loadContainersFromStorage();
-    setContainers(loadedContainers);
+    fetchContainers();
   }, []);
 
-  const addContainer = (
+  const addContainer = async (
     name: string,
     image: Image,
     cpuCores: number,
@@ -39,15 +76,16 @@ export const useContainers = () => {
       memoryGBs: memoryGBs,
       storageGBs: storageGBs,
     };
-    
-    console.log(newContainer["id"]);
 
-    const updatedContainers = [...containers, newContainer];
-    setContainers(updatedContainers);
-    saveContainersToStorage(updatedContainers);
+    // Save to the API
+    const savedContainer = await saveContainer(newContainer);
+    if (savedContainer) {
+      setContainers((prev) => [...prev, savedContainer]);
+    }
   };
 
   const deleteContainer = (id: number) => {
+    // API delete logic here (if needed)
     const updatedContainers = containers.filter(
       (container) => container.id !== id
     );
@@ -55,7 +93,6 @@ export const useContainers = () => {
     setSelectedContainers(
       selectedContainers.filter((selectedId) => selectedId !== id)
     );
-    saveContainersToStorage(updatedContainers);
   };
 
   const updateContainerStatus = (
@@ -66,7 +103,6 @@ export const useContainers = () => {
       container.id === id ? { ...container, status } : container
     );
     setContainers(updatedContainers);
-    saveContainersToStorage(updatedContainers);
   };
 
   const toggleSelectContainer = (id: number) => {
@@ -94,7 +130,6 @@ export const useContainers = () => {
       );
     }
     setContainers(updatedContainers);
-    saveContainersToStorage(updatedContainers);
   };
 
   return {
@@ -107,3 +142,4 @@ export const useContainers = () => {
     performBulkAction,
   };
 };
+

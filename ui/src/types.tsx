@@ -47,7 +47,7 @@ export interface Assignment {
   is_unlocked?: boolean;
   is_published?: boolean;
   allows_late_submissions: boolean;
-  docker_image_id: string;
+  docker_image_id?: string | null;
   user_id?: string;
 }
 

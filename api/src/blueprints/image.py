@@ -33,6 +33,7 @@ def create_image():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+
 @image_bp.route('/images/build', methods=['POST'])
 def build_image():
     data = request.get_json()
@@ -42,6 +43,7 @@ def build_image():
     image_tag = data.get('image_tag', f'image_{datetime.utcnow().isoformat()}')
 
     try:
+
         # Use the low-level API client for more granular log handling
         api_client = docker.APIClient()
         
@@ -61,6 +63,16 @@ def build_image():
 
         # After successful build, retrieve the image by tag
         image = docker_client.images.get(image_tag)
+
+        # Check if an image with the same tag already exists in the database
+        existing_image = Image.query.filter_by(docker_image_id=image.id).first()
+
+        if existing_image:
+            # If an image already exists, return it
+            return jsonify({
+                'message': 'Image already exists',
+                'docker_image_id': existing_image.docker_image_id
+            }), 200
 
         # Save image information to the database
         new_image = Image(

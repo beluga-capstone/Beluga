@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Assignment } from "@/types";
-import { desc } from "framer-motion/client";
 
 export const useAssignments = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -68,7 +67,7 @@ export const useAssignments = () => {
     unlock_at: Date,
     publish_at: Date,
     allows_late_submissions: boolean,
-    docker_image_id: string
+    docker_image_id: string | null
   ) => {
     const newAssignment: Assignment = {
       assignment_id: Date.now().toString(),
@@ -114,7 +113,7 @@ export const useAssignments = () => {
       allows_late_submissions:allows_late_submissions,
       docker_image_id:docker_image_id,  
     };
-    //console.log("updating with",assignmentId,courseId,title,description,dueAt,lockAt,unlockAt,imageId)
+    console.log("updating with",assignment_id,course_id,title,description,due_at,lock_at,unlock_at,docker_image_id)
 
     try {
       const response = await fetch(`http://localhost:5000/assignments/${assignment_id}`, {

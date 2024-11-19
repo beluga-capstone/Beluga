@@ -28,13 +28,13 @@ const StudentAssignmentsTable = () => {
               </Link>
             </td>
             <td className="text-center py-2">
-              {assignment.publishAt.toLocaleDateString("en-US", {
+              {assignment.publish_at?.toLocaleDateString("en-US", {
                 dateStyle: "short",
                 timeZone: "UTC",
               })}
             </td>
             <td className="text-center py-2">
-              {assignment.dueAt.toLocaleDateString("en-US", {
+              {assignment.due_at?.toLocaleDateString("en-US", {
                 dateStyle: "short",
                 timeZone: "UTC",
               })}
