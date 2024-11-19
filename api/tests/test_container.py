@@ -30,3 +30,22 @@ def test_create_container_missing_fields(test_client):
     response = test_client.post('/containers', json=data)
     assert response.status_code == 400
     assert b'Docker Container ID and User ID are required' in response.data
+
+def test_search_containers(test_client, user_id, container_id):
+    # Search by user_id
+    response = test_client.get(f'/containers/search?user_id={user_id}')
+    assert response.status_code == 200
+    json_data = response.get_json()
+    assert any(container['user_id'] == str(user_id) for container in json_data)
+
+    # Search by docker_container_id
+    response = test_client.get(f'/containers/search?docker_container_id={container_id}')
+    assert response.status_code == 200
+    json_data = response.get_json()
+    assert any(container['docker_container_id'] == container_id for container in json_data)
+
+    # Search with non-matching criteria
+    response = test_client.get('/containers/search?description=NonExistentContainer')
+    assert response.status_code == 200
+    json_data = response.get_json()
+    assert len(json_data) == 0

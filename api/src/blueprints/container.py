@@ -5,6 +5,7 @@ from flask_socketio import emit
 from src import socketio
 import docker
 import io
+from src.util.query_utils import apply_filters
 
 container_bp = Blueprint('container', __name__)
 
@@ -115,6 +116,29 @@ def get_container(docker_container_id):
         'user_id': str(container.user_id),
         'description': container.description
     }), 200
+
+# Dynamic search for containers (GET)
+@container_bp.route('/containers/search', methods=['GET'])
+def search_containers():
+    filters = request.args.to_dict()  # Get all query parameters as filters
+
+    try:
+        # Dynamically apply filters using the helper function `apply_filters`
+        query = apply_filters(Container, filters)
+        containers = query.all()
+
+        # Format the response
+        containers_list = [{
+            'docker_container_id': container.docker_container_id,
+            'user_id': str(container.user_id),
+            'description': container.description
+        } for container in containers]
+
+        return jsonify(containers_list), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 # Update a container (PUT)
 @container_bp.route('/containers/<string:docker_container_id>', methods=['PUT'])
