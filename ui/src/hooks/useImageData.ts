@@ -13,7 +13,7 @@ interface ImageDataState {
 
 import { useState, useEffect } from 'react';
 
-export const useImageData = (imageId: string): ImageDataState => {
+export const useImageData = (imageId: string | null): ImageDataState => {
   const [imageData, setImageData] = useState<ImageData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

@@ -12,6 +12,7 @@ import ContainerPageTerminal from "@/components/ContainerPageTerminal";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Assignment } from "@/types";
+import { useImageData } from "@/hooks/useImageData";
 
 // Function to format the date
 const format_date = (date: string) =>
@@ -68,9 +69,6 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
       setAssignment(found || null);
       setContainerName(`${assignment?.title}_con`)
 
-      // todo, get the tag from the api
-      // const imageName=`${assignment?.docker_image_id}`;
-
       // check if container exist
       if (assignment && containerName) {
         const check_exist_startup = async() =>{
@@ -88,6 +86,9 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
     }
   }, [assignment, assignments]);
 
+  const {imageData}= useImageData(assignment?.docker_image_id ?? null);
+  console.log("nice",imageData);
+  const imageName = imageData?.tag[0];
 
   const runContainer = async (imageId: string|null) => {
     if (!imageId) return;
@@ -120,7 +121,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
     }
   };
 
-  const stopContainer = async (containerName: string | null | undefined) => {
+  const stopContainer = async (containerName: string |null)=> {
     try {
       const response = await fetch(`http://localhost:5000/containers/${containerName}`, {
         method: "DELETE",
@@ -220,6 +221,14 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
               ))}
             </h2>
           )}
+
+          <h2 className="font-bold pb-4">
+            {assignment?.docker_image_id
+              ? `Image name: ${imageName}`
+              : null
+            }
+          </h2>
+
           {assignment?.docker_image_id ? (
             <Button
               className={`${
