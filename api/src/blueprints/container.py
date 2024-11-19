@@ -4,9 +4,12 @@ from datetime import datetime
 from flask_socketio import emit
 from src import socketio
 import docker
+from flask import current_app
 import io
 
 container_bp = Blueprint('container', __name__)
+registry_ip = current_app.config['REGISTRY_IP']
+registry_port = current_app.config['REGISTRY_PORT']
 
 # Create a new container (POST)
 @container_bp.route('/containers', methods=['POST'])
@@ -31,8 +34,8 @@ def create_container():
         return jsonify({'error': str(e)}), 500
 
 # Define the Flask route to create and run a container
-@container_bp.route('/containers/run', methods=['POST'])
-def run_container():
+@container_bp.route('/containers/build_run', methods=['POST'])
+def build_run_container():
     data = request.get_json()
 
     # Check for required parameters
@@ -48,9 +51,16 @@ def run_container():
         # Initialize Docker API client
         api_client = docker.APIClient()
 
+        image_tag_registry = f"{registry_ip}:{registry_port}/{docker_image_id}"
+
+        # Pull from registry -> api_client.pull(image_tag_registry)
+        for log in api_client.pull(image_tag_registry):
+            socketio.emit('container_pull', {'output': log})
+
         # Create and start the container with specified options
         container = api_client.create_container(
-            image=docker_image_id,
+            #image=docker_image_id,
+            image=image_tag_registry,
             name=container_name,
             detach=True,
             stdin_open=True,
@@ -67,11 +77,6 @@ def run_container():
         # Start the container
         api_client.start(container=container.get('Id'))
 
-        # Stream logs to the frontend via socket
-        log_generator = api_client.logs(container=container.get('Id'), stream=True)
-        for log in log_generator:
-            socketio.emit('container_output', {'output': log.decode('utf-8')})
-
         # Save container details to the database
         new_container = Container(
             docker_container_id=container.get('Id'),
@@ -80,6 +85,11 @@ def run_container():
         )
         db.session.add(new_container)
         db.session.commit()
+
+        # Stream logs to the frontend via socket
+        log_generator = api_client.logs(container=container.get('Id'), stream=True)
+        for log in log_generator:
+            socketio.emit('container_output', {'output': log.decode('utf-8')})
 
         # Notify the frontend of successful container start
         socketio.emit('container_started', {'docker_container_id': container.get('Id')})
@@ -142,9 +152,108 @@ def delete_container(docker_container_id):
         return jsonify({'error': 'Container not found'}), 404
 
     try:
+        api_client = docker.APIClient()
+
+        try:
+            api_client.inspect_container(docker_container_id)
+        except Exception as e:
+            return jsonify({'error': f'Container {docker_container_id} not found, {e}'}), 404
+
+        api_client.remove_container(docker_container_id, force=True)
+
         db.session.delete(container)
         db.session.commit()
         return jsonify({'message': 'Container deleted successfully'}), 200
+
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+# Get all container and status for a user
+@container_bp.route('/containers/user/<uuid:user_id>', methods=['GET'])
+def get_containers_by_user(user_id):
+    try:
+        containers = db.session.query(Container).filter_by(user_id=user_id).all()
+
+        if not containers:
+            return jsonify({'error': 'No containers found for this user'}), 404
+
+        api_client = docker.APIClient()
+
+        containers_data = []
+        for container in containers:
+            try:
+                container_info = api_client.inspect_container(container.docker_container_id)
+                created = container_info.get('Created', '')
+                state = container_info.get('State', '')
+            except Exception:
+                created = ''
+                state = ''
+
+            containers_data.append({
+                'docker_container_id': container.docker_container_id,
+                'description': container.description,
+                'created': created,
+                'state': state
+            })
+
+        return jsonify({'containers': containers_data}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Run a container
+@container_bp.route('/containers/run', methods=['POST'])
+def run_container():
+    try:
+        data = request.get_json()
+
+        if not data or not data.get('docker_container_id'):
+            return jsonify({'error': 'Docker cotainer ID is required'}), 400
+
+        docker_container_id = data['docker_container_id']
+
+        api_client = docker.APIClient()
+        try:
+            container_info = api_client.inspect_container(docker_container_id)
+            if not container_info['State']['Running']:
+                api_client.start(docker_container_id)
+                print(f"Container {docker_container_id} started.")
+                return jsonify({'message': 'Container is started'}), 200
+            else:
+                print(f"Container {docker_container_id} is already running.")
+                return jsonify({'info': 'Container is already running'}), 500
+        except Exception as e:
+            return jsonify({'info': 'Container cannot be located', 'error': str(e)}), 500
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# Stop container
+@container_bp.route('/containers/stop', methods=['POST'])
+def stop_container():
+    try:
+        data = request.get_json()
+
+        if not data or not data.get('docker_container_id'):
+            return jsonify({'error': 'Docker cotainer ID is required'}), 400
+
+        docker_container_id = data['docker_container_id']
+
+        api_client = docker.APIClient()
+        try:
+            container_info = api_client.inspect_container(docker_container_id)
+            if container_info['State']['Running']:
+                api_client.stop(docker_container_id)
+                print(f"Container {docker_container_id} stopped.")
+                return jsonify({'message': 'Container is stopped'}), 200
+            else:
+                print(f"Container {docker_container_id} is not running.")
+                return jsonify({'info': 'Container is not running'}), 500
+        except Exception as e:
+            return jsonify({'info': 'Container cannot be located', 'error': str(e)}), 500
+
+    except Exception as e:
         return jsonify({'error': str(e)}), 500
