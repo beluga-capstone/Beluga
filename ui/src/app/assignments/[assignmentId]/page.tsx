@@ -85,7 +85,6 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
           if (!containerName) return;
           let {exists, port}= await checkContainerExists(containerName);
           if (exists) {
-            alert("Container already exists and is running.");
             setIsContainerRunning(true);
             setContainerPort(port);
           }
@@ -96,9 +95,28 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
     }
   }, [assignment, assignments]);
 
-  const {imageData}= useImageData(assignment?.docker_image_id ?? null);
-  console.log("nice",imageData);
-  const imageName = imageData?.tag[0];
+  const { imageData } = useImageData(assignment?.docker_image_id ?? null);
+
+  useEffect(() => {
+    if (!assignment) return;
+
+    const name = normalizeDockerName(`${assignment.title}_con`);
+    setContainerName(name);
+
+    const checkContainer = async () => {
+      if (!name) return;
+      const { exists, port } = await checkContainerExists(name);
+      if (exists) {
+        setIsContainerRunning(true);
+        setContainerPort(port);
+      }
+    };
+
+    checkContainer();
+  }, [assignment]);
+
+  const imageName = imageData?.tag?.[0] ?? "Unknown Image";
+
 
   const runContainer = async (imageId: string|null) => {
     if (!imageId) return;
