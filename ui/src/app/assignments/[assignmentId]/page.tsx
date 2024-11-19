@@ -5,7 +5,7 @@ import SubmissionZone from "@/components/SubmissionZone";
 import { ROLES } from "@/constants";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useProfile } from "@/hooks/useProfile";
-import { ArrowUpFromLine, Edit2 } from "lucide-react";
+import { ArrowUpFromLine, Edit2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import ContainerPageTerminal from "@/components/ContainerPageTerminal";
@@ -29,7 +29,12 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   const [containerPort, setContainerPort] = useState<number | null>(null);
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [containerName, setContainerName] = useState<string | null>(null);
+  const [imageName, setImageName] = useState<string | null>(null);
   const router = useRouter();
+
+  // New state for container stop loading
+  const [isStoppingContainer, setIsStoppingContainer] = useState(false);
+  const [isRunningContainer, setIsRunningContainer] = useState(false);
 
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
@@ -65,7 +70,6 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
       .replace(/^[_.-]+|[_.-]+$/g, ""); // Remove leading or trailing '_', '.', '-'
   };
 
-
   // get the assignment and check if the container is running on startup
   useEffect(() => {
     const { assignmentId } = params;  
@@ -76,24 +80,23 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
       );
       setAssignment(found || null);
 
-      const name = normalizeDockerName(`${assignment?.title}_con`);
+      const name = normalizeDockerName(`${found?.title}_con`);
       setContainerName(name);
 
       // check if container exist
-      if (assignment && containerName) {
+      if (found && name) {
         const check_exist_startup = async() =>{
-          if (!containerName) return;
-          let {exists, port}= await checkContainerExists(containerName);
+          if (!name) return;
+          let {exists, port}= await checkContainerExists(name);
           if (exists) {
             setIsContainerRunning(true);
             setContainerPort(port);
           }
         };
         check_exist_startup();
-        console.log("inside",assignment.title);
       }
     }
-  }, [assignment, assignments]);
+  }, [assignments, params]);
 
   const { imageData } = useImageData(assignment?.docker_image_id ?? null);
 
@@ -115,11 +118,17 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
     checkContainer();
   }, [assignment]);
 
-  const imageName = imageData?.tag?.[0] ?? "Unknown Image";
-
+  useEffect(()=>{
+    if (imageData?.tag?.[0]) {
+      setImageName(imageData.tag[0]);
+    }
+  },[imageData]);
 
   const runContainer = async (imageId: string|null) => {
     if (!imageId) return;
+    
+    setIsRunningContainer(true);
+
     try {
       // If container not exist, create a new container
       const response = await fetch("http://localhost:5000/containers", {
@@ -146,10 +155,17 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
     } catch (error) {
       console.error("Error running container:", error);
       alert("An error occurred while starting the container.");
+    } finally {
+      setIsRunningContainer(false);
     }
   };
 
   const stopContainer = async (containerName: string |null)=> {
+    if (!containerName) return;
+    
+    // Set loading state before making the request
+    setIsStoppingContainer(true);
+
     try {
       const response = await fetch(`http://localhost:5000/containers/${containerName}`, {
         method: "DELETE",
@@ -170,11 +186,24 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
     } catch (error) {
       console.error("Error stopping container:", error);
       alert("An error occurred while stopping the container.");
+    } finally {
+      // Always reset loading state
+      setIsStoppingContainer(false);
     }
   };
 
   return (
     <div className="container mx-auto p-4">
+      {/* Overlay when stopping container */}
+      {!isStoppingContainer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-gray-500 p-6 rounded-lg shadow-xl flex items-center">
+            <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+            <p>Stopping container...</p>
+          </div>
+        </div>
+      )}
+
       <div
         className={`mb-8 flex items-center ${
           profile?.role_id === ROLES.STUDENT ? "justify-between" : ""
@@ -253,7 +282,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
           <h2 className="font-bold pb-4">
             {assignment?.docker_image_id
               ? `Image name: ${imageName}`
-              : null
+              !: null
             }
           </h2>
 
@@ -267,8 +296,22 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
                   ? stopContainer(containerName)
                   : runContainer(assignment.docker_image_id ?? null)
               }
+              // Disable the button while stopping or running the container
+              disabled={isStoppingContainer || isRunningContainer}
             >
-              {isContainerRunning ? "Stop Container" : "Run Container"}
+              {isStoppingContainer ? (
+                <div className="flex items-center">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Stopping...
+                </div>
+              ) : isRunningContainer ? (
+                <div className="flex items-center">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Starting...
+                </div>
+              ) : (
+                isContainerRunning ? "Stop Container" : "Run Container"
+              )}
             </Button>
           ):null}
         </div>
@@ -302,5 +345,3 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
 };
 
 export default AssignmentPage;
-
-
