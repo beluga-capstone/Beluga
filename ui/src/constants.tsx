@@ -9,10 +9,10 @@ import {
 } from "./types";
 
 export const ROLES = {
-  ADMIN: 8,
+  ADMIN: 1,
   PROFESSOR: 2,
   TA: 4,
-  STUDENT: 1,
+  STUDENT: 8,
 };
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
@@ -28,7 +28,7 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
   },
   {
     title: "Assignments",
-    path: "/assignments/courses/${courseId}",
+    path: "/assignments",
     icon: <Folder size={24} />,
   },
   {
@@ -122,23 +122,4 @@ b = int(input())
 c = a + b
 print("%d + %d = %d" % (a, b, c))
 `,
-];
-
-export const DEFAULT_IMAGES: Image[] = [
-  {
-    id: 1,
-    title: "Default title",
-    courses: ["csce101"],
-    packages: ["vim"],
-    dockerfileContent: "none",
-    name: "default image1",
-  },
-  {
-    id: 1,
-    title: "Default title",
-    courses: ["csce101"],
-    packages: ["bruh"],
-    dockerfileContent: "none",
-    name: "default image2",
-  },
 ];
