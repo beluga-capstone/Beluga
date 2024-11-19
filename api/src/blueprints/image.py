@@ -5,19 +5,27 @@ from flask_socketio import emit
 from datetime import datetime
 import docker
 import io
+from flask import current_app
+import secrets
+import requests
 
 docker_client = docker.from_env()
+api_client = docker.APIClient()
 
 image_bp = Blueprint('image', __name__)
+
+registry_ip = current_app.config['REGISTRY_IP']
+registry_port = current_app.config['REGISTRY_PORT']
+
 
 # Create a new image (POST)
 @image_bp.route('/images', methods=['POST'])
 def create_image():
     data = request.get_json()
-    
+
     if not data or not data.get('docker_image_id') or not data.get('user_id'):
         return jsonify({'error': 'Docker Image ID and User ID are required'}), 400
-    
+
     new_image = Image(
         docker_image_id=data['docker_image_id'],
         user_id=data['user_id'],
@@ -32,19 +40,21 @@ def create_image():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+
 @image_bp.route('/images/build', methods=['POST'])
 def build_image():
     data = request.get_json()
     dockerfile_content = data['dockerfile_content']
     user_id = data['user_id']
     description = data.get('description', '')
-    image_tag = data.get('image_tag', f'image_{datetime.utcnow().isoformat()}')
+    # image_tag = data.get('image_tag', f'image_{secrets.token_bytes(16)}')
+    token = secrets.token_bytes(16).hex()
+    image_tag = f'image_{token}'
 
     try:
-        # Use the low-level API client for more granular log handling
-        api_client = docker.APIClient()
-        
-        # Start building the image and stream logs
+        image_id = None
+
+        # Build
         logs = api_client.build(
             fileobj=io.BytesIO(dockerfile_content.encode('utf-8')),
             tag=image_tag,
@@ -53,27 +63,46 @@ def build_image():
         )
 
         for log in logs:
-            # Emit each line of the build log to the frontend
             message = log.get('stream') or log.get('status', '').strip()
             if message:
                 socketio.emit('build_status', {'status': message})
+                # print(message)
+            if 'aux' in log and 'ID' in log['aux']:
+                image_id = log['aux']['ID']
+                image_id = image_id[7:]
 
-        # After successful build, retrieve the image by tag
-        image = docker_client.images.get(image_tag)
-
-        # Save image information to the database
+        # DB info
         new_image = Image(
-            docker_image_id=image.id,
+            # docker_image_id=image_id,
+            docker_image_id=image_tag,
             description=description,
             user_id=user_id,
         )
         db.session.add(new_image)
         db.session.commit()
 
-        # Notify the frontend of completion
-        socketio.emit('build_complete', {'docker_image_id': image.id})
+        # Push to registry
+        image_tag_registry = f"{registry_ip}:{registry_port}/{image_tag}"
+        api_client.tag(image=image_id, repository=image_tag_registry)
 
-        return jsonify({'message': 'Image built successfully', 'docker_image_id': image.id}), 201
+        push_logs = api_client.push(f"{registry_ip}:{registry_port}/{image_tag}", stream=True, decode=True)
+
+        # print("image_id:", image_id)
+        for push_log in push_logs:
+            push_message = push_log.get('status') or push_log.get('error', '').strip()
+            if push_message:
+                socketio.emit('push_status', {'status': push_message})
+                # print(push_message)
+
+        # Remove image locally
+        try:
+            api_client.remove_image(image=image_tag, force=True)
+            socketio.emit('cleanup_status', {'status': f"Image {image_tag} removed locally"})
+            # print("done deleted locally")
+        except Exception as e:
+            socketio.emit('cleanup_status', {'status': f"Failed to remove image {image_id}: {str(e)}"})
+
+        return jsonify({'message': 'Image built successfully', 'docker_image_id': image_id}), 201
 
     except Exception as e:
         db.session.rollback()
@@ -106,7 +135,7 @@ def get_image(docker_image_id):
         'docker_image_id': image.docker_image_id,
         'user_id': str(image.user_id),
         'description': image.description,
-        'tag':result.tags
+        'tag': result.tags
     }), 200
 
 
@@ -127,12 +156,20 @@ def update_image(docker_image_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+
 # Delete an image (DELETE)
 @image_bp.route('/images/<string:docker_image_id>', methods=['DELETE'])
 def delete_image(docker_image_id):
     image = db.session.get(Image, docker_image_id)
     if image is None:
         return jsonify({'error': 'Image not found'}), 404
+
+    # TO DO: add delete image from the registry
+    '''
+    1. Make sure configure the docker registry to delete image
+    2. Get the manifest tag through http request
+    3. Delete through http request
+    '''
 
     try:
         db.session.delete(image)
