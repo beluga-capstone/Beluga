@@ -27,15 +27,29 @@ def create_container():
     
     try:
         image_tag_registry = f"{registry_ip}:{registry_port}/{data['docker_image_id']}"
-        container = docker_client.containers.run(
-            #data['docker_image_id'],
-            image_tag_registry,
-            detach=True,
-            name=data.get('container_name', f"container_{data['docker_image_id']}"),
+        # container = docker_client.containers.run(
+        #     #data['docker_image_id'],
+        #     image_tag_registry,
+        #     detach=True,
+        #     name=data.get('container_name', f"container_{data['docker_image_id']}"),
+        #
+        #     # expose 5000 in the container as 'port' on the host
+        #     ports={'5000/tcp':port},
+        # )
 
-            # expose 5000 in the container as 'port' on the host
-            ports={'5000/tcp':port},
+        api_client = docker.APIClient()
+        # Create the container
+        container = api_client.create_container(
+            image=image_tag_registry,
+            name=data.get('container_name', f"container_{data['docker_image_id']}"),
+            ports=[5000],
+            host_config=api_client.create_host_config(
+                port_bindings={5000: port}
+            ),
         )
+
+        api_client.start(container=container['Id'])
+
 
         # Save container information to the database
         new_container = Container(
