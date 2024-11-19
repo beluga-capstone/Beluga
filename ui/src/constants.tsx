@@ -10,9 +10,9 @@ import {
 
 export const ROLES = {
   ADMIN: 1,
-  PROFESSOR: 2,
+  PROFESSOR: 8,
   TA: 4,
-  STUDENT: 8,
+  STUDENT: 2,
 };
 
 export const SIDENAV_ITEMS: SideNavItem[] = [
