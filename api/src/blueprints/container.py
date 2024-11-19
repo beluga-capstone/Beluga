@@ -47,6 +47,39 @@ def create_container():
         return jsonify({'error': str(e)}), 500
 
 
+# Get a container
+@container_bp.route('/containers/<string:container_name>', methods=['GET'])
+def get_container(container_name):
+    try:
+        # get the container id from the name
+        containers = docker_client.containers.list(all=True)  # Include stopped containers
+        for container in containers:
+            if f"/{container_name}" in container.attrs['Name'] or container_name in container.name:
+                container = Container.query.get(container.id)
+                if not container:
+                    return jsonify({'error': 'Container not found'}), 404
+                
+                # it exists, get the port 
+                docker_container = docker_client.containers.get(container_name)
+                port_mapping = docker_container.attrs['NetworkSettings']['Ports']
+                for container_port, host_ports in port_mapping.items():
+                    if host_ports: 
+                        return jsonify({
+                            'message': 'container and port found', 
+                            'port':f"{host_ports[0]['HostPort']}"
+                        })
+                    else:
+                        return jsonify({
+                            'message': "container found but not port"
+                        })
+
+                return jsonify({'message': 'Container found'}), 200
+    except docker.errors.NotFound:
+        return jsonify({'error': 'Docker container not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 # Delete a container (DELETE)
 @container_bp.route('/containers/<string:container_name>', methods=['DELETE'])
 def delete_container(container_name):

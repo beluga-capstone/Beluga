@@ -10,6 +10,8 @@ import Link from "next/link";
 import { useState } from "react";
 import ContainerPageTerminal from "@/components/ContainerPageTerminal";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { Assignment } from "@/types";
 
 // Function to format the date
 const format_date = (date: string) =>
@@ -24,15 +26,9 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   const { assignments } = useAssignments();
   const [isContainerRunning, setIsContainerRunning] = useState(false);
   const [containerPort, setContainerPort] = useState<number | null>(null);
+  const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const [containerName, setContainerName] = useState<string | null>(null);
   const router = useRouter();
-
-  const assignment = assignments.find(
-    (assignment) =>
-      assignment.assignment_id === params.assignmentId
-  );
-
-  // todo, get the tag from the api
-  const imageName=`${assignment?.docker_image_id}`;
 
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
@@ -47,25 +43,55 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
         }
       );
       const data = await response.json();
-      return response.ok && data.exists; 
+
+      if (response.ok) {
+        console.log("Container exists");
+        return { exists: true, port: data.port }; 
+      } else {
+        console.log("Container does not exist");
+        return { exists: false, port: 0 };  
+      }
     } catch (error) {
       console.error("Error checking container existence:", error);
-      return false;
+      return { exists: false, port: 0 };
     }
   };
 
-  const runContainer = async (imageId: string) => {
-    const containerName = `${assignment?.title}_container`;
-    try {
-      // Check if the container exists
-      const exists = await checkContainerExists(containerName);
-      if (exists) {
-        alert("Container already exists and is running.");
-        setIsContainerRunning(true);
-        return;
-      }
+  // get the assignment and check if the container is running on startup
+  useEffect(() => {
+    const { assignmentId } = params;  
+    if (assignmentId) {
+      const found = assignments.find(
+        (assignment) =>
+          assignment.assignment_id === params.assignmentId
+      );
+      setAssignment(found || null);
+      setContainerName(`${assignment?.title}_con`)
 
-      // If not, create a new container
+      // todo, get the tag from the api
+      // const imageName=`${assignment?.docker_image_id}`;
+
+      // check if container exist
+      if (assignment && containerName) {
+        const check_exist_startup = async() =>{
+          if (!containerName) return;
+          let {exists, port}= await checkContainerExists(containerName);
+          if (exists) {
+            alert("Container already exists and is running.");
+            setIsContainerRunning(true);
+            setContainerPort(port);
+          }
+        };
+        check_exist_startup();
+        console.log("inside",assignment.title);
+      }
+    }
+  }, [assignment, assignments]);
+
+
+  const runContainer = async (imageId: string) => {
+    try {
+      // If container not exist, create a new container
       const response = await fetch("http://localhost:5000/containers", {
         method: "POST",
         headers: {
@@ -93,7 +119,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
     }
   };
 
-  const stopContainer = async (containerName: string) => {
+  const stopContainer = async (containerName: string | null) => {
     try {
       const response = await fetch(`http://localhost:5000/containers/${containerName}`, {
         method: "DELETE",
@@ -200,7 +226,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
               } text-white px-4 py-2 mb-4 rounded`}
               onClick={() =>
                 isContainerRunning
-                  ? stopContainer(`${assignment?.title}_container`)
+                  ? stopContainer(containerName)
                   : runContainer(assignment.docker_image_id)
               }
             >
@@ -238,4 +264,5 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
 };
 
 export default AssignmentPage;
+
 
