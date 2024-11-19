@@ -195,7 +195,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   return (
     <div className="container mx-auto p-4">
       {/* Overlay when stopping container */}
-      {!isStoppingContainer && (
+      {isStoppingContainer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-gray-500 p-6 rounded-lg shadow-xl flex items-center">
             <Loader2 className="mr-2 h-6 w-6 animate-spin" />
@@ -282,7 +282,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
           <h2 className="font-bold pb-4">
             {assignment?.docker_image_id
               ? `Image name: ${imageName}`
-              !: null
+              : null
             }
           </h2>
 
