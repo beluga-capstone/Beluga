@@ -5,6 +5,7 @@ import uuid
 
 from src.util.auth import admin_required
 from src.util.db import db, User
+from src.util.auth import *
 
 
 users_bp = Blueprint('users', __name__)
@@ -12,6 +13,7 @@ users_bp = Blueprint('users', __name__)
 
 # Create User (POST)
 @users_bp.route('/users', methods=['POST'])
+@login_required
 def create_user():
     data = request.get_json()
     if not data or not data.get('username') or not data.get('email'):
@@ -36,6 +38,7 @@ def create_user():
 
 # Read All Users (GET)
 @users_bp.route('/users', methods=['GET'])
+@admin_required
 def get_users():
     users = db.session.scalars(db.select(User)).all()
     users_list = []
@@ -76,6 +79,7 @@ def get_user(user_id):
 
 # Update User (PUT)
 @users_bp.route('/users/<uuid:user_id>', methods=['PUT'])
+@login_required
 def update_user(user_id):
     user = db.session.get(User, user_id)
     if user is None:
@@ -100,6 +104,7 @@ def update_user(user_id):
 
 # Delete User (DELETE)
 @users_bp.route('/users/<uuid:user_id>', methods=['DELETE'])
+@professor_required
 def delete_user(user_id):
     user = db.session.get(User, user_id)
     if user is None:

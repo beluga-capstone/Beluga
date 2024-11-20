@@ -7,12 +7,15 @@ from datetime import datetime
 import docker
 import io
 
+from src.util.auth import *
+
 docker_client = docker.from_env()
 
 image_bp = Blueprint('image', __name__)
 
 # Create a new image (POST)
 @image_bp.route('/images', methods=['POST'])
+@professor_required
 def create_image():
     data = request.get_json()
     
@@ -35,6 +38,7 @@ def create_image():
 
 
 @image_bp.route('/images/build', methods=['POST'])
+@professor_required
 def build_image():
     data = request.get_json()
     dockerfile_content = data['dockerfile_content']
@@ -96,6 +100,7 @@ def build_image():
 
 # Dynamic search for images (GET)
 @image_bp.route('/images/search', methods=['GET'])
+@login_required
 def search_images():
     filters = request.args.to_dict()  # Get all query parameters as filters
 
@@ -119,6 +124,7 @@ def search_images():
 
 # Get all images (GET)
 @image_bp.route('/images', methods=['GET'])
+@admin_required
 def get_images():
     images = db.session.scalars(db.select(Image)).all()
     images_list = [{
@@ -131,6 +137,7 @@ def get_images():
 
 # Get a specific image (GET)
 @image_bp.route('/images/<string:docker_image_id>', methods=['GET'])
+@login_required
 def get_image(docker_image_id):
     image = db.session.get(Image, docker_image_id)
     if image is None:
@@ -148,6 +155,7 @@ def get_image(docker_image_id):
 
 # Update an image (PUT)
 @image_bp.route('/images/<string:docker_image_id>', methods=['PUT'])
+@professor_required
 def update_image(docker_image_id):
     image = db.session.get(Image, docker_image_id)
     if image is None:
@@ -165,6 +173,7 @@ def update_image(docker_image_id):
 
 # Delete an image (DELETE)
 @image_bp.route('/images/<string:docker_image_id>', methods=['DELETE'])
+@professor_required
 def delete_image(docker_image_id):
     image = db.session.get(Image, docker_image_id)
     if image is None:

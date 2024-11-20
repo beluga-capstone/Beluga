@@ -3,6 +3,7 @@ from datetime import datetime
 import uuid
 from src.util.db import db, Assignment
 from src.util.query_utils import apply_filters
+from src.util.auth import *
 
 assignment_bp = Blueprint('assignment', __name__)
 
@@ -29,6 +30,7 @@ def parse_date(date_str):
 
 # Create a new assignment (POST)
 @assignment_bp.route('/assignments', methods=['POST'])
+@professor_required
 def create_assignment():
     data = request.get_json()
 
@@ -71,6 +73,7 @@ def create_assignment():
 
 # Dynamic assignment search (GET)
 @assignment_bp.route('/assignments/search', methods=['GET'])
+@login_required
 def search_assignments():
     filters = request.args.to_dict()  # Get all query parameters as filters
     try:
@@ -94,6 +97,7 @@ def search_assignments():
 
 # Get all assignments (GET)
 @assignment_bp.route('/assignments', methods=['GET'])
+@admin_required
 def get_assignments():
     assignments = db.session.scalars(db.select(Assignment)).all()
     assignments_list = [{
@@ -112,6 +116,7 @@ def get_assignments():
 
 # Get a specific assignment (GET)
 @assignment_bp.route('/assignments/<uuid:assignment_id>', methods=['GET'])
+@login_required
 def get_assignment(assignment_id):
     assignment = db.session.get(Assignment, assignment_id)
     if assignment is None:
@@ -130,6 +135,7 @@ def get_assignment(assignment_id):
     }), 200
 
 @assignment_bp.route('/assignments/<uuid:assignment_id>', methods=['PUT'])
+@professor_required
 def update_assignment(assignment_id):
     assignment = db.session.get(Assignment, assignment_id)
     if assignment is None:
@@ -184,6 +190,7 @@ def update_assignment(assignment_id):
         return jsonify({'error': str(e)}), 500
 
 # Delete an assignment (DELETE)
+@professor_required
 @assignment_bp.route('/assignments/<uuid:assignment_id>', methods=['DELETE'])
 def delete_assignment(assignment_id):
     assignment = db.session.get(Assignment, assignment_id)

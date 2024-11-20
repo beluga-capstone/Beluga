@@ -1,11 +1,14 @@
 from flask import Blueprint, request, jsonify
 from src.util.db import db, Role
 from datetime import datetime
+from src.util.auth import *
+
 
 role_bp = Blueprint('role', __name__)
 
 # Create a new role (POST)
 @role_bp.route('/roles', methods=['POST'])
+@admin_required
 def create_role():
     data = request.get_json()
     
@@ -29,6 +32,7 @@ def create_role():
 
 # Read all roles (GET)
 @role_bp.route('/roles', methods=['GET'])
+@admin_required
 def get_roles():
     roles = db.session.scalars(db.select(Role)).all()
 
@@ -45,6 +49,7 @@ def get_roles():
 
 # Read a single role by ID (GET)
 @role_bp.route('/roles/<int:role_id>', methods=['GET'])
+@admin_required
 def get_role(role_id):
     role = db.session.get(Role, role_id)
     if role is None:
@@ -61,6 +66,7 @@ def get_role(role_id):
 
 # Update a role (PUT)
 @role_bp.route('/roles/<int:role_id>', methods=['PUT'])
+@admin_required
 def update_role(role_id):
     role = db.session.get(Role, role_id)
     if role is None:
@@ -82,6 +88,7 @@ def update_role(role_id):
 
 # Delete a role (DELETE)
 @role_bp.route('/roles/<int:role_id>', methods=['DELETE'])
+@admin_required
 def delete_role(role_id):
     role = db.session.get(Role, role_id)
     if role is None:

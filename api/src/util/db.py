@@ -33,12 +33,11 @@ class User(db.Model, UserMixin):
         return (self.user_id)
 
     def parse_role(self):
-        roles = ['student', 'ta', 'prof', 'admin']
+        roles = ['admin', 'prof', 'ta', 'student']
+        bits = bin(self.role_id)[2:].zfill(len(roles))
         r = {}
-
-        for k, v in zip(roles, map(int, bin(self.role_id)[2:])):
-            r[k] = bool(v)
-
+        for k, v in zip(roles, bits[::-1]):
+            r[k] = bool(int(v))
         return r
 
     def is_student(self):

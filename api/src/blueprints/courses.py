@@ -2,11 +2,13 @@ from flask import Blueprint, request, jsonify
 from src.util.db import db, Course
 from datetime import datetime
 import uuid
+from src.util.auth import *
 
 course_bp = Blueprint('course', __name__)
 
 # Create a new course (POST)
 @course_bp.route('/courses', methods=['POST'])
+@professor_required
 def create_course():
     data = request.get_json()
 
@@ -32,6 +34,7 @@ def create_course():
 
 # Get all courses (GET)
 @course_bp.route('/courses', methods=['GET'])
+@admin_required
 def get_courses():
     courses = db.session.scalars(db.select(Course)).all()
     courses_list = [{
@@ -48,6 +51,7 @@ def get_courses():
 
 # Get a specific course (GET)
 @course_bp.route('/courses/<uuid:course_id>', methods=['GET'])
+@login_required
 def get_course(course_id):
     course = db.session.get(Course, course_id)
     if course is None:
@@ -65,6 +69,7 @@ def get_course(course_id):
 
 # Update a course (PUT)
 @course_bp.route('/courses/<uuid:course_id>', methods=['PUT'])
+@professor_required
 def update_course(course_id):
     course = db.session.get(Course, course_id)
     if course is None:
@@ -88,6 +93,7 @@ def update_course(course_id):
 
 # Delete a course (DELETE)
 @course_bp.route('/courses/<uuid:course_id>', methods=['DELETE'])
+@professor_required
 def delete_course(course_id):
     course = db.session.get(Course, course_id)
     if course is None:

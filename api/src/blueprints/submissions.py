@@ -3,11 +3,14 @@ from src.util.db import db, Submission
 from src.util.query_utils import apply_filters
 from datetime import datetime
 import uuid
+from src.util.auth import *
+
 
 submission_bp = Blueprint('submission', __name__)
 
 # Create a new submission (POST)
 @submission_bp.route('/submissions', methods=['POST'])
+@student_required
 def create_submission():
     data = request.get_json()
 
@@ -33,6 +36,7 @@ def create_submission():
 
 # Dynamic submission search (GET)
 @submission_bp.route('/submissions/search', methods=['GET'])
+@login_required
 def search_submissions():
     filters = request.args.to_dict()
     try:
@@ -54,6 +58,7 @@ def search_submissions():
 
 # Get all submissions (GET)
 @submission_bp.route('/submissions', methods=['GET'])
+@admin_required
 def get_submissions():
     submissions = db.session.scalars(db.select(Submission)).all()
     submissions_list = [{
@@ -70,6 +75,7 @@ def get_submissions():
 
 # Get a specific submission (GET)
 @submission_bp.route('/submissions/<uuid:submission_id>', methods=['GET'])
+@login_required
 def get_submission(submission_id):
     submission = db.session.get(Submission, submission_id)
     if submission is None:
@@ -87,6 +93,7 @@ def get_submission(submission_id):
 
 # Update a submission (PUT)
 @submission_bp.route('/submissions/<uuid:submission_id>', methods=['PUT'])
+@student_required
 def update_submission(submission_id):
     submission = db.session.get(Submission, submission_id)
     if submission is None:
@@ -109,6 +116,7 @@ def update_submission(submission_id):
 
 # Delete a submission (DELETE)
 @submission_bp.route('/submissions/<uuid:submission_id>', methods=['DELETE'])
+@student_required
 def delete_submission(submission_id):
     submission = db.session.get(Submission, submission_id)
     if submission is None:
