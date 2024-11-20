@@ -10,6 +10,34 @@ docker_client = docker.from_env()
 
 container_bp = Blueprint('container', __name__)
 
+@container_bp.route('/containers', methods=['GET'])
+def get_all_containers():
+    try:
+        # Get all containers from Docker including stopped ones
+        docker_containers = docker_client.containers.list(all=True)
+        
+        containers_list = []
+        for docker_container in docker_containers:
+            # Get container from database
+            container = Container.query.filter_by(
+                docker_container_id=docker_container.id
+            ).first()
+
+            if container:
+                containers_list.append({
+                    'docker_container_id': container.docker_container_id,
+                    'docker_container_name': container.docker_container_name,
+                    'description': container.description,
+                    'user_id': container.user_id,
+                })
+
+        return jsonify(containers_list), 200
+
+    except Exception as e:
+        current_app.logger.error(f"Error getting containers: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
 # Create and start a new container (POST)
 @container_bp.route('/containers', methods=['POST'])
 def create_container():
@@ -34,6 +62,7 @@ def create_container():
         # Save container information to the database
         new_container = Container(
             docker_container_id=container.id,
+            docker_container_name=data.get('container_name',f"container_{data['docker_image_id']}"),
             user_id=data['user_id'],
             description=data.get('description', f"Container running with image {data['docker_image_id']}")
 
@@ -81,31 +110,30 @@ def get_container(container_name):
 
 
 # Delete a container (DELETE)
-@container_bp.route('/containers/<string:container_name>', methods=['DELETE'])
-def delete_container(container_name):
+@container_bp.route('/containers/<string:container_id>', methods=['DELETE'])
+def delete_container(container_id):
     try:
-        # get the container id from the name
-        containers = docker_client.containers.list(all=True)  # Include stopped containers
-        for container in containers:
-            if f"/{container_name}" in container.attrs['Name'] or container_name in container.name:
-                container = Container.query.get(container.id)
-                if not container:
-                    return jsonify({'error': 'Container not found'}), 404
+        # Retrieve the container from the database using the container_id
+        container = Container.query.get(container_id)
+        if not container:
+            return jsonify({'error': 'Container not found'}), 404
 
-                # Stop and remove the Docker container
-                docker_container = docker_client.containers.get(container.docker_container_id)
-                docker_container.stop()
-                docker_container.remove()
+        # Stop and remove the Docker container
+        docker_container = docker_client.containers.get(container.docker_container_id)
+        docker_container.stop()
+        docker_container.remove()
 
-                # Remove from the database
-                db.session.delete(container)
-                db.session.commit()
+        # Remove the container record from the database
+        db.session.delete(container)
+        db.session.commit()
 
-                return jsonify({'message': 'Container deleted successfully'}), 200
+        return jsonify({'message': 'Container deleted successfully'}), 200
+
     except docker.errors.NotFound:
         return jsonify({'error': 'Docker container not found'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 def find_available_port(start_port: int, end_port: int) -> int:
     for port in range(start_port, end_port + 1):

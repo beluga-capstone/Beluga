@@ -97,7 +97,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
       setContainerPort(null);
     } else {
       const port = await runContainer(assignment?.docker_image_id ?? null, containerName);
-      setContainerPort(port);
+      setContainerPort(port??null);
     }
   };
 
