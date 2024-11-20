@@ -7,10 +7,11 @@ interface ContainerHook {
   isLoading: boolean;
   error: string | null;
   isContainerRunning: boolean;
-  containerPort: number | null;
+  otherContainerPort: number | null;
+  otherContainerId: string | null;
   isStoppingContainer: boolean;
   isRunningContainer: boolean;
-  runContainer: (imageId: string | null, containerName: string | null) => Promise<void>;
+  runContainer: (imageId: string | null, containerName: string | null) => Promise<{ container_id: string | null; container_port: number | null } | null>;
   stopContainer: (containerName: string | null) => Promise<void>;
   checkContainerExists: (containerName: string) => Promise<{ exists: boolean; port: number }>;
 }
@@ -21,7 +22,8 @@ export const useContainers = (): ContainerHook => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isContainerRunning, setIsContainerRunning] = useState(false);
-  const [containerPort, setContainerPort] = useState<number | null>(null);
+  const [otherContainerPort, setContainerPort] = useState<number | null>(null);
+  const [otherContainerId, setContainerId] = useState<string | null>(null);
   const [isStoppingContainer, setIsStoppingContainer] = useState(false);
   const [isRunningContainer, setIsRunningContainer] = useState(false);
 
@@ -62,10 +64,14 @@ export const useContainers = (): ContainerHook => {
     }
   };
 
-  const runContainer = async (imageId: string | null, containerName: string | null) => {
-    if (!imageId || !containerName) return;
-    
+  const runContainer = async (
+    imageId: string | null,
+    containerName: string | null
+  ): Promise<{ container_id: string | null; container_port: number | null } | null> => {
+    if (!imageId || !containerName) return null;
+
     setIsRunningContainer(true);
+
     try {
       const response = await fetch("http://localhost:5000/containers", {
         method: "POST",
@@ -76,16 +82,21 @@ export const useContainers = (): ContainerHook => {
           user_id: profile?.user_id,
         }),
       });
+
       const data = await response.json();
       if (response.ok) {
         setContainerPort(data.port);
         setIsContainerRunning(true);
+        setContainerId(data.docker_container_id);
         await fetchContainers(); // Refresh the list
+        return { container_id: data.docker_container_id, container_port: data.port };
       } else {
         console.error("Error starting container:", data.error);
+        return { container_id: null, container_port: null };
       }
     } catch (error) {
       console.error("Error running container:", error);
+      return { container_id: null, container_port: null };
     } finally {
       setIsRunningContainer(false);
     }
@@ -121,7 +132,8 @@ export const useContainers = (): ContainerHook => {
     isLoading,
     error,
     isContainerRunning,
-    containerPort,
+    otherContainerPort,
+    otherContainerId,
     isStoppingContainer,
     isRunningContainer,
     runContainer,

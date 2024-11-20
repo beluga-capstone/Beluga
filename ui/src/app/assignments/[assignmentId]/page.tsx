@@ -44,6 +44,8 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
     isContainerRunning,
     isStoppingContainer,
     isRunningContainer,
+    otherContainerId,
+    otherContainerPort,
     runContainer,
     stopContainer,
     checkContainerExists,
@@ -52,6 +54,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
   // State
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [containerName, setContainerName] = useState<string | null>(null);
+  const [containerId, setContainerId] = useState<string | null>(null);
   const [containerPort, setContainerPort] = useState<number | null>(null);
   const [imageName, setImageName] = useState<string | null>(null);
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
@@ -89,15 +92,29 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
       setImageName(imageData.tag[0]);
     }
   }, [imageData]);
+  
 
+  useEffect(()=>{
+    console.log("port and id ",containerPort,containerId);
+  },[containerId,containerPort]);
   // Handlers
   const handleContainerAction = async () => {
     if (isContainerRunning) {
-      await stopContainer(containerName);
+      await stopContainer(containerId);
+      console.log("stopping",containerId);
       setContainerPort(null);
     } else {
-      const port = await runContainer(assignment?.docker_image_id ?? null, containerName);
-      setContainerPort(port??null);
+      const result = await runContainer(assignment?.docker_image_id ?? null, containerName);
+
+      if (result) {
+        const { container_port: port, container_id: id } = result;
+        console.log(`Container running on port: ${port}, ID: ${id}`);
+        setContainerPort(port);
+        setContainerId(id);
+      } else {
+        console.error("Failed to run the container.");
+      }
+
     }
   };
 

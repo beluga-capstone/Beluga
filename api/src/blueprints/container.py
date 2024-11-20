@@ -70,7 +70,7 @@ def create_container():
         db.session.add(new_container)
         db.session.commit()
 
-        return jsonify({'message': 'Container created and started successfully', 'port':port}), 201
+        return jsonify({'message': 'Container created and started successfully', 'port':port,'docker_container_id':container.id}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
