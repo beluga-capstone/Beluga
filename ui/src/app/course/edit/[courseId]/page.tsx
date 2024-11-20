@@ -3,18 +3,18 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useDashboard } from "@/hooks/useDashboard";
-import CoursesForm from "@/components/CoursesForm";
+import CoursesForm from "../../../../components/CoursesForm";
 import Button from "@/components/Button";
 
 const EditCourse: React.FC = () => {
   const { courses, updateCourse } = useDashboard();
   const router = useRouter();
   const { courseId } = useParams();
-  
+
   const course = courses.find((c) => c.id === Number(courseId));
 
   const [title, setTitle] = useState(course?.name || "");
-  const [section, setSection] = useState(course?.section || "");
+  const [section, setSection] = useState(course?.section?.toString() || ""); // Ensure string
   const [semester, setSemester] = useState(course?.term || "");
   const [professor, setProfessor] = useState(course?.professor || "");
 
@@ -24,9 +24,9 @@ const EditCourse: React.FC = () => {
     }
   }, [course, router]);
 
-  const handleUpdateCourse = () => {
+  const handleUpdateCourse = async () => {
     if (course) {
-      updateCourse(course.id, title, section, semester, professor);
+      await updateCourse(course.id, title, section, semester, professor); // Call update API
       router.push("/");
     }
   };

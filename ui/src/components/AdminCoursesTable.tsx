@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Trash2, Edit2, ToggleLeft, ToggleRight } from "lucide-react";
+import { Trash2, Edit2, ToggleLeft, ToggleRight, Plus } from "lucide-react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useUsers } from "@/hooks/useUsers";
 import { ROLES } from "@/constants";
@@ -14,7 +14,7 @@ const AdminCoursesTable: React.FC = () => {
     const [termSeason, termYear] = term.split(" ");
     const currentYear = currentDate.getFullYear();
     const termYearInt = parseInt(termYear, 10);
-    const { users } = useUsers();
+    // const { users } = useUsers();
 
     if (termYearInt !== currentYear) {
       return false;
@@ -45,6 +45,17 @@ const AdminCoursesTable: React.FC = () => {
 
   return (
     <div>
+
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Courses</h2>
+        <Link href="/course/new">
+          <button className="flex items-center bg-blue-500 text-white px-4 py-2 rounded">
+            <Plus className="mr-2" />
+            Add Course
+          </button>
+        </Link>
+      </div>
+
       <table className="table w-full">
         <thead>
           <tr>

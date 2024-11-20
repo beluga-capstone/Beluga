@@ -4,7 +4,7 @@ import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import Papa from "papaparse";
 import Button from "@/components/Button";
-import CoursesForm from "../../../components/CoursesForm";
+import CoursesForm from "@/components/CoursesForm";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useUsers } from "@/hooks/useUsers";
 import StudentsTable from "../../students/StudentsTable";
@@ -12,12 +12,12 @@ import { User } from "@/types";
 import { useRouter } from "next/navigation";
 
 const NewCourse: React.FC = () => {
-  const { addCourse } = useDashboard();
+  const { addCourse, fetchCourses } = useDashboard();
   const { addUsers } = useUsers();
   const router = useRouter();
 
   const [title, setTitle] = useState("");
-  const [section, setSection] = useState<string>("");   
+  const [section, setSection] = useState<string>("");
   const [professor, setProfessor] = useState<string>("");
   const [semester, setSemester] = useState("");
   const [students, setStudents] = useState<User[]>([]);
@@ -47,11 +47,16 @@ const NewCourse: React.FC = () => {
     accept: { "text/csv": [".csv"] },
   });
 
-  const handleAddCourse = () => {
-    const courseId = Date.now();
-    addCourse(title, section, professor, semester, students.length);
-    const studentsWithCourseId = students.map(student => ({ ...student, courseId }));
-    addUsers(studentsWithCourseId);
+  const handleAddCourse = async () => {
+    const courseId = Date.now(); 
+    await addCourse(title, section, professor, semester, students.length);
+    await fetchCourses(); 
+    const studentsWithCourseId = students.map((student) => ({
+      ...student,
+      courseId,
+    }));
+    await addUsers(studentsWithCourseId);
+  
     router.push("/");
   };
 
@@ -59,6 +64,7 @@ const NewCourse: React.FC = () => {
     <div className="container mx-auto p-4">
       <h1 className="font-bold text-4xl mb-6">New Course</h1>
 
+      {/* Course Form */}
       <CoursesForm
         title={title}
         setTitle={setTitle}
@@ -70,6 +76,7 @@ const NewCourse: React.FC = () => {
         setSemester={setSemester}
       />
 
+      {/* CSV Upload Section */}
       <h2 className="font-bold text-2xl mt-8 mb-4">Upload Students</h2>
       {students.length === 0 ? (
         <div
@@ -83,6 +90,7 @@ const NewCourse: React.FC = () => {
         <StudentsTable students={students} />
       )}
 
+      {/* Action Buttons */}
       <div className="flex flex-row justify-end pt-4 space-x-2">
         <Button className="bg-gray-500 text-white px-4 py-2 rounded" href="/">
           Cancel
@@ -90,7 +98,7 @@ const NewCourse: React.FC = () => {
         <Button
           className="bg-blue-500 text-white px-4 py-2 rounded"
           onClick={handleAddCourse}
-          disabled={!title}
+          disabled={!title || students.length === 0}
         >
           Add Course
         </Button>

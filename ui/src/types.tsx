@@ -25,6 +25,7 @@ export interface Course {
   term: string;
   studentsEnrolled: number;
   isPublished: boolean;
+  professor: string;
 }
 
 export interface Student {
