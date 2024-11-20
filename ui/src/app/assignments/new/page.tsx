@@ -2,16 +2,15 @@
 
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
-import React from "react";
+import React, {useState,useEffect} from "react";
 import AssignmentForm from "../../../components/AssignmentsForm";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const NewAssignment: React.FC = () => {
-  const { addAssignment, fetchAssignments } = useAssignments(); // Include fetchAssignments here
+  const courseId = "6d37fdc4-77ed-42cc-bb57-4dc59fd683a0";
+  const { addAssignment, fetchAssignments } = useAssignments();
   const searchParams = useSearchParams();
   const router = useRouter();
-
-  const courseId = searchParams.get("courseId") || "";
   const courseName = decodeURIComponent(searchParams.get("name") || "Unknown Course");
 
   const [title, setTitle] = React.useState("");
@@ -21,7 +20,12 @@ const NewAssignment: React.FC = () => {
   const [lockAt, setLockAt] = React.useState("");
   const [unlockAt, setUnlockAt] = React.useState("");
   const [allowsLateSubmissions, setAllowsLateSubmissions] = React.useState(false);
-  const [imageId, setImageId] = React.useState("");
+  const [imageId, setImageId] = useState<string | null>(null);
+
+  // if select image, then unselect,imageid will be -1, fix it
+  useEffect(()=>{
+    if (imageId === "-1") setImageId(null);
+  }, [imageId]);
 
   const handleAddAssignment = async () => {
     await addAssignment(
@@ -76,7 +80,20 @@ const NewAssignment: React.FC = () => {
         <div className="p-2">
           <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={handleAddAssignment}
+            onClick={() =>
+              addAssignment(
+                courseId,
+                title,
+                description,
+                new Date(dueAt),
+                allowsLateSubmissions ? new Date(lockAt) : new Date(dueAt),
+                new Date(unlockAt),
+                new Date(publishAt),
+                allowsLateSubmissions,
+                imageId || null
+              )
+            }
+            href="/assignments"
             disabled={!title}
           >
             Add Assignment

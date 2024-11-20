@@ -51,10 +51,10 @@ const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({
               </Link>
             </td>
             <td className="text-center py-2">
-              {formatDate(assignment.publish_at ?? null)}
+              {assignment.publish_at ? formatDate(assignment.publish_at) : "Not found"}
             </td>
             <td className="text-center py-2">
-              {formatDate(assignment.due_at ?? null)}
+              {assignment.due_at ? formatDate(assignment.due_at) : "Not found"}
             </td>
             <td className="text-center py-2">0</td>
             <td className="py-2">

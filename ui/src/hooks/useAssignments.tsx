@@ -74,8 +74,8 @@ export const useAssignments = () => {
     lock_at: Date,
     unlock_at: Date,
     publish_at: Date,
-    allowsLateSubmissions: boolean,
-    dockerImageId: string
+    allows_late_submissions: boolean,
+    docker_image_id: string | null
   ) => {
     const newAssignment: Assignment = {
       assignment_id: Date.now().toString(),
@@ -88,8 +88,8 @@ export const useAssignments = () => {
       publish_at,
       is_unlocked: Date.now() >= unlock_at.getTime(),
       is_published: Date.now() >= publish_at.getTime(),
-      allows_late_submissions: allowsLateSubmissions,
-      docker_image_id: dockerImageId,
+      allows_late_submissions: allows_late_submissions,
+      docker_image_id: docker_image_id,
     };
   
     try {
@@ -128,6 +128,7 @@ export const useAssignments = () => {
       allows_late_submissions,
       docker_image_id,
     };
+    console.log("updating with",assignment_id,course_id,title,description,due_at,lock_at,unlock_at,docker_image_id)
 
     try {
       const response = await fetch(`http://localhost:5000/assignments/${assignment_id}`, {

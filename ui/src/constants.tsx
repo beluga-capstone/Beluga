@@ -9,10 +9,10 @@ import {
 } from "./types";
 
 export const ROLES = {
-  ADMIN: 1,
-  PROFESSOR: 2,
+  ADMIN: 8,
+  PROFESSOR: 1,
   TA: 4,
-  STUDENT: 8,
+  STUDENT: 2,
 };
 
 export const SIDENAV_ITEMS: SideNavItem[] = [

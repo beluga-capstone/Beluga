@@ -1,18 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import {Image} from "@/types";
 
 interface EditImageModalProps {
     onClose: () => void;
-    onUpdateImage: (updatedImage: { id: number; title: string; courses: string[]; packages: string[]; dockerfileContent: string }) => void;
-    onDeleteImage: (imageId: number | null) => void;
-    imageId: number | null;
-    selectedImage: {
-        id: number;
-        title: string;
-        courses: string[];
-        packages: string[];
-        dockerfileContent: string;
-    } | null;
+    onUpdateImage: (updatedImage: Image) => void;
+    onDeleteImage: (imageId: string | null) => void;
+    imageId: string | null;
+    selectedImage: Image | null;
 }
 
 function EditImageModal({onClose, onUpdateImage, onDeleteImage, imageId, selectedImage }: EditImageModalProps) {
@@ -24,46 +19,14 @@ function EditImageModal({onClose, onUpdateImage, onDeleteImage, imageId, selecte
 
     useEffect(() => {
         if (selectedImage) {
-            setImageName(selectedImage.title);
-            setCourses(selectedImage.courses);
-            setPackages(selectedImage.packages);
-            setDockerFileContent(selectedImage.dockerfileContent);
+            setImageName(selectedImage.docker_image_id);
         } else {
             setImageName("");
             setCourses([]);
             setPackages([]);
             setDockerFileContent("");
         }
-    }, [selectedImage]);
-
-    const handleUpdateImage = () => {
-        if (imageName.trim() !== "" && imageId !== null) {
-            onUpdateImage({
-                id: imageId,
-                title: imageName,
-                courses,
-                packages,
-                dockerfileContent: dockerFileContent,
-            });
-            onClose();
-        }
-    };
-
-    const handleCourseChange = (course: string) => {
-        setCourses((prevCourses) =>
-            prevCourses.includes(course)
-                ? prevCourses.filter((c) => c !== course)
-                : [...prevCourses, course]
-        );
-    };
-
-    const handlePackageChange = (packageName: string) => {
-        setPackages((prevPackages) =>
-            prevPackages.includes(packageName)
-                ? prevPackages.filter((p) => p !== packageName)
-                : [...prevPackages, packageName]
-        );
-    };
+    }, []);
 
     return (
         <div className="container mx-auto p-4">
@@ -83,19 +46,8 @@ function EditImageModal({onClose, onUpdateImage, onDeleteImage, imageId, selecte
             </div>
 
             <div className="mb-4">
-                <h2>Courses Assigned:</h2>
+                <h2>Assignments:</h2>
                 <div className="mb-4">
-                    {['CSCE 121', 'CSCE 313', 'CSCE 410'].map((course) => (
-                        <label key={course} className="flex items-center bg-surface">
-                            <input
-                                type="checkbox"
-                                checked={courses.includes(course)}
-                                onChange={() => handleCourseChange(course)}
-                                className="mr-2"
-                            />{" "}
-                            {course}
-                        </label>
-                    ))}
                 </div>
             </div>
                 
@@ -116,18 +68,6 @@ function EditImageModal({onClose, onUpdateImage, onDeleteImage, imageId, selecte
                     </tr>
                 </thead>
                 <tbody>
-                    {['vim', 'python3', 'imagemagick'].map((packageName) => (
-                        <tr key={packageName}>
-                            <td className="bg-surface">{packageName}</td>
-                            <td className="text-center">
-                                <input
-                                    type="checkbox"
-                                    checked={packages.includes(packageName)}
-                                    onChange={() => handlePackageChange(packageName)}
-                                />
-                            </td>
-                        </tr>
-                    ))}
                 </tbody>
             </table>
             </div>

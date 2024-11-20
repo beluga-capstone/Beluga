@@ -63,7 +63,7 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 <h1 className="font-bold text-4xl mb-6">Container "{container.name}"</h1>
                 <ContainerPageInfo container={container} />
                 <br/>
-                <ContainerPageTerminal containerId={containerId}/>
+                <ContainerPageTerminal imageId={containerId}/>
             </div>
         );
     }
