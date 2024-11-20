@@ -17,10 +17,6 @@ interface ContainerItemProps {
 
 const ContainerItem: React.FC<ContainerItemProps> = ({
   container,
-  onDelete,
-  onPause,
-  onRun,
-  onStop,
   onToggleSelect,
   isSelected,
 }) => {

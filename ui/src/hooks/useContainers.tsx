@@ -1,145 +1,108 @@
-"use client";
+import { useState, useEffect } from 'react';
+import { useProfile } from './useProfile';
 
-import { useEffect, useState } from "react";
-import { Container, Image } from "@/types";
-import { DEFAULT_CONTAINERS } from "@/constants";
+interface ContainerHook {
+  isContainerRunning: boolean;
+  containerPort: number | null;
+  isStoppingContainer: boolean;
+  isRunningContainer: boolean;
+  runContainer: (imageId: string | null, containerName: string | null) => Promise<void>;
+  stopContainer: (containerName: string | null) => Promise<void>;
+  checkContainerExists: (containerName: string) => Promise<{ exists: boolean; port: number }>;
+}
 
-const fetchContainers = async (): Promise<Container[]> => {
-  try {
-    const response = await fetch("http://localhost:5000/api/containers");
-    if (!response.ok) {
-      throw new Error("Failed to fetch containers");
-    }
-    const data = await response.json();
-    return data.containers; 
-  } catch (error) {
-    console.error("Error fetching containers:", error);
-    return DEFAULT_CONTAINERS;
-  }
-};
+export const useContainers = (): ContainerHook => {
+  const { profile } = useProfile();
+  const [isContainerRunning, setIsContainerRunning] = useState(false);
+  const [containerPort, setContainerPort] = useState<number | null>(null);
+  const [isStoppingContainer, setIsStoppingContainer] = useState(false);
+  const [isRunningContainer, setIsRunningContainer] = useState(false);
 
-const saveContainer = async (newContainer: Container) => {
-  try {
-    const response = await fetch("http://localhost:5000/api/containers", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newContainer),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to add container");
-    }
-    const data = await response.json();
-    return data.container; // Assuming the API returns the newly created container
-  } catch (error) {
-    console.error("Error saving container:", error);
-  }
-};
-
-export const useContainers = () => {
-  const [containers, setContainers] = useState<Container[]>([]);
-  const [selectedContainers, setSelectedContainers] = useState<number[]>([]);
-
-  const fetchContainers = async () => {
+  const checkContainerExists = async (containerName: string) => {
     try {
-      const response = await fetch('http://localhost:5000/containers');
-      if (!response.ok) {
-        throw new Error('Failed to fetch images');
-      }
+      const response = await fetch(
+        `http://localhost:5000/containers/${containerName}`,
+        { method: "GET" }
+      );
       const data = await response.json();
-      setContainers(data);
-    } catch (err) {
-      console.log(err);
+
+      if (response.ok) {
+        setIsContainerRunning(true);
+
+        return { exists: true, port: data.port }; 
+      } else {
+        return { exists: false, port: 0 };  
+      }
+    } catch (error) {
+      console.error("Error checking container existence:", error);
+      return { exists: false, port: 0 };
     }
   };
 
-  // Initial fetch
-  useEffect(() => {
-    fetchContainers();
-  }, []);
+  const runContainer = async (imageId: string | null, containerName: string | null) => {
+    if (!imageId || !containerName) return;
+    
+    setIsRunningContainer(true);
 
-  const addContainer = async (
-    name: string,
-    image: Image,
-    cpuCores: number,
-    memoryGBs: number,
-    storageGBs: number
-  ) => {
-    const newContainer: Container = {
-      id: Date.now(),
-      name: name,
-      status: "stopped",
-      launchTime: new Date().toLocaleString(),
-      image: image,
-      cpuCores: cpuCores,
-      memoryGBs: memoryGBs,
-      storageGBs: storageGBs,
-    };
+    try {
+      const response = await fetch("http://localhost:5000/containers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          container_name: containerName,
+          docker_image_id: imageId,
+          user_id: profile?.user_id,
+        }),
+      });
 
-    // Save to the API
-    const savedContainer = await saveContainer(newContainer);
-    if (savedContainer) {
-      setContainers((prev) => [...prev, savedContainer]);
+      const data = await response.json();
+
+      if (response.ok) {
+        setContainerPort(data.port);
+        setIsContainerRunning(true);
+      } else {
+        console.error("Error starting container:", data.error);
+      }
+    } catch (error) {
+      console.error("Error running container:", error);
+    } finally {
+      setIsRunningContainer(false);
     }
   };
 
-  const deleteContainer = (id: number) => {
-    // API delete logic here (if needed)
-    const updatedContainers = containers.filter(
-      (container) => container.id !== id
-    );
-    setContainers(updatedContainers);
-    setSelectedContainers(
-      selectedContainers.filter((selectedId) => selectedId !== id)
-    );
-  };
+  const stopContainer = async (containerName: string | null) => {
+    if (!containerName) return;
+    
+    setIsStoppingContainer(true);
 
-  const updateContainerStatus = (
-    id: number,
-    status: "running" | "paused" | "stopped"
-  ) => {
-    const updatedContainers = containers.map((container) =>
-      container.id === id ? { ...container, status } : container
-    );
-    setContainers(updatedContainers);
-  };
+    try {
+      const response = await fetch(`http://localhost:5000/containers/${containerName}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
 
-  const toggleSelectContainer = (id: number) => {
-    setSelectedContainers((prevSelected) =>
-      prevSelected.includes(id)
-        ? prevSelected.filter((selectedId) => selectedId !== id)
-        : [...prevSelected, id]
-    );
-  };
-
-  const performBulkAction = (
-    action: "running" | "paused" | "stopped" | "delete"
-  ) => {
-    let updatedContainers = containers;
-    if (action === "delete") {
-      updatedContainers = containers.filter(
-        (container) => !selectedContainers.includes(container.id)
-      );
-      setSelectedContainers([]);
-    } else {
-      updatedContainers = containers.map((container) =>
-        selectedContainers.includes(container.id)
-          ? { ...container, status: action }
-          : container
-      );
+      if (response.ok) {
+        setIsContainerRunning(false);
+        setContainerPort(null);
+      } else {
+        const data = await response.json();
+        console.error(`Error stopping container: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error stopping container:", error);
+    } finally {
+      setIsStoppingContainer(false);
     }
-    setContainers(updatedContainers);
   };
 
   return {
-    containers,
-    selectedContainers,
-    addContainer,
-    deleteContainer,
-    updateContainerStatus,
-    toggleSelectContainer,
-    performBulkAction,
+    isContainerRunning,
+    containerPort,
+    isStoppingContainer,
+    isRunningContainer,
+    runContainer,
+    stopContainer,
+    checkContainerExists,
   };
 };
 
