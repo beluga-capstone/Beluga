@@ -309,13 +309,15 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
             {assignment?.docker_image_id ? `Image name: ${imageName}` : null}
           </h2>
 
-          <p className="text-blue-500 pb-8">
-            <Link
-              href={`/assignments/${assignment?.assignment_id}/submissions/${latestSubmission?.submission_id}`}
-            >
-              View Submission
-            </Link>
-          </p>
+          {latestSubmission && (
+            <p className="text-blue-500 pb-8">
+              <Link
+                href={`/assignments/${assignment?.assignment_id}/submissions/${latestSubmission?.submission_id}`}
+              >
+                View Submission
+              </Link>
+            </p>
+          )}
 
           {assignment?.docker_image_id ? (
             <Button

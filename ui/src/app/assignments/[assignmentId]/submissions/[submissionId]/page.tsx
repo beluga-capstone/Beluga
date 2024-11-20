@@ -1,12 +1,12 @@
 "use client";
 
 import FilesPreview from "@/components/FilesPreview";
-import { DEFAULT_FILES } from "@/constants";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useProfile } from "@/hooks/useProfile";
 import { useSubmissions } from "@/hooks/useSubmissions";
 import { Submission } from "@/types";
 import { useEffect, useState } from "react";
+import JSZip from "jszip";
 
 const SubmissionPage = ({
   params,
@@ -24,6 +24,7 @@ const SubmissionPage = ({
   const [latestSubmission, setLatestSubmission] = useState<Submission | null>(
     null
   );
+  const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
     if (profile) {
@@ -35,7 +36,22 @@ const SubmissionPage = ({
 
   useEffect(() => {
     if (latestSubmission) {
-      console.log(latestSubmission);
+      const unzipFiles = async (zipData: ArrayBuffer) => {
+        const zip = await JSZip.loadAsync(zipData);
+        const files: File[] = [];
+
+        for (const relativePath of Object.keys(zip.files)) {
+          const file = zip.files[relativePath];
+          const fileData = await file.async("blob");
+          files.push(new File([fileData], relativePath));
+        }
+
+        return files;
+      };
+
+      latestSubmission.data.arrayBuffer().then((buffer) => unzipFiles(buffer)).then((unzippedFiles) => {
+        setFiles(unzippedFiles);
+      });
     }
   }, [latestSubmission]);
 
@@ -57,7 +73,7 @@ const SubmissionPage = ({
         {studentFirstName} {studentLastName}
       </h2>
       <FilesPreview
-        files={DEFAULT_FILES.map((file) => new File([file], "file.py"))}
+        files={files}
       />
     </div>
   );
