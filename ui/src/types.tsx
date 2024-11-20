@@ -52,7 +52,6 @@ export interface Assignment {
 }
 
 export interface Container {
-  id: number;
   name: string;
   status: "running" | "paused" | "stopped";
   launchTime: string;

@@ -1,9 +1,15 @@
 import React from "react";
-import { useRouter } from "next/navigation"; // Import useRouter
+import { useRouter } from "next/navigation";
 import { Trash2, Pause, Play, Square, CheckSquare } from "lucide-react";
-import ContainerStatus from "./ContainerStatus";
-import { Container } from "@/types";
 import IconButton from "./IconButton";
+import ContainerStatus from "./ContainerStatus";
+
+interface Container {
+  id: number;
+  name: string;
+  status: string;
+  // Add other container properties as needed
+}
 
 interface ContainerItemProps {
   container: Container;
@@ -17,6 +23,10 @@ interface ContainerItemProps {
 
 const ContainerItem: React.FC<ContainerItemProps> = ({
   container,
+  onDelete,
+  onPause,
+  onRun,
+  onStop,
   onToggleSelect,
   isSelected,
 }) => {
@@ -27,7 +37,7 @@ const ContainerItem: React.FC<ContainerItemProps> = ({
   };
 
   return (
-    <div className="flex items-center space-x-4 p-4 border rounded-lg mb-4">
+    <div className="flex items-center space-x-4 p-4 border rounded-lg mb-4 hover:bg-gray-50">
       <button
         onClick={() => onToggleSelect(container.id)}
         className="focus:outline-none"
@@ -39,43 +49,39 @@ const ContainerItem: React.FC<ContainerItemProps> = ({
         )}
       </button>
       <div className="flex-grow">
-        <h3 className="font-semibold cursor-pointer" onClick={handleContainerClick}>
-          {container.name}{" "}
-          <span className={`px-1 py-0.25 rounded bg-on-surface text-light-surface`}>
-            {container.status}
-          </span>
+        <h3 
+          className="font-semibold cursor-pointer hover:text-blue-600" 
+          onClick={handleContainerClick}
+        >
+          {container.name}
         </h3>
-        <p className="text-sm text-on-surface">
-          Launch Time: {container.launchTime}
-        </p>
+        <ContainerStatus status={container.status} />
       </div>
-      <div className="flex items-center space-x-2">
+      <div className="flex space-x-2">
+        {container.status === 'running' ? (
+          <>
+            <IconButton
+              icon={<Pause className="h-4 w-4" />}
+              onClick={() => onPause(container.id)}
+              tooltip="Pause"
+            />
+            <IconButton
+              icon={<Square className="h-4 w-4" />}
+              onClick={() => onStop(container.id)}
+              tooltip="Stop"
+            />
+          </>
+        ) : (
+          <IconButton
+            icon={<Play className="h-4 w-4" />}
+            onClick={() => onRun(container.id)}
+            tooltip="Run"
+          />
+        )}
         <IconButton
-          title="Pause"
-          onClick={() => onPause(container.id)}
-          disabled={container.status === "paused" || container.status === "stopped"}
-          icon={Pause}
-          iconColor="yellow-500"
-        />
-        <IconButton
-          title="Start"
-          onClick={() => onRun(container.id)}
-          disabled={container.status === "running"}
-          icon={Play}
-          iconColor="green-500"
-        />
-        <IconButton
-          title="Stop"
-          onClick={() => onStop(container.id)}
-          disabled={container.status === "stopped"}
-          icon={Square}
-          iconColor="red-500"
-        />
-        <IconButton
-          title="Delete"
+          icon={<Trash2 className="h-4 w-4" />}
           onClick={() => onDelete(container.id)}
-          icon={Trash2}
-          iconColor="red-500"
+          tooltip="Delete"
         />
       </div>
     </div>
@@ -83,3 +89,4 @@ const ContainerItem: React.FC<ContainerItemProps> = ({
 };
 
 export default ContainerItem;
+

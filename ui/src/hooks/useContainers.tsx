@@ -1,7 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useProfile } from './useProfile';
 
+interface Container {
+  id: number;
+  name: string;
+  status: string;
+  // Add other container properties as needed
+}
+
 interface ContainerHook {
+  containers: Container[];
+  isLoading: boolean;
+  error: string | null;
   isContainerRunning: boolean;
   containerPort: number | null;
   isStoppingContainer: boolean;
@@ -9,15 +19,38 @@ interface ContainerHook {
   runContainer: (imageId: string | null, containerName: string | null) => Promise<void>;
   stopContainer: (containerName: string | null) => Promise<void>;
   checkContainerExists: (containerName: string) => Promise<{ exists: boolean; port: number }>;
+  deleteContainer: (id: number) => Promise<void>;
+  pauseContainer: (id: number) => Promise<void>;
 }
 
 export const useContainers = (): ContainerHook => {
   const { profile } = useProfile();
+  const [containers, setContainers] = useState<Container[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isContainerRunning, setIsContainerRunning] = useState(false);
   const [containerPort, setContainerPort] = useState<number | null>(null);
   const [isStoppingContainer, setIsStoppingContainer] = useState(false);
   const [isRunningContainer, setIsRunningContainer] = useState(false);
 
+  useEffect(() => {
+    fetchContainers();
+  }, []);
+
+  const fetchContainers = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/containers');
+      if (!response.ok) throw new Error('Failed to fetch containers');
+      const data = await response.json();
+      setContainers(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Existing functions from the original hook...
   const checkContainerExists = async (containerName: string) => {
     try {
       const response = await fetch(
@@ -25,10 +58,8 @@ export const useContainers = (): ContainerHook => {
         { method: "GET" }
       );
       const data = await response.json();
-
       if (response.ok) {
         setIsContainerRunning(true);
-
         return { exists: true, port: data.port }; 
       } else {
         return { exists: false, port: 0 };  
@@ -43,7 +74,6 @@ export const useContainers = (): ContainerHook => {
     if (!imageId || !containerName) return;
     
     setIsRunningContainer(true);
-
     try {
       const response = await fetch("http://localhost:5000/containers", {
         method: "POST",
@@ -54,12 +84,11 @@ export const useContainers = (): ContainerHook => {
           user_id: profile?.user_id,
         }),
       });
-
       const data = await response.json();
-
       if (response.ok) {
         setContainerPort(data.port);
         setIsContainerRunning(true);
+        await fetchContainers(); // Refresh the list
       } else {
         console.error("Error starting container:", data.error);
       }
@@ -74,16 +103,15 @@ export const useContainers = (): ContainerHook => {
     if (!containerName) return;
     
     setIsStoppingContainer(true);
-
     try {
       const response = await fetch(`http://localhost:5000/containers/${containerName}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });
-
       if (response.ok) {
         setIsContainerRunning(false);
         setContainerPort(null);
+        await fetchContainers(); // Refresh the list
       } else {
         const data = await response.json();
         console.error(`Error stopping container: ${data.error}`);
@@ -95,7 +123,34 @@ export const useContainers = (): ContainerHook => {
     }
   };
 
+  const deleteContainer = async (id: number) => {
+    try {
+      const response = await fetch(`http://localhost:5000/containers/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete container');
+      await fetchContainers(); // Refresh the list
+    } catch (error) {
+      console.error('Error deleting container:', error);
+    }
+  };
+
+  const pauseContainer = async (id: number) => {
+    try {
+      const response = await fetch(`http://localhost:5000/containers/${id}/pause`, {
+        method: 'POST',
+      });
+      if (!response.ok) throw new Error('Failed to pause container');
+      await fetchContainers(); // Refresh the list
+    } catch (error) {
+      console.error('Error pausing container:', error);
+    }
+  };
+
   return {
+    containers,
+    isLoading,
+    error,
     isContainerRunning,
     containerPort,
     isStoppingContainer,
@@ -103,6 +158,7 @@ export const useContainers = (): ContainerHook => {
     runContainer,
     stopContainer,
     checkContainerExists,
+    deleteContainer,
+    pauseContainer,
   };
 };
-
