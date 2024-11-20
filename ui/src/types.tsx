@@ -51,6 +51,16 @@ export interface Assignment {
   user_id?: string;
 }
 
+export interface Submission {
+  submission_id: string;
+  user_id: string;
+  assignment_id: string;
+  submitted_at: Date;
+  grade: number;
+  status: string;
+  data: File;
+}
+
 export interface Container {
   id: number;
   name: string;
