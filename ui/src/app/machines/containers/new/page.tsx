@@ -18,7 +18,7 @@ const NewContainer: React.FC = () => {
   useEffect(() => {
     if (imageId === "-1") setImageId(null);
   }, [imageId]);
-
+  
   // Check if the "Add Container" button should be enabled
   const isButtonDisabled = !title || !description || !imageId;
 

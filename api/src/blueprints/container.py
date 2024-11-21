@@ -1,11 +1,16 @@
 from src import socketio
 from src.util.db import db, Container
+from datetime import datetime
+from src import socketio
+from src.util.query_utils import apply_filters
 from flask_socketio import emit
 from flask import Blueprint, current_app, request, jsonify
 import docker
 import io
 import re
 import socket
+from src.util.auth import *
+
 
 docker_client = docker.from_env()
 
@@ -56,6 +61,7 @@ def get_all_containers():
 
 
 @container_bp.route('/containers', methods=['POST'])
+@student_required
 def create_container():
     data = request.get_json()
     
@@ -104,9 +110,66 @@ def create_container():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+# Get all containers (GET)
+@container_bp.route('/containers', methods=['GET'])
+@admin_required
+def get_containers():
+    containers = db.session.scalars(db.select(Container)).all()
+    containers_list = [{
+        'docker_container_id': container.docker_container_id,
+        'user_id': str(container.user_id),
+        'description': container.description
+    } for container in containers]
+
+    return jsonify(containers_list), 200
+
+# Dynamic search for containers (GET)
+@container_bp.route('/containers/search', methods=['GET'])
+@login_required
+def search_containers():
+    filters = request.args.to_dict()  # Get all query parameters as filters
+
+    try:
+        # Dynamically apply filters using the helper function `apply_filters`
+        query = apply_filters(Container, filters)
+        containers = query.all()
+
+        # Format the response
+        containers_list = [{
+            'docker_container_id': container.docker_container_id,
+            'user_id': str(container.user_id),
+            'description': container.description
+        } for container in containers]
+
+        return jsonify(containers_list), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# Update a container (PUT)
+@container_bp.route('/containers/<string:docker_container_id>', methods=['PUT'])
+@admin_required
+def update_container(docker_container_id):
+    container = db.session.get(Container, docker_container_id)
+    if container is None:
+        return jsonify({'error': 'Container not found'}), 404
+
+    data = request.get_json()
+    container.user_id = data.get('user_id', container.user_id)
+    container.description = data.get('description', container.description)
+    
+    try:
+        db.session.commit()  # Persist changes
+        return jsonify({'message': 'Container updated successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 
 # Get a container
 @container_bp.route('/containers/<string:container_name>', methods=['GET'])
+@student_required
 def get_container(container_name):
     try:
         # Normalize container name
@@ -115,7 +178,7 @@ def get_container(container_name):
         containers = docker_client.containers.list(all=True)  # Include stopped containers
         for container in containers:
             if f"/{container_name}" in container.attrs['Name'] or container_name in container.name:
-                container = Container.query.get(container.id)
+                container = db.session.get(Container, container.id)
                 if not container:
                     return jsonify({'error': 'Container not found'}), 404
                 
@@ -141,22 +204,26 @@ def get_container(container_name):
 
 
 # Delete a container (DELETE)
-@container_bp.route('/containers/<string:container_id>', methods=['DELETE'])
-def delete_container(container_id):
+@container_bp.route('/containers/<string:container_name>', methods=['DELETE'])
+@student_required
+def delete_container(container_name):
     try:
-        # Retrieve the container from the database using the container_id
-        container = Container.query.get(container_id)
-        if not container:
-            return jsonify({'error': 'Container not found'}), 404
+        # get the container id from the name
+        containers = docker_client.containers.list(all=True)  # Include stopped containers
+        for container in containers:
+            if f"/{container_name}" in container.attrs['Name'] or container_name in container.name:
+                container = db.session.get(Container, container.id)
+                if not container:
+                    return jsonify({'error': 'Container not found'}), 404
 
-        # Stop and remove the Docker container
-        docker_container = docker_client.containers.get(container.docker_container_id)
-        docker_container.stop()
-        docker_container.remove()
-
-        # Remove the container record from the database
-        db.session.delete(container)
-        db.session.commit()
+                # Stop and remove the Docker container
+                docker_container = docker_client.containers.get(container.docker_container_id)
+                docker_container.stop()
+                docker_container.remove()
+                
+                # Remove the container record from the database
+                db.session.delete(container)
+                db.session.commit()
 
         return jsonify({'message': 'Container deleted successfully'}), 200
 
