@@ -5,6 +5,8 @@ from flask_socketio import emit
 from datetime import datetime
 import docker
 import io
+import requests
+from flask import current_app
 
 docker_client = docker.from_env()
 
@@ -26,6 +28,10 @@ def build_image():
     dockerfile_content = data.get('dockerfile_content', '')
     image_tag = data.get('image_tag', f'image_{datetime.utcnow().isoformat()}')
 
+    registry_ip = current_app.config['REGISTRY_IP']
+    registry_port = current_app.config['REGISTRY_PORT']
+    image_tag_registry = f"{registry_ip}:{registry_port}/{image_tag}"
+
     # Construct base Dockerfile content
     base_dockerfile = (
         "FROM beluga_base_ubuntu\n"
@@ -45,7 +51,7 @@ def build_image():
         # Start building the image and stream logs
         logs = api_client.build(
             fileobj=io.BytesIO(dockerfile_content.encode('utf-8')),
-            tag=image_tag,
+            tag=image_tag_registry,
             rm=True,
             decode=True  # Ensures each log entry is JSON-decoded
         )
@@ -57,7 +63,7 @@ def build_image():
                 socketio.emit('build_status', {'status': message})
 
         # After successful build, retrieve the image by tag
-        image = docker_client.images.get(image_tag)
+        image = docker_client.images.get(image_tag_registry)
 
         # Check if an image with the same tag already exists in the database
         existing_image = Image.query.filter_by(docker_image_id=image.id).first()
@@ -78,6 +84,22 @@ def build_image():
         )
         db.session.add(new_image)
         db.session.commit()
+
+        # Push to registry
+
+        push_logs = api_client.push(image_tag_registry, stream=True, decode=True)
+
+        for push_log in push_logs:
+            push_message = push_log.get('status') or push_log.get('error', '').strip()
+            if push_message:
+                socketio.emit('push_status', {'status': push_message})
+
+        # Remove image locally
+        try:
+            api_client.remove_image(image=image_tag_registry, force=True)
+            socketio.emit('cleanup_status', {'status': f"Image {image_tag} removed locally"})
+        except Exception as e:
+            socketio.emit('cleanup_status', {'status': f"Failed to remove image {image.id}: {str(e)}"})
 
         # Notify the frontend of completion
         socketio.emit('build_complete', {'docker_image_id': image.id})

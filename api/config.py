@@ -42,6 +42,9 @@ class Config:
             ],
         }
     }
+    # REGISTRY_IP = environ.get("REGISTRY_IP", "127.0.0.1")
+    REGISTRY_IP = environ.get("REGISTRY_IP", "localhost")
+    REGISTRY_PORT = environ.get("REGISTRY_PORT", "8000")
 
 class TestingConfig:
     SQLALCHEMY_DATABASE_URI = environ.get('DATABASE_URI', 'postgresql://postgres:temppassword@db:5432/your_db')
