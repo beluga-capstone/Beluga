@@ -2,9 +2,11 @@ interface FormInputProps {
   title: string;
   value: string;
   onChange: (value: string) => void;
+  type?: string;
+  placeholder?: string;
 }
 
-const FormInput: React.FC<FormInputProps> = ({ title, value, onChange }) => {
+const FormInput: React.FC<FormInputProps> = ({ title, value, onChange, type = "text" }) => {
   return (
     <>
       <h2>{title}</h2>
@@ -12,7 +14,7 @@ const FormInput: React.FC<FormInputProps> = ({ title, value, onChange }) => {
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          type="text"
+          type={type}
           className="border rounded p-1 bg-surface"
           placeholder={title}
           aria-label={title}

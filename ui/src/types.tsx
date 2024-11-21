@@ -22,6 +22,7 @@ export interface Course {
   id: number;
   name: string;
   section: number;
+  professor: string;
   term: string;
   studentsEnrolled: number;
   isPublished: boolean;

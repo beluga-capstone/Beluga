@@ -9,8 +9,8 @@ import {
 } from "./types";
 
 export const ROLES = {
-  ADMIN: 1,
-  PROFESSOR: 8,
+  ADMIN: 8,
+  PROFESSOR: 1,
   TA: 4,
   STUDENT: 2,
 };
@@ -47,6 +47,7 @@ export const DEFAULT_COURSES: Course[] = [
     id: 1,
     name: "CSCE 120",
     section: 500,
+    professor: "Paul Taele",
     term: "Fall 2024",
     studentsEnrolled: 50,
     isPublished: true,
@@ -55,6 +56,7 @@ export const DEFAULT_COURSES: Course[] = [
     id: 2,
     name: "CSCE 313",
     section: 200,
+    professor: "Dylan Shell",
     term: "Fall 2024",
     studentsEnrolled: 67,
     isPublished: true,
@@ -63,6 +65,7 @@ export const DEFAULT_COURSES: Course[] = [
     id: 3,
     name: "CSCE 410",
     section: 500,
+    professor: "Paula Devitte",
     term: "Spring 2024",
     studentsEnrolled: 0,
     isPublished: false,
