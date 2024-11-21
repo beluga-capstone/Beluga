@@ -299,8 +299,8 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
           Available:{" "}
           {assignment?.publish_at
             ? format_date(assignment.publish_at.toISOString())
-            : "not found"}
-          {" "}to{" "}
+            : "not found"}{" "}
+          to{" "}
           {assignment?.lock_at
             ? format_date(assignment.lock_at.toISOString())
             : "not found"}
@@ -322,7 +322,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
           {assignment?.docker_image_id ? `Image name: ${imageName}` : null}
         </h2>
 
-        {latestSubmission && (
+        {profile?.role_id === ROLES.STUDENT && latestSubmission && (
           <p className="text-blue-500 pb-8">
             <Link
               href={`/assignments/${assignment?.assignment_id}/submissions/${latestSubmission?.submission_id}`}
