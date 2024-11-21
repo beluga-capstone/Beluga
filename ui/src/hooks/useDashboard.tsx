@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { DEFAULT_COURSES } from "@/constants";
 
 interface Course {
   id: number;
@@ -12,17 +11,25 @@ interface Course {
 }
 
 export const useDashboard = () => {
-  const [courses, setCourses] = useState<Course[]>(DEFAULT_COURSES);
-
+  const [courses, setCourses] = useState<Course[]>([]);
   const fetchCourses = async () => {
     try {
       const response = await fetch("http://localhost:5000/courses");
       if (!response.ok) {
         throw new Error("Failed to fetch courses");
       }
-
       const data = await response.json();
-      setCourses(data);
+      const transformedCourses = data.map((course: any) => ({
+        id: course.course_id,
+        name: course.name,
+        section: course.section || 0,
+        term: course.term_id || "Unknown Term",
+        studentsEnrolled: course.studentsEnrolled || 0,
+        isPublished: course.publish || false,
+        professor: course.professor || "Unknown",
+      }));
+  
+      setCourses(transformedCourses);
     } catch (error) {
       console.error("Error fetching courses:", error);
     }

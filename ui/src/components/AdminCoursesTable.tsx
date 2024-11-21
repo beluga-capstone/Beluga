@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Trash2, Edit2, ToggleLeft, ToggleRight, Plus } from "lucide-react";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useUsers } from "@/hooks/useUsers";
@@ -6,46 +6,25 @@ import { ROLES } from "@/constants";
 import Link from "next/link";
 
 const AdminCoursesTable: React.FC = () => {
-  const { courses, setPublished, deleteCourse } = useDashboard();
+  const { courses, fetchCourses, setPublished, deleteCourse } = useDashboard();
   const { users } = useUsers();
-
-  const isTermActive = (term: string) => {
-    const currentDate = new Date();
-    const [termSeason, termYear] = term.split(" ");
-    const currentYear = currentDate.getFullYear();
-    const termYearInt = parseInt(termYear, 10);
-    // const { users } = useUsers();
-
-    if (termYearInt !== currentYear) {
-      return false;
-    }
-
-    const currentMonth = currentDate.getMonth();
-    switch (termSeason.toLowerCase()) {
-      case "spring":
-        return currentMonth >= 0 && currentMonth <= 4;
-      case "summer":
-        return currentMonth >= 5 && currentMonth <= 6;
-      case "fall":
-        return currentMonth >= 7 && currentMonth <= 11;
-      default:
-        return false;
-    }
-  };
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    courses.forEach((course) => {
-      const currentDate = new Date();
-      const termActive = currentDate.getFullYear() === parseInt(course.term.split(" ")[1]);
-      if (course.isPublished !== termActive) {
-        setPublished(course.id, termActive);
-      }
-    });
-  }, [courses, setPublished]);
+    const loadCourses = async () => {
+      setLoading(true); // Set loading to true at the start
+      await fetchCourses(); // Wait for courses to fetch
+      setLoading(false); // Set loading to false when done
+    };
+    loadCourses();
+  }, [fetchCourses]);
+
+  if (loading) return <div>Loading courses...</div>;
+
+  if (courses.length === 0) return <div>No courses available. Please add one!</div>;
 
   return (
     <div>
-
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Courses</h2>
         <Link href="/course/new">
@@ -68,14 +47,9 @@ const AdminCoursesTable: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td colSpan={6}>
-              <hr />
-            </td>
-          </tr>
           {courses.map((course) => {
             const studentsEnrolled = users.filter(
-              (user) => 
+              (user) =>
                 parseInt(user.role) === ROLES.STUDENT &&
                 user.courseId === course.id
             ).length;
@@ -88,7 +62,9 @@ const AdminCoursesTable: React.FC = () => {
                       course.name
                     )}`}
                   >
-                    <span className="cursor-pointer text-white">{course.name}</span>
+                    <span className="cursor-pointer text-white">
+                      {course.name}
+                    </span>
                   </Link>
                 </td>
                 <td className="text-center py-2">{course.section}</td>

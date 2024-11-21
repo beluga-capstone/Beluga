@@ -7,29 +7,41 @@ import CoursesForm from "../../../../components/CoursesForm";
 import Button from "@/components/Button";
 
 const EditCourse: React.FC = () => {
-  const { courses, updateCourse } = useDashboard();
+  const { courses, fetchCourses, updateCourse } = useDashboard();
   const router = useRouter();
   const { courseId } = useParams();
 
-  const course = courses.find((c) => c.id === Number(courseId));
-
-  const [title, setTitle] = useState(course?.name || "");
-  const [section, setSection] = useState(course?.section?.toString() || ""); // Ensure string
-  const [semester, setSemester] = useState(course?.term || "");
-  const [professor, setProfessor] = useState(course?.professor || "");
+  const [loading, setLoading] = useState(true);
+  const [title, setTitle] = useState("");
+  const [section, setSection] = useState("");
+  const [semester, setSemester] = useState("");
+  const [professor, setProfessor] = useState("");
 
   useEffect(() => {
-    if (!course) {
-      router.push("/");
-    }
-  }, [course, router]);
+    const loadCourse = async () => {
+      setLoading(true);
+      await fetchCourses();
+      const course = courses.find((c) => c.id === Number(courseId));
+      if (course) {
+        setTitle(course.name || "");
+        setSection(course.section?.toString() || "");
+        setSemester(course.term || "");
+        setProfessor(course.professor || "");
+      } else {
+        router.push("/");
+      }
+      setLoading(false);
+    };
+  
+    loadCourse();
+  }, [courseId, fetchCourses, router]);
 
   const handleUpdateCourse = async () => {
-    if (course) {
-      await updateCourse(course.id, title, section, semester, professor); // Call update API
-      router.push("/");
-    }
+    await updateCourse(Number(courseId), title, section, semester, professor);
+    router.push("/");
   };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="container mx-auto p-4">
