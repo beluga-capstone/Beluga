@@ -6,18 +6,17 @@ import { useContainers } from "@/hooks/useContainers";
 import { Image } from "@/types";
 import { useImages } from "@/hooks/useImages";
 import { useAllImagesData } from "@/hooks/useImageData";
-import io from "socket.io-client";
-
-const socket = io("http://localhost:5000");
 
 const NewContainer: React.FC = () => {
   const { addContainer } = useContainers();
   const [containerName, setContainerName] = useState("");
+  const [cpuCores, setCpuCores] = useState(1);
+  const [memoryGBs, setMemoryGBs] = useState(1);
+  const [storageGBs, setStorageGBs] = useState(16);
   const [error, setError] = useState<string | null>(null);
-  const [output, setOutput] = useState<string[]>([]);
 
   const { images } = useImages();
-  const imageIds = images.map((img) => img.docker_image_id);
+  const imageIds = images.map(img => img.docker_image_id);
   const { imagesData } = useAllImagesData(imageIds);
 
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
@@ -28,33 +27,8 @@ const NewContainer: React.FC = () => {
     }
   }, [images]);
 
-  useEffect(() => {
-    // Listen for container status updates from the backend
-    socket.on("container_output", (data) => {
-      setOutput((prevOutput) => [...prevOutput, data.output]);
-    });
-
-    socket.on("container_started", (data) => {
-      setOutput((prevOutput) => [
-        ...prevOutput,
-        `Container started with ID: ${data.docker_container_id}`,
-      ]);
-    });
-
-    socket.on("container_error", (data) => {
-      setError(data.error);
-    });
-
-    return () => {
-      socket.off("container_output");
-      socket.off("container_started");
-      socket.off("container_error");
-    };
-  }, []);
-
-  const handleCreateContainer = async () => {
+  const handleCreateContainer = () => {
     setError(null);
-    setOutput([]);
 
     if (!selectedImage) {
       setError("No image selected");
@@ -67,7 +41,6 @@ const NewContainer: React.FC = () => {
     }
 
     try {
-
       addContainer(
         containerName,
         selectedImage,
@@ -75,7 +48,7 @@ const NewContainer: React.FC = () => {
         memoryGBs,
         storageGBs
       );
-d    } catch (err) {
+    } catch (err) {
       setError("Failed to create container: " + (err instanceof Error ? err.message : String(err)));
     }
   };
@@ -109,9 +82,48 @@ d    } catch (err) {
         >
           {images.map((image) => (
             <option key={image.docker_image_id} value={image.docker_image_id}>
-              {imagesData[image.docker_image_id]?.tag[0] || "Loading..."}
+              {imagesData[image.docker_image_id]?.tag[0] || 'Loading...'}
             </option>
           ))}
+        </select>
+      </div>
+      <h2>Configuration Options</h2>
+      <div className="flex items-center space-x-4 py-2">
+        <h3>CPU</h3>
+        <select
+          value={cpuCores}
+          onChange={(e) => setCpuCores(parseInt(e.target.value))}
+          className="border rounded p-1 bg-surface"
+          aria-label="Number of CPU cores"
+        >
+          <option value={1}>1 core</option>
+          <option value={2}>2 cores</option>
+          <option value={4}>4 cores</option>
+          <option value={8}>8 cores</option>
+        </select>
+        <h3>Memory</h3>
+        <select
+          value={memoryGBs}
+          onChange={(e) => setMemoryGBs(parseInt(e.target.value))}
+          className="border rounded p-1 bg-surface"
+          aria-label="Gigabytes of RAM"
+        >
+          <option value={1}>1 GB</option>
+          <option value={2}>2 GB</option>
+          <option value={4}>4 GB</option>
+          <option value={8}>8 GB</option>
+        </select>
+        <h3>Storage</h3>
+        <select
+          value={storageGBs}
+          onChange={(e) => setStorageGBs(parseInt(e.target.value))}
+          className="border rounded p-1 bg-surface"
+          aria-label="Gigabytes of storage"
+        >
+          <option value={16}>16 GB</option>
+          <option value={32}>32 GB</option>
+          <option value={64}>64 GB</option>
+          <option value={128}>128 GB</option>
         </select>
       </div>
       <div className="flex flex-column justify-end">
@@ -131,14 +143,6 @@ d    } catch (err) {
           >
             Create
           </Button>
-        </div>
-      </div>
-      <div className="mt-4">
-        <h2>Container Logs</h2>
-        <div className="bg-gray-100 p-4 rounded h-64 overflow-y-auto">
-          {output.map((line, index) => (
-            <p key={index}>{line}</p>
-          ))}
         </div>
       </div>
     </div>
