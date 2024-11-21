@@ -4,10 +4,11 @@ import FilesPreview from "@/components/FilesPreview";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useProfile } from "@/hooks/useProfile";
 import { useSubmissions } from "@/hooks/useSubmissions";
-import { Submission } from "@/types";
+import { Submission, User } from "@/types";
 import { useEffect, useState } from "react";
 import JSZip from "jszip";
 import { ROLES } from "@/constants";
+import { useUsers } from "@/hooks/useUsers";
 
 const SubmissionPage = ({
   params,
@@ -21,11 +22,11 @@ const SubmissionPage = ({
     getLatestSubmissionForUser,
     getAllSubmissionsForAssignmentAndUser,
   } = useSubmissions();
+  const { getUser } = useUsers();
+  const student = getUser(params.userId);
   const assignment = assignments.find(
     (assignment) => assignment.assignment_id === params.assignmentId
   );
-  const studentFirstName = "Bode";
-  const studentLastName = "Raymond";
   const [latestSubmission, setLatestSubmission] = useState<Submission | null>(
     null
   );
@@ -85,37 +86,42 @@ const SubmissionPage = ({
 
         <div className="flex">
           <div className="flex flex-col mr-16">
-            <h2>Viewing Submission:</h2>
-            <select
-              className="border rounded p-1 bg-surface dark:[color-scheme:dark]"
-              onChange={(e) => {
-                const selectedSubmission = allSubmissions.find(
-                  (submission) => submission.submission_id === e.target.value
-                );
-                if (selectedSubmission) {
-                  setLatestSubmission(selectedSubmission);
-                }
-              }}
-              value={latestSubmission?.submission_id || ""}
-              title="Viewing Submission"
-            >
-              {allSubmissions.map((submission) => (
-                <option
-                  key={submission.submission_id}
-                  value={submission.submission_id}
+            {latestSubmission?.submitted_at && (
+              <>
+                <h2>Viewing Submission:</h2>
+                <select
+                  className="border rounded p-1 bg-surface dark:[color-scheme:dark]"
+                  onChange={(e) => {
+                    const selectedSubmission = allSubmissions.find(
+                      (submission) =>
+                        submission.submission_id === e.target.value
+                    );
+                    if (selectedSubmission) {
+                      setLatestSubmission(selectedSubmission);
+                    }
+                  }}
+                  value={latestSubmission?.submission_id || ""}
+                  title="Viewing Submission"
                 >
-                  {submission.submitted_at.toLocaleDateString("en-US", {
-                    dateStyle: "short",
-                    timeZone: "UTC",
-                  })}{" "}
-                  at{" "}
-                  {submission.submitted_at.toLocaleTimeString("en-US", {
-                    timeStyle: "short",
-                    timeZone: "UTC",
-                  })}
-                </option>
-              ))}
-            </select>
+                  {allSubmissions.map((submission) => (
+                    <option
+                      key={submission.submission_id}
+                      value={submission.submission_id}
+                    >
+                      {submission.submitted_at.toLocaleDateString("en-US", {
+                        dateStyle: "short",
+                        timeZone: "UTC",
+                      })}{" "}
+                      at{" "}
+                      {submission.submitted_at.toLocaleTimeString("en-US", {
+                        timeStyle: "short",
+                        timeZone: "UTC",
+                      })}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
           </div>
 
           <div className="flex flex-col">
@@ -130,29 +136,34 @@ const SubmissionPage = ({
             </h2>
 
             <h2>
-              Submitted:{" "}
-              {latestSubmission?.submitted_at
-                ? latestSubmission.submitted_at.toLocaleDateString("en-US", {
-                    dateStyle: "short",
+              {latestSubmission?.submitted_at ? (
+                <>
+                  Submitted:{" "}
+                  {latestSubmission?.submitted_at.toLocaleTimeString("en-US", {
+                    timeStyle: "short",
                     timeZone: "UTC",
-                  })
-                : "No due date"}
+                  })}
+                </>
+              ) : (
+                "Not yet submitted"
+              )}
             </h2>
 
             <h2>
-              {latestSubmission?.status === "graded" ? (
-                <>Grade: {latestSubmission?.grade}</>
-              ) : (
-                "Not yet graded"
-              )}
+              {latestSubmission?.submitted_at &&
+                (latestSubmission?.status === "graded" ? (
+                  <>Grade: {latestSubmission?.grade}</>
+                ) : (
+                  "Not yet graded"
+                ))}
             </h2>
           </div>
         </div>
       </div>
 
-      {profile?.role_id !== 8 && (
+      {profile?.role_id !== ROLES.STUDENT && (
         <h2 className="text-2xl pb-8">
-          {studentFirstName} {studentLastName}
+          {student?.firstName} {student?.lastName}
         </h2>
       )}
 

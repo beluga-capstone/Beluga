@@ -89,6 +89,10 @@ export const useUsers = () => {
     saveUsersToStorage(updatedUsers);
   };
 
+  const getUser = (id: string) => {
+    return users.find((user) => user.id === id);
+  };
+
   const deleteUser = (id: string) => {
     const updatedUsers = users.filter((user) => user.id !== id);
     setUsers(updatedUsers);
@@ -102,6 +106,7 @@ export const useUsers = () => {
     addUser,
     addUsers,
     updateUser,
+    getUser,
     deleteUser,
   };
 };
