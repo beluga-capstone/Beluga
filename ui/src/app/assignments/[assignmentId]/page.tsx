@@ -270,86 +270,98 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
               className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
               onClick={() => setSubmissionWindowIsOpen(true)}
             >
-              <ArrowUpFromLine className="mr-2" /> Upload Files
+              <ArrowUpFromLine className="mr-2" />
+              {latestSubmission ? "Reupload files" : "Upload files"}
             </Button>
           ))}
       </div>
 
-      {latestSubmission && (
-        <h1>Submission ID: {latestSubmission.submission_id}</h1>
-      )}
-      <div className="flex justify-between items-center">
-        <div className="flex-row">
+      <div className="flex-row">
+        <div className="flex justify-between">
           <h2 className="font-bold pb-4">
             Due Date:{" "}
             {assignment?.due_at
               ? format_date(assignment.due_at.toISOString())
               : "not found"}
           </h2>
-          <h2 className="font-bold pb-4">
-            Available:{" "}
-            {assignment?.publish_at
-              ? format_date(assignment.publish_at.toISOString())
-              : "not found"}
-          </h2>
-
-          {assignment?.description && (
-            <h2 className="font-bold pb-4">
-              Description:{" "}
-              {assignment?.description.split("\n").map((line, index) => (
-                <span key={index}>
-                  {line}
-                  <br />
-                </span>
-              ))}
-            </h2>
-          )}
-
-          <h2 className="font-bold pb-4">
-            {assignment?.docker_image_id ? `Image name: ${imageName}` : null}
-          </h2>
 
           {latestSubmission && (
-            <p className="text-blue-500 pb-8">
-              <Link
-                href={`/assignments/${assignment?.assignment_id}/submissions/${latestSubmission?.submission_id}`}
-              >
-                View Submission
-              </Link>
-            </p>
+            <h2 className="font-bold pb-4">
+              Submitted:{" "}
+              {latestSubmission?.submitted_at
+                ? format_date(latestSubmission?.submitted_at.toISOString())
+                : "not found"}
+            </h2>
           )}
-
-          {assignment?.docker_image_id ? (
-            <Button
-              className={`${
-                isContainerRunning ? "bg-red-500" : "bg-blue-500"
-              } text-white px-4 py-2 mb-4 rounded`}
-              onClick={() =>
-                isContainerRunning
-                  ? stopContainer(containerName)
-                  : runContainer(assignment.docker_image_id ?? null)
-              }
-              // Disable the button while stopping or running the container
-              disabled={isStoppingContainer || isRunningContainer}
-            >
-              {isStoppingContainer ? (
-                <div className="flex items-center">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Stopping...
-                </div>
-              ) : isRunningContainer ? (
-                <div className="flex items-center">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Starting...
-                </div>
-              ) : isContainerRunning ? (
-                "Stop Container"
-              ) : (
-                "Run Container"
-              )}
-            </Button>
-          ) : null}
         </div>
+
+        <h2 className="font-bold pb-4">
+          Available:{" "}
+          {assignment?.publish_at
+            ? format_date(assignment.publish_at.toISOString())
+            : "not found"}
+          {" "}to{" "}
+          {assignment?.lock_at
+            ? format_date(assignment.lock_at.toISOString())
+            : "not found"}
+        </h2>
+
+        {assignment?.description && (
+          <h2 className="font-bold pb-4">
+            Description:{" "}
+            {assignment?.description.split("\n").map((line, index) => (
+              <span key={index}>
+                {line}
+                <br />
+              </span>
+            ))}
+          </h2>
+        )}
+
+        <h2 className="font-bold pb-4">
+          {assignment?.docker_image_id ? `Image name: ${imageName}` : null}
+        </h2>
+
+        {latestSubmission && (
+          <p className="text-blue-500 pb-8">
+            <Link
+              href={`/assignments/${assignment?.assignment_id}/submissions/${latestSubmission?.submission_id}`}
+            >
+              View Submission
+            </Link>
+          </p>
+        )}
+
+        {assignment?.docker_image_id ? (
+          <Button
+            className={`${
+              isContainerRunning ? "bg-red-500" : "bg-blue-500"
+            } text-white px-4 py-2 mb-4 rounded`}
+            onClick={() =>
+              isContainerRunning
+                ? stopContainer(containerName)
+                : runContainer(assignment.docker_image_id ?? null)
+            }
+            // Disable the button while stopping or running the container
+            disabled={isStoppingContainer || isRunningContainer}
+          >
+            {isStoppingContainer ? (
+              <div className="flex items-center">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Stopping...
+              </div>
+            ) : isRunningContainer ? (
+              <div className="flex items-center">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Starting...
+              </div>
+            ) : isContainerRunning ? (
+              "Stop Container"
+            ) : (
+              "Run Container"
+            )}
+          </Button>
+        ) : null}
       </div>
 
       <div className="flex justify-between items-center">

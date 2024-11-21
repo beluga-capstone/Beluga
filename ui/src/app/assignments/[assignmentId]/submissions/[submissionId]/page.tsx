@@ -49,9 +49,12 @@ const SubmissionPage = ({
         return files;
       };
 
-      latestSubmission.data.arrayBuffer().then((buffer) => unzipFiles(buffer)).then((unzippedFiles) => {
-        setFiles(unzippedFiles);
-      });
+      latestSubmission.data
+        .arrayBuffer()
+        .then((buffer) => unzipFiles(buffer))
+        .then((unzippedFiles) => {
+          setFiles(unzippedFiles);
+        });
     }
   }, [latestSubmission]);
 
@@ -59,22 +62,45 @@ const SubmissionPage = ({
     <div className="container mx-auto p-4">
       <div className="mb-4 flex justify-between items-center">
         <h1 className="font-bold text-4xl mb-6">{assignment?.title}</h1>
-        <h2>
-          Due:{" "}
-          {assignment?.due_at
-            ? assignment.due_at.toLocaleDateString("en-US", {
-                dateStyle: "short",
-                timeZone: "UTC",
-              })
-            : "No due date"}
-        </h2>
+
+        <div className="flex flex-col">
+          <h2>
+            Due:{" "}
+            {assignment?.due_at
+              ? assignment.due_at.toLocaleDateString("en-US", {
+                  dateStyle: "short",
+                  timeZone: "UTC",
+                })
+              : "No due date"}
+          </h2>
+
+          <h2>
+            Submitted:{" "}
+            {latestSubmission?.submitted_at
+              ? latestSubmission.submitted_at.toLocaleDateString("en-US", {
+                  dateStyle: "short",
+                  timeZone: "UTC",
+                })
+              : "No due date"}
+          </h2>
+
+          <h2>
+            {latestSubmission?.status === "graded" ? (
+              <>Grade: {latestSubmission?.grade}</>
+            ) : (
+              "Not yet graded"
+            )}
+          </h2>
+        </div>
       </div>
-      <h2 className="text-2xl pb-8">
-        {studentFirstName} {studentLastName}
-      </h2>
-      <FilesPreview
-        files={files}
-      />
+
+      {profile?.role_id !== 8 && (
+        <h2 className="text-2xl pb-8">
+          {studentFirstName} {studentLastName}
+        </h2>
+      )}
+
+      {files && files.length > 0 && <FilesPreview files={files} />}
     </div>
   );
 };

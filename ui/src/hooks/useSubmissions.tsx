@@ -30,6 +30,7 @@ const loadSubmissionsFromStorage = async (): Promise<Submission[]> => {
   return Promise.all(
     submissions.map(async (submission) => ({
       ...submission,
+      submitted_at: new Date(submission.submitted_at),
       data: base64ToFile(submission.data as unknown as string, "submission.zip"),
     }))
   );
