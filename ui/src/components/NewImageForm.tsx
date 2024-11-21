@@ -92,13 +92,10 @@ function NewImageForm() {
     setBuildStatus("Starting image build...");
 
    const dockerfileContent = () => {
-     return `FROM ubuntu:latest\n` +
-         //`RUN apt-get update && apt-get install -y sudo bash curl vim\n` +
-         `CMD ["bash"]`;
         if (!dockerFileContent || dockerFileContent.trim() === '') {
           return `FROM beluga_base_ubuntu\n` +
          //`RUN apt-get update && apt-get install -y sudo bash curl vim\n` +
-         `CMD ["bash"]`;
+         `CMD ["tail", "-f", "/dev/null"]`;
         }
         if (!dockerFileContent.toUpperCase().includes('FROM')) {
           return `FROM beluga_base_ubuntu\n` + dockerFileContent;
@@ -106,12 +103,6 @@ function NewImageForm() {
         //return dockerFileContent;
       }
 
-      // console.log(JSON.stringify({
-      //     dockerfile_content: dockerfileContent(),
-      //     user_id: profile?.user_id,
-      //     description: `Image for ${normalizedImageName}`,
-      //     image_tag: normalizedImageName,
-      //   }))
     try {
       const response = await fetch("http://localhost:5000/images/build", {
         method: "POST",
