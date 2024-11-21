@@ -42,10 +42,10 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
   const { assignments } = useAssignments();
   const {
     isContainerRunning,
-    isStoppingContainer,
+    isDeletingContainer,
     isRunningContainer,
     runContainer,
-    stopContainer,
+    deleteContainer,
     checkContainerExists,
   } = useContainers();
 
@@ -99,7 +99,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
   // Handlers
   const handleContainerAction = async () => {
     if (isContainerRunning) {
-      await stopContainer(containerId);
+      await deleteContainer(containerId);
       console.log("stopping",containerId);
       setContainerPort(null);
     } else {
@@ -144,9 +144,9 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
           isContainerRunning ? "bg-red-500" : "bg-blue-500"
         } text-white px-4 py-2 mb-4 rounded`}
         onClick={handleContainerAction}
-        disabled={isStoppingContainer || isRunningContainer}
+        disabled={isDeletingContainer || isRunningContainer}
       >
-        {isStoppingContainer ? (
+        {isDeletingContainer ? (
           <div className="flex items-center">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Stopping...
@@ -203,7 +203,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
   return (
     <div className="container mx-auto p-4">
       {/* Loading Overlay */}
-      {isStoppingContainer && (
+      {isDeletingContainer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-gray-500 p-6 rounded-lg shadow-xl flex items-center">
             <Loader2 className="mr-2 h-6 w-6 animate-spin" />

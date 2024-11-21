@@ -10,10 +10,10 @@ interface ContainerHook {
   isContainerRunning: boolean;
   otherContainerPort: number | null;
   otherContainerId: string | null;
-  isStoppingContainer: boolean;
+  isDeletingContainer: boolean;
   isRunningContainer: boolean;
   runContainer: (imageId: string | null, containerName: string | null) => Promise<{ container_id: string | null; container_port: number | null } | null>;
-  stopContainer: (containerName: string | null) => Promise<void>;
+  deleteContainer: (containerName: string | null) => Promise<void>;
   checkContainerExists: (containerName: string) => Promise<{ exists: boolean; port: number }>;
 }
 
@@ -25,7 +25,7 @@ export const useContainers = (): ContainerHook => {
   const [isContainerRunning, setIsContainerRunning] = useState(false);
   const [otherContainerPort, setContainerPort] = useState<number | null>(null);
   const [otherContainerId, setContainerId] = useState<string | null>(null);
-  const [isStoppingContainer, setIsStoppingContainer] = useState(false);
+  const [isDeletingContainer, setIsDeletingContainer] = useState(false);
   const [isRunningContainer, setIsRunningContainer] = useState(false);
   const router=useRouter();
 
@@ -104,11 +104,11 @@ export const useContainers = (): ContainerHook => {
     }
   };
 
-  const stopContainer = async (containerId: string | null) => {
+  const deleteContainer = async (containerId: string | null) => {
     if (!containerId) return;
     
-    setIsStoppingContainer(true);
-    console.log("stopping",containerId);
+    setIsDeletingContainer(true);
+    console.log("deleting",containerId);
     try {
       const response = await fetch(`http://localhost:5000/containers/${containerId}`, {
         method: "DELETE",
@@ -120,12 +120,12 @@ export const useContainers = (): ContainerHook => {
         await fetchContainers(); // Refresh the list
       } else {
         const data = await response.json();
-        console.error(`Error stopping container: ${data.error}`);
+        console.error(`Error deleting container: ${data.error}`);
       }
     } catch (error) {
-      console.error("Error stopping container:", error);
+      console.error("Error deleting container:", error);
     } finally {
-      setIsStoppingContainer(false);
+      setIsDeletingContainer(false);
       router.refresh();
     }
   };
@@ -137,10 +137,10 @@ export const useContainers = (): ContainerHook => {
     isContainerRunning,
     otherContainerPort,
     otherContainerId,
-    isStoppingContainer,
+    isDeletingContainer,
     isRunningContainer,
     runContainer,
-    stopContainer,
+    deleteContainer,
     checkContainerExists,
   };
 };

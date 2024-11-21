@@ -9,10 +9,10 @@ import Link from "next/link";
 const Containers: React.FC = () => {
   const {
     containers,
-    isStoppingContainer,
+    isDeletingContainer,
     isLoading,
     error,
-    stopContainer,
+    deleteContainer,
   } = useContainers();
   const [selectedContainers, setSelectedContainers] = useState<string[]>([]);
 
@@ -37,7 +37,7 @@ const Containers: React.FC = () => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  const renderStoppingButton = () => {
+  const renderDeletingButton = () => {
     return (
       <Button
         className="bg-gray-500 text-white px-4 py-2 rounded cursor-not-allowed"
@@ -45,7 +45,7 @@ const Containers: React.FC = () => {
       >
         <div className="flex items-center">
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Stopping...
+          Deleting...
         </div>
       </Button>
     );
@@ -54,11 +54,11 @@ const Containers: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       {/* Loading Overlay */}
-      {isStoppingContainer && (
+      {isDeletingContainer && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-gray-500 p-6 rounded-lg shadow-xl flex items-center">
             <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-            <p>Stopping container(s)...</p>
+            <p>Deleting container(s)...</p>
           </div>
         </div>
       )}
@@ -68,20 +68,20 @@ const Containers: React.FC = () => {
           <Link href="containers/new">
             <Button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center">
               <Plus className="h-4 w-4 mr-2" />
-              Run container
+              Create container
             </Button>
           </Link>
           {selectedContainers.length > 0 && (
             <>
-              {isStoppingContainer ? renderStoppingButton() : (
+              {isDeletingContainer ? renderDeletingButton() : (
                 <Button
                   className="bg-red-500 text-white px-4 py-2 rounded flex items-center"
                   onClick={()=> {
-                    selectedContainers.forEach(id => stopContainer(id));
+                    selectedContainers.forEach(id => deleteContainer(id));
                     setSelectedContainers([]);
                   }}
                 >
-                  Stop Container(s)
+                  Delete Container(s)
                 </Button>
               )}
             </>
@@ -107,7 +107,6 @@ const Containers: React.FC = () => {
           </Button>
         )}
       </div>
-
       <div className="space-y-4">
         {containers.map(container => (
           <ContainerItem
