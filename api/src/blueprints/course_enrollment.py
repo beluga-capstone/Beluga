@@ -4,11 +4,14 @@ from datetime import datetime
 import uuid
 from src.util.db import db, CourseEnrollment, User, Course
 from src.util.auth import student_required
+from src.util.auth import *
+
 
 enrollment_bp = Blueprint('enrollment', __name__)
 
 # Create a new course enrollment (POST)
 @enrollment_bp.route('/enrollments', methods=['POST'])
+@professor_required
 def create_enrollment():
     data = request.get_json()
 
@@ -38,6 +41,7 @@ def create_enrollment():
 
 # Get all enrollments (GET)
 @enrollment_bp.route('/enrollments', methods=['GET'])
+@admin_required
 def get_enrollments():
     course_enrollments = db.session.scalars(db.select(CourseEnrollment)).all()
     enrollments_list = [{
@@ -51,6 +55,7 @@ def get_enrollments():
 
 # Get a specific enrollment (GET)
 @enrollment_bp.route('/enrollments/<uuid:enrollment_id>', methods=['GET'])
+@login_required
 def get_enrollment(enrollment_id):
     enrollment = db.session.get(CourseEnrollment, enrollment_id)
     if enrollment is None:
@@ -65,6 +70,7 @@ def get_enrollment(enrollment_id):
 
 # Update an enrollment (PUT)
 @enrollment_bp.route('/enrollments/<uuid:enrollment_id>', methods=['PUT'])
+@admin_required
 def update_enrollment(enrollment_id):
     enrollment = db.session.get(CourseEnrollment, enrollment_id)
     if enrollment is None:
@@ -84,6 +90,7 @@ def update_enrollment(enrollment_id):
 
 # Delete an enrollment (DELETE)
 @enrollment_bp.route('/enrollments/<uuid:enrollment_id>', methods=['DELETE'])
+@admin_required
 def delete_enrollment(enrollment_id):
     enrollment = db.session.get(CourseEnrollment, enrollment_id)
     if enrollment is None:
@@ -123,6 +130,7 @@ def get_enrollments_for_user():
 
 # Get all users enrolled in a specific course (GET)
 @enrollment_bp.route('/courses/<uuid:course_id>/users', methods=['GET'])
+@student_required
 def get_users_for_course(course_id):
     enrollments = db.session.scalars(db.select(CourseEnrollment).filter_by(course_id=course_id)).all()
     users_list = []
