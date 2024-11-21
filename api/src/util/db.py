@@ -122,3 +122,4 @@ class Image(db.Model):
     docker_image_id = db.Column(db.String(80), primary_key=True)
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
     description = db.Column(db.String(255))
+    packages = db.Column(db.String(255))

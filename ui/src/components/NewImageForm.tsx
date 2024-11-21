@@ -5,27 +5,21 @@ import { useProfile } from "@/hooks/useProfile";
 
 const socket = io("http://localhost:5000");
 
-// Normalization function for Docker image names
 const normalizeDockerImageName = (name: string) => {
   return name
-    .toLowerCase() // Convert to lowercase
-    .replace(/[^a-z0-9_.-]+/g, "_") // Replace invalid characters with '_'
-    .replace(/^[_.-]+|[_.-]+$/g, ""); // Remove leading or trailing '_', '.', '-'
+    .toLowerCase()
+    .replace(/[^a-z0-9_.-]+/g, "_")
 };
 
 function NewImageForm() {
-  const [isAdvancedDetailsOpen, setIsAdvancedDetailsOpen] = useState(false);
   const [imageName, setImageName] = useState("");
-  const [courses, setSelectedCourses] = useState<string[]>([]);
-  const [packages, setSelectedPackages] = useState<string[]>([]);
-  const [dockerFileContent, setDockerFileContent] = useState("");
+  const [additionalPackages, setAdditionalPackages] = useState("");
+  const [extraDockerFileContent, setExtraDockerFileContent] = useState("");
   const [buildStatus, setBuildStatus] = useState("");
   const [isBuilding, setIsBuilding] = useState(false);
   const { profile } = useProfile();
 
   const statusRef = useRef<HTMLPreElement>(null);
-  const [isUserScrolling, setIsUserScrolling] = useState(false);
-
   const router = useRouter();
 
   useEffect(() => {
@@ -33,7 +27,7 @@ function NewImageForm() {
       setBuildStatus((prevStatus) => `${prevStatus}\n${data.status}`);
     });
 
-    socket.on("build_complete", (data) => {
+    socket.on("build_complete", () => {
       setBuildStatus((prevStatus) => `${prevStatus}\nBuild complete!`);
       setIsBuilding(false);
     });
@@ -56,31 +50,6 @@ function NewImageForm() {
     }
   }, [buildStatus]);
 
-  const handleScroll = () => {
-    if (statusRef.current) {
-      const atBottom =
-        statusRef.current.scrollHeight - statusRef.current.scrollTop ===
-        statusRef.current.clientHeight;
-      setIsUserScrolling(!atBottom);
-    }
-  };
-
-  const handleCourseChange = (course: string) => {
-    setSelectedCourses((prev) =>
-      prev.includes(course)
-        ? prev.filter((c) => c !== course)
-        : [...prev, course]
-    );
-  };
-
-  const handlePackageChange = (packageName: string) => {
-    setSelectedPackages((prev) =>
-      prev.includes(packageName)
-        ? prev.filter((p) => p !== packageName)
-        : [...prev, packageName]
-    );
-  };
-
   const handleBuildImage = async () => {
     if (imageName.trim() === "") {
       alert("Image name cannot be empty.");
@@ -91,22 +60,21 @@ function NewImageForm() {
     setIsBuilding(true);
     setBuildStatus("Starting image build...");
 
-    const dockerfileContent =
-      dockerFileContent ||
-      `FROM python:3.8-slim\nRUN apt-get update && apt-get install -y ${packages.join(
-        " "
-      )}`;
+    const dockerfileContent = `
+      ${extraDockerFileContent}
+    `;
 
     try {
-      const response = await fetch("http://localhost:5000/images/build", {
+      const response = await fetch("http://localhost:5000/images", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          dockerfile_content: dockerfileContent,
           user_id: profile?.user_id,
           description: `Image for ${normalizedImageName}`,
+          additional_packages: additionalPackages, 
+          dockerfile_content: dockerfileContent,
           image_tag: normalizedImageName,
         }),
       });
@@ -123,133 +91,80 @@ function NewImageForm() {
       setBuildStatus((prevStatus) => `${prevStatus}\n${result.message}`);
       router.back();
     } catch (error) {
-      if (error instanceof Error) {
-        setBuildStatus((prevStatus) => `${prevStatus}\nError: ${error.message}`);
-      } else {
-        setBuildStatus(
-          (prevStatus) =>
-            `${prevStatus}\nError: An unknown error occurred`
-        );
-      }
+      setBuildStatus((prevStatus) => `${prevStatus}\nError: ${error}`);
     } finally {
       setIsBuilding(false);
     }
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 min-h-screen">
       <h1 className="font-bold text-4xl mb-6">New Image</h1>
-      <div className="mb-4">
-        <h2>Image Name</h2>
-        <div className="pt-2 pb-8">
-          <input
-            id="imageName"
-            type="text"
-            value={imageName}
-            onChange={(e) => setImageName(normalizeDockerImageName(e.target.value))}
-            className="border rounded p-1 bg-surface"
-            placeholder="Image Name"
+
+      {/* Image Name Section */}
+      <div className="mb-6 rounded-lg shadow-md bg-surface">
+        <h2 className="block font-bold text-2xl mb-4">
+          Image Name { }
+        </h2>
+        <input
+          id="imageName"
+          type="text"
+          value={imageName}
+          onChange={(e) => setImageName(normalizeDockerImageName(e.target.value))}
+          className="border rounder p-1 bg-surface w-full mb-4"
+          placeholder="Enter image name"
+        />
+      </div>
+
+      {/* Dockerfile Section */}
+      <div className="mb-8 rounded-lg shadow-md bg-surface">
+        <h2 className="text-2xl font-bold mb-4">Dockerfile</h2>
+        <div className="bg-surface p-4 rounded border">
+          <pre className="whitespace-pre-wrap">
+            <span>FROM beluga_base_ubuntu</span>
+            <br />
+            <span>RUN apt update && apt install git curl wget build-essential </span>
+            <input
+              type="text"
+              value={additionalPackages}
+              onChange={(e) => setAdditionalPackages(e.target.value)}
+              className="border rounder p-1 bg-surface w-2/4 mb-4"
+              placeholder="Enter additional packages"
+            />
+            <br />
+          </pre>
+          <textarea
+            className="border rounded p-2 w-full h-40 bg-surface text-on-surface"
+            value={extraDockerFileContent}
+            onChange={(e) => setExtraDockerFileContent(e.target.value)}
+            placeholder="Add additional Dockerfile content here..."
           />
         </div>
       </div>
 
-      <div className="mb-4">
-        <h2>Courses Assigned:</h2>
-        <div className="mb-4">
-          {["CSCE 121", "CSCE 313", "CSCE 410"].map((course) => (
-            <label key={course} className="flex items-center bg-surface">
-              <input
-                type="checkbox"
-                checked={courses.includes(course)}
-                onChange={() => handleCourseChange(course)}
-                className="mr-2"
-              />{" "}
-              {course}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div className="pt-2 pb-8">
-        <input
-          type="text"
-          placeholder="Search"
-          className="border rounded p-1 bg-surface"
-        />
-      </div>
-
-      <div className="mb-4">
-        <table className="min-w mb-4">
-          <thead>
-            <tr className="border-b border-black">
-              <th className="text-left bg-surface">Package</th>
-              <th className="text-center bg-surface">Install</th>
-            </tr>
-          </thead>
-          <tbody>
-            {["vim", "python3", "imagemagick"].map((packageName) => (
-              <tr key={packageName}>
-                <td className="bg-surface">{packageName}</td>
-                <td className="text-center">
-                  <input
-                    type="checkbox"
-                    checked={packages.includes(packageName)}
-                    onChange={() => handlePackageChange(packageName)}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="pt-2 pb-8">
-        {isAdvancedDetailsOpen && (
-          <>
-            <label className="block mb-2">Docker File:</label>
-            <textarea
-              className="border rounded p-1 w-1/2 h-60 bg-surface"
-              placeholder="Type your Dockerfile content here..."
-              value={dockerFileContent}
-              onChange={(e) => setDockerFileContent(e.target.value)}
-            />
-          </>
-        )}
-      </div>
-
-      <div className="flex justify-between items-center mt-4">
+      {/* Action Buttons */}
+      <div className="flex items-center mt-4 bg-surface rounded-lg shadow-md">
         <button
-          className={`border rounded p-1 bg-surface ${
-            isAdvancedDetailsOpen ? "bg-gray-300" : ""
-          }`}
-          onClick={() => setIsAdvancedDetailsOpen(!isAdvancedDetailsOpen)}
+          className="mr-3 bg-gray-500 text-white px-4 py-2 rounded"
+          onClick={() => router.back()}
         >
-          {isAdvancedDetailsOpen ? "Hide Advanced Details" : "Show Advanced Details"}
+          Cancel
         </button>
-
-        <div className="flex space-x-4">
-          <button
-            className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={() => router.back()}
-          >
-            Cancel
-          </button>
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={handleBuildImage}
-            disabled={isBuilding}
-          >
-            {isBuilding ? "Building..." : "Create"}
-          </button>
-        </div>
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+          onClick={handleBuildImage}
+          disabled={isBuilding}
+        >
+          {isBuilding ? "Building..." : "Create"}
+        </button>
       </div>
 
-      <div className="mt-8">
-        <h2 className="font-bold text-2xl mb-4">Build Status:</h2>
+      {/* Build Status Section */}
+      <div className="mt-8 rounded-lg shadow-md bg-surface">
+        <h2 className="text-2xl font-bold mb-4" >Build Status</h2>
         <pre
           ref={statusRef}
-          onScroll={handleScroll}
-          className="border rounded p-2 bg-surface w-full h-40 overflow-auto"
+          className="border rounded p-4 bg-surface h-40 overflow-auto text-on-surface"
         >
           {buildStatus}
         </pre>

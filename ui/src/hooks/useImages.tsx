@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Image } from '@/types'
+import NewImagePage from '@/app/machines/images/new/page';
 
 export const useImages = () => {
   const [images, setImages] = useState<Image[]>([]);
@@ -29,28 +30,6 @@ export const useImages = () => {
   useEffect(() => {
     fetchImages();
   }, []);
-
-  const addImage = async (newImage: Image) => {
-    try {
-      const response = await fetch('http://localhost:5000/images', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newImage),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to add image');
-      }
-
-      const data = await response.json();
-      setImages(prevImages => [...prevImages, { ...newImage, docker_image_id: data.docker_image_id }]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add image');
-      throw err;
-    }
-  };
 
   const editImage = async (updatedImage: Image) => {
     try {
@@ -136,7 +115,6 @@ export const useImages = () => {
     selectedImageIds,
     isLoading,
     error,
-    addImage,
     editImage,
     deleteImage,
     toggleSelectImage,

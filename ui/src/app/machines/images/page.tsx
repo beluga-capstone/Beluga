@@ -2,6 +2,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
+import { Trash2, Pause, Play, Square, CheckSquare } from "lucide-react";
 import ImageItem from "@/components/ImageItem";
 import CheckBox from "@/components/CheckBox";
 import Link from "next/link";
@@ -21,7 +22,7 @@ export default function Images() {
   return (
     <div className="container mx-auto p-4">
       <h1 className="font-bold text-4xl mb-6">Images</h1>
-      <div className="mb-4 flex justify-between items-center">
+      <div className="mb-4 flex items-center">
         <Link href="/machines/images/new">
           <button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center">
             <Plus className="mr-2" /> Add Image
@@ -29,14 +30,12 @@ export default function Images() {
         </Link>
 
         {selectedImageIds.length > 0 && (
-          <div className="space-x-2">
             <button
               onClick={deleteSelectedImages}
-              className="bg-red-700 text-white px-4 py-2 rounded"
+              className="bg-red-700 text-white ml-2 px-4 py-2 rounded"
             >
               Delete Selected
             </button>
-          </div>
         )}
       </div>
 
