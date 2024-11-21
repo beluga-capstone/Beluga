@@ -15,6 +15,11 @@ image_bp = Blueprint('image', __name__)
 @image_bp.route('/images', methods=['POST'])
 def build_image():
     data = request.get_json()
+    if not isinstance(data, dict):
+        return jsonify({'error': 'Invalid JSON data'}), 400
+    if not data.get('user_id'):
+        return jsonify({'error':'invalid user id'}),400
+
     user_id = data['user_id']
     description = data.get('description', '')
     additional_packages = data.get('additional_packages', '')
@@ -52,7 +57,7 @@ def build_image():
                 socketio.emit('build_status', {'status': message})
 
         # After successful build, retrieve the image by tag
-        image = api_client.images.get(image_tag)
+        image = docker_client.images.get(image_tag)
 
         # Check if an image with the same tag already exists in the database
         existing_image = Image.query.filter_by(docker_image_id=image.id).first()
@@ -69,7 +74,7 @@ def build_image():
             docker_image_id=image.id,
             description=description,
             user_id=user_id,
-            packages=add
+            packages=additional_packages
         )
         db.session.add(new_image)
         db.session.commit()
