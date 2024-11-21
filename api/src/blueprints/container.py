@@ -6,6 +6,7 @@ import docker
 import io
 import socket
 from flask import current_app
+import requests
 
 docker_client = docker.from_env()
 
@@ -26,30 +27,33 @@ def create_container():
         return jsonify({'error': 'Image ID and User ID are required'}), 400
     
     try:
-        image_tag_registry = f"{registry_ip}:{registry_port}/{data['docker_image_id']}"
-        # container = docker_client.containers.run(
-        #     #data['docker_image_id'],
-        #     image_tag_registry,
-        #     detach=True,
-        #     name=data.get('container_name', f"container_{data['docker_image_id']}"),
-        #
-        #     # expose 5000 in the container as 'port' on the host
-        #     ports={'5000/tcp':port},
-        # )
-
         api_client = docker.APIClient()
-        # Create the container
-        container = api_client.create_container(
-            image=image_tag_registry,
+        # # Get the tag
+        image_id = data['docker_image_id']
+        image_tag = find_image_tag_from_registry(image_id)
+        # image_tag_registry = f"{registry_ip}:{registry_port}/{image_tag}"
+        image_tag_registry = image_tag
+        #print('image_tag_registry:', image_tag_registry)
+        container = docker_client.containers.run(
+            #data['docker_image_id'],
+            image_tag_registry,
+            detach=True,
             name=data.get('container_name', f"container_{data['docker_image_id']}"),
-            ports=[5000],
-            host_config=api_client.create_host_config(
-                port_bindings={5000: port}
-            ),
+
+            # expose 5000 in the container as 'port' on the host
+            ports={'5000/tcp':port},
         )
 
-        api_client.start(container=container['Id'])
-
+        # Create the container
+        # container = api_client.create_container(
+        #     image=image_tag_registry,
+        #     name=data.get('container_name', f"container_{data['docker_image_id']}"),
+        #     ports=[5000],
+        #     host_config=api_client.create_host_config(
+        #         port_bindings={5000: port}
+        #     ),
+        # )
+        # api_client.start(container=container['Id'])
 
         # Save container information to the database
         new_container = Container(
@@ -135,3 +139,38 @@ def find_available_port(start_port: int, end_port: int) -> int:
                 return port
     raise RuntimeError(f"No available ports found in the range {start_port}-{end_port}")
 
+
+def find_image_tag_from_registry(image_id):
+    #print('find_image_tag_from_registry')
+    registry_ip = current_app.config['REGISTRY_IP']
+    registry_port = current_app.config['REGISTRY_PORT']
+
+    registry_url = f"http://{registry_ip}:{registry_port}/v2"
+    headers = {"Accept": "application/vnd.docker.distribution.manifest.v2+json"}
+
+    try:
+        repos_url = f"{registry_url}/_catalog"
+        res = requests.get(repos_url)
+        res.raise_for_status()
+        repositories = res.json().get("repositories", [])
+
+        for repo in repositories:
+            #print('repo:', repo)
+            tags_url = f"{registry_url}/{repo}/tags/list"
+            tags_res = requests.get(tags_url)
+            tags_res.raise_for_status()
+            tags = tags_res.json().get("tags", [])
+
+            for tag in tags:
+                manifest_url = f"{registry_url}/{repo}/manifests/{tag}"
+                manifest_response = requests.get(manifest_url, headers=headers)
+                manifest_response.raise_for_status()
+                manifest = manifest_response.json()
+
+                if "config" in manifest and manifest["config"]["digest"].endswith(image_id):
+                    return f"{registry_ip}:{registry_port}/{repo}:{tag}"
+
+        return "Image tag not found from ID on registry"
+
+    except Exception as e:
+        return f"Error tag from id in registry: {str(e)}"
