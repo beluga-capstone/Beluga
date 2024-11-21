@@ -11,7 +11,7 @@ const fileToBase64 = (file: File): Promise<string> => {
 };
 
 const base64ToFile = (base64: string, filename: string): File => {
-  const arr = base64.split(',');
+  const arr = base64.split(",");
   const mime = arr[0].match(/:(.*?);/)![1];
   const bstr = atob(arr[1]);
   let n = bstr.length;
@@ -31,7 +31,10 @@ const loadSubmissionsFromStorage = async (): Promise<Submission[]> => {
     submissions.map(async (submission) => ({
       ...submission,
       submitted_at: new Date(submission.submitted_at),
-      data: base64ToFile(submission.data as unknown as string, "submission.zip"),
+      data: base64ToFile(
+        submission.data as unknown as string,
+        "submission.zip"
+      ),
     }))
   );
 };
@@ -50,12 +53,12 @@ export const useSubmissions = () => {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
 
   useEffect(() => {
-      const loadSubmissions = async () => {
-        const loadedSubmissions = await loadSubmissionsFromStorage();
-        setSubmissions(loadedSubmissions);
-      };
-      loadSubmissions();
-    }, []);
+    const loadSubmissions = async () => {
+      const loadedSubmissions = await loadSubmissionsFromStorage();
+      setSubmissions(loadedSubmissions);
+    };
+    loadSubmissions();
+  }, []);
 
   const submit = (userId: string, assignmentId: string, data: File) => {
     const submission: Submission = {
@@ -92,9 +95,26 @@ export const useSubmissions = () => {
     );
   };
 
+  const getAllSubmissionsForAssignmentAndUser = (
+    assignmentId: string,
+    userId: string
+  ): Submission[] => {
+    const userSubmissions = submissions.filter(
+      (submission) =>
+        submission.assignment_id === assignmentId &&
+        submission.user_id === userId
+    );
+
+    return userSubmissions.sort(
+      (a, b) =>
+        new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime()
+    );
+  };
+
   return {
     submissions,
     submit,
     getLatestSubmission,
+    getAllSubmissionsForAssignmentAndUser,
   };
 };
