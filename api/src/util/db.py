@@ -114,6 +114,7 @@ class Submission(db.Model):
 class Container(db.Model):
     __tablename__ = 'container'
     docker_container_id = db.Column(db.String(64), primary_key=True)
+    docker_container_name = db.Column(db.String(255))
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
     description = db.Column(db.String(255))
 

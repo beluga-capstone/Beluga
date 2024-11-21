@@ -1,145 +1,146 @@
-"use client";
+import { useState, useEffect } from 'react';
+import { useProfile } from './useProfile';
+import { Container } from '@/types';
+import { useRouter } from 'next/navigation';
 
-import { useEffect, useState } from "react";
-import { Container, Image } from "@/types";
-import { DEFAULT_CONTAINERS } from "@/constants";
+interface ContainerHook {
+  containers: Container[];
+  isLoading: boolean;
+  error: string | null;
+  isContainerRunning: boolean;
+  otherContainerPort: number | null;
+  otherContainerId: string | null;
+  isStoppingContainer: boolean;
+  isRunningContainer: boolean;
+  runContainer: (imageId: string | null, containerName: string | null) => Promise<{ container_id: string | null; container_port: number | null } | null>;
+  stopContainer: (containerName: string | null) => Promise<void>;
+  checkContainerExists: (containerName: string) => Promise<{ exists: boolean; port: number }>;
+}
 
-const fetchContainers = async (): Promise<Container[]> => {
-  try {
-    const response = await fetch("http://localhost:5000/api/containers");
-    if (!response.ok) {
-      throw new Error("Failed to fetch containers");
-    }
-    const data = await response.json();
-    return data.containers; 
-  } catch (error) {
-    console.error("Error fetching containers:", error);
-    return DEFAULT_CONTAINERS;
-  }
-};
-
-const saveContainer = async (newContainer: Container) => {
-  try {
-    const response = await fetch("http://localhost:5000/api/containers", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newContainer),
-    });
-    if (!response.ok) {
-      throw new Error("Failed to add container");
-    }
-    const data = await response.json();
-    return data.container; // Assuming the API returns the newly created container
-  } catch (error) {
-    console.error("Error saving container:", error);
-  }
-};
-
-export const useContainers = () => {
+export const useContainers = (): ContainerHook => {
+  const { profile } = useProfile();
   const [containers, setContainers] = useState<Container[]>([]);
-  const [selectedContainers, setSelectedContainers] = useState<number[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isContainerRunning, setIsContainerRunning] = useState(false);
+  const [otherContainerPort, setContainerPort] = useState<number | null>(null);
+  const [otherContainerId, setContainerId] = useState<string | null>(null);
+  const [isStoppingContainer, setIsStoppingContainer] = useState(false);
+  const [isRunningContainer, setIsRunningContainer] = useState(false);
+  const router=useRouter();
 
-  const fetchContainers = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/containers');
-      if (!response.ok) {
-        throw new Error('Failed to fetch images');
-      }
-      const data = await response.json();
-      setContainers(data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  // Initial fetch
   useEffect(() => {
     fetchContainers();
   }, []);
 
-  const addContainer = async (
-    name: string,
-    image: Image,
-    cpuCores: number,
-    memoryGBs: number,
-    storageGBs: number
-  ) => {
-    const newContainer: Container = {
-      id: Date.now(),
-      name: name,
-      status: "stopped",
-      launchTime: new Date().toLocaleString(),
-      image: image,
-      cpuCores: cpuCores,
-      memoryGBs: memoryGBs,
-      storageGBs: storageGBs,
-    };
-
-    // Save to the API
-    const savedContainer = await saveContainer(newContainer);
-    if (savedContainer) {
-      setContainers((prev) => [...prev, savedContainer]);
+  const fetchContainers = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/containers');
+      if (!response.ok) throw new Error('Failed to fetch containers');
+      const data = await response.json();
+      setContainers(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const deleteContainer = (id: number) => {
-    // API delete logic here (if needed)
-    const updatedContainers = containers.filter(
-      (container) => container.id !== id
-    );
-    setContainers(updatedContainers);
-    setSelectedContainers(
-      selectedContainers.filter((selectedId) => selectedId !== id)
-    );
-  };
-
-  const updateContainerStatus = (
-    id: number,
-    status: "running" | "paused" | "stopped"
-  ) => {
-    const updatedContainers = containers.map((container) =>
-      container.id === id ? { ...container, status } : container
-    );
-    setContainers(updatedContainers);
-  };
-
-  const toggleSelectContainer = (id: number) => {
-    setSelectedContainers((prevSelected) =>
-      prevSelected.includes(id)
-        ? prevSelected.filter((selectedId) => selectedId !== id)
-        : [...prevSelected, id]
-    );
-  };
-
-  const performBulkAction = (
-    action: "running" | "paused" | "stopped" | "delete"
-  ) => {
-    let updatedContainers = containers;
-    if (action === "delete") {
-      updatedContainers = containers.filter(
-        (container) => !selectedContainers.includes(container.id)
+  // Existing functions from the original hook...
+  const checkContainerExists = async (containerName: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/containers/${containerName}`,
+        { method: "GET" }
       );
-      setSelectedContainers([]);
-    } else {
-      updatedContainers = containers.map((container) =>
-        selectedContainers.includes(container.id)
-          ? { ...container, status: action }
-          : container
-      );
+      const data = await response.json();
+      if (response.ok) {
+        setIsContainerRunning(true);
+        return { exists: true, port: data.port }; 
+      } else {
+        return { exists: false, port: 0 };  
+      }
+    } catch (error) {
+      console.error("Error checking container existence:", error);
+      return { exists: false, port: 0 };
     }
-    setContainers(updatedContainers);
+  };
+
+  const runContainer = async (
+    imageId: string | null,
+    containerName: string | null
+  ): Promise<{ container_id: string | null; container_port: number | null } | null> => {
+    if (!imageId || !containerName) return null;
+
+    setIsRunningContainer(true);
+
+    try {
+      const response = await fetch("http://localhost:5000/containers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          container_name: containerName,
+          docker_image_id: imageId,
+          user_id: profile?.user_id,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setContainerPort(data.port);
+        setIsContainerRunning(true);
+        setContainerId(data.docker_container_id);
+        await fetchContainers(); // Refresh the list
+        return { container_id: data.docker_container_id, container_port: data.port };
+      } else {
+        console.error("Error starting container:", data.error);
+        return { container_id: null, container_port: null };
+      }
+    } catch (error) {
+      console.error("Error running container:", error);
+      return { container_id: null, container_port: null };
+    } finally {
+      setIsRunningContainer(false);
+    }
+  };
+
+  const stopContainer = async (containerId: string | null) => {
+    if (!containerId) return;
+    
+    setIsStoppingContainer(true);
+    console.log("stopping",containerId);
+    try {
+      const response = await fetch(`http://localhost:5000/containers/${containerId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (response.ok) {
+        setIsContainerRunning(false);
+        setContainerPort(null);
+        await fetchContainers(); // Refresh the list
+      } else {
+        const data = await response.json();
+        console.error(`Error stopping container: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error stopping container:", error);
+    } finally {
+      setIsStoppingContainer(false);
+      router.refresh();
+    }
   };
 
   return {
     containers,
-    selectedContainers,
-    addContainer,
-    deleteContainer,
-    updateContainerStatus,
-    toggleSelectContainer,
-    performBulkAction,
+    isLoading,
+    error,
+    isContainerRunning,
+    otherContainerPort,
+    otherContainerId,
+    isStoppingContainer,
+    isRunningContainer,
+    runContainer,
+    stopContainer,
+    checkContainerExists,
   };
 };
-

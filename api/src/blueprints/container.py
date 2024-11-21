@@ -4,13 +4,57 @@ from flask_socketio import emit
 from flask import Blueprint, current_app, request, jsonify
 import docker
 import io
+import re
 import socket
 
 docker_client = docker.from_env()
 
 container_bp = Blueprint('container', __name__)
 
-# Create and start a new container (POST)
+
+def normalize_container_name(name: str) -> str:
+    """
+    Normalizes the container name by:
+    - Allowing only lowercase letters, numbers, dashes, underscores, and periods.
+    - Removing any invalid characters and trimming leading/trailing special characters.
+    """
+    # Remove any character that is not alphanumeric, dash, underscore, or period
+    name = re.sub(r'[^a-z0-9_.-]', '_', name.lower())
+    
+    # Remove leading/trailing dashes, underscores, and periods
+    name = re.sub(r'^[_.-]+|[_.-]+$', '', name)
+    
+    return name
+
+
+@container_bp.route('/containers', methods=['GET'])
+def get_all_containers():
+    try:
+        # Get all containers from Docker including stopped ones
+        docker_containers = docker_client.containers.list(all=True)
+        
+        containers_list = []
+        for docker_container in docker_containers:
+            # Get container from database
+            container = Container.query.filter_by(
+                docker_container_id=docker_container.id
+            ).first()
+
+            if container:
+                containers_list.append({
+                    'docker_container_id': container.docker_container_id,
+                    'docker_container_name': container.docker_container_name,
+                    'description': container.description,
+                    'user_id': container.user_id,
+                })
+
+        return jsonify(containers_list), 200
+
+    except Exception as e:
+        current_app.logger.error(f"Error getting containers: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
 @container_bp.route('/containers', methods=['POST'])
 def create_container():
     data = request.get_json()
@@ -20,28 +64,42 @@ def create_container():
     
     if not data or not data.get('docker_image_id') or not data.get('user_id'):
         return jsonify({'error': 'Image ID and User ID are required'}), 400
+
+    # Normalize container name
+    container_name = data.get('container_name', f"container_{data['docker_image_id']}")
+    container_name = normalize_container_name(container_name)
     
     try:
         container = docker_client.containers.run(
             data['docker_image_id'],
             detach=True,
-            name=data.get('container_name', f"container_{data['docker_image_id']}"),
+            name=container_name,  # Use normalized container name
 
             # expose 5000 in the container as 'port' on the host
-            ports={'5000/tcp':port},
+            ports={'5000/tcp': port},
         )
+
+        # get the image tag
+        image_tag=""
+        image = docker_client.images.get(data['docker_image_id'])
+        image_tag=image.tags[0]
+
+        # set alt description
+        alt_desc = f"Container running with image {data['docker_image_id']}"
+        if image_tag != "":
+            alt_desc= f"Container running with image {image_tag}"
 
         # Save container information to the database
         new_container = Container(
             docker_container_id=container.id,
+            docker_container_name=container_name,  # Use normalized container name
             user_id=data['user_id'],
-            description=data.get('description', f"Container running with image {data['docker_image_id']}")
-
+            description=data.get('description', alt_desc)
         )
         db.session.add(new_container)
         db.session.commit()
 
-        return jsonify({'message': 'Container created and started successfully', 'port':port}), 201
+        return jsonify({'message': 'Container created and started successfully', 'port': port, 'docker_container_id': container.id}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -51,7 +109,9 @@ def create_container():
 @container_bp.route('/containers/<string:container_name>', methods=['GET'])
 def get_container(container_name):
     try:
-        # get the container id from the name
+        # Normalize container name
+        container_name = normalize_container_name(container_name)
+        
         containers = docker_client.containers.list(all=True)  # Include stopped containers
         for container in containers:
             if f"/{container_name}" in container.attrs['Name'] or container_name in container.name:
@@ -59,14 +119,14 @@ def get_container(container_name):
                 if not container:
                     return jsonify({'error': 'Container not found'}), 404
                 
-                # it exists, get the port 
+                # it exists, get the port
                 docker_container = docker_client.containers.get(container_name)
                 port_mapping = docker_container.attrs['NetworkSettings']['Ports']
                 for container_port, host_ports in port_mapping.items():
                     if host_ports: 
                         return jsonify({
                             'message': 'container and port found', 
-                            'port':f"{host_ports[0]['HostPort']}"
+                            'port': f"{host_ports[0]['HostPort']}"
                         })
                     else:
                         return jsonify({
@@ -81,31 +141,30 @@ def get_container(container_name):
 
 
 # Delete a container (DELETE)
-@container_bp.route('/containers/<string:container_name>', methods=['DELETE'])
-def delete_container(container_name):
+@container_bp.route('/containers/<string:container_id>', methods=['DELETE'])
+def delete_container(container_id):
     try:
-        # get the container id from the name
-        containers = docker_client.containers.list(all=True)  # Include stopped containers
-        for container in containers:
-            if f"/{container_name}" in container.attrs['Name'] or container_name in container.name:
-                container = Container.query.get(container.id)
-                if not container:
-                    return jsonify({'error': 'Container not found'}), 404
+        # Retrieve the container from the database using the container_id
+        container = Container.query.get(container_id)
+        if not container:
+            return jsonify({'error': 'Container not found'}), 404
 
-                # Stop and remove the Docker container
-                docker_container = docker_client.containers.get(container.docker_container_id)
-                docker_container.stop()
-                docker_container.remove()
+        # Stop and remove the Docker container
+        docker_container = docker_client.containers.get(container.docker_container_id)
+        docker_container.stop()
+        docker_container.remove()
 
-                # Remove from the database
-                db.session.delete(container)
-                db.session.commit()
+        # Remove the container record from the database
+        db.session.delete(container)
+        db.session.commit()
 
-                return jsonify({'message': 'Container deleted successfully'}), 200
+        return jsonify({'message': 'Container deleted successfully'}), 200
+
     except docker.errors.NotFound:
         return jsonify({'error': 'Docker container not found'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 def find_available_port(start_port: int, end_port: int) -> int:
     for port in range(start_port, end_port + 1):
