@@ -3,21 +3,21 @@
 import { useEffect, useState } from "react";
 import { useContainers } from "@/hooks/useContainers";
 import { Container } from "@/types";
-import ContainerPageInfo from "@/components/ContainerPageInfo";
 import ContainerPageTerminal from "@/components/ContainerPageTerminal";
 
 const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
-    const { containers } = useContainers();
+    const { containers,checkContainerExists } = useContainers();
     const [container, setContainer] = useState<Container | null>(null);
     const [loading, setLoading] = useState(true); 
     const [notFound, setNotFound] = useState(false); 
-    const [containerId, setContainerId] = useState<number | null>(null);
+    const [containerId, setContainerId] = useState<string | null>(null);
+    const [containerPort, setContainerPort] = useState<number | null>(null);
 
     // type handling for containerid
     useEffect(() => {
         const fetchParams = async () => {
             const unwrappedParams = await params;
-            const id = parseInt(unwrappedParams.id, 10);
+            const id = unwrappedParams.id;
             setContainerId(id);
         };
         fetchParams();
@@ -25,11 +25,21 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
     useEffect(() => {
         if (containerId !== null) {
-            const foundContainer = containers.find((c) => c.id === containerId);
+            const foundContainer = containers.find((c) => c.docker_container_id === containerId);
 
             if (foundContainer) {
                 setContainer(foundContainer);
                 setLoading(false);
+                const getContainer = async () => {
+                // Check if container exists
+                const { exists, port } = await checkContainerExists(container?.docker_container_name??"");
+                if (exists) {
+                  setContainerPort(port);
+                }
+        };
+
+        getContainer();
+
             } else {
                 const timeout = setTimeout(() => {
                     setLoading(false);
@@ -60,10 +70,12 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
     if (container) {
         return (
             <div className="container mx-auto p-4">
-                <h1 className="font-bold text-4xl mb-6">Container "{container.name}"</h1>
-                <ContainerPageInfo container={container} />
+                <h1 className="font-bold text-4xl mb-6">Container "{container.docker_container_name}"</h1>
                 <br/>
-                <ContainerPageTerminal imageId={containerId}/>
+                <ContainerPageTerminal 
+                  isRunning={true}
+                  containerPort={containerPort}
+                />
             </div>
         );
     }
@@ -72,3 +84,4 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
 };
 
 export default ContainerPage;
+

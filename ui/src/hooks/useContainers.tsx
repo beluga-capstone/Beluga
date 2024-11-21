@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useProfile } from './useProfile';
 import { Container } from '@/types';
+import { useRouter } from 'next/navigation';
 
 interface ContainerHook {
   containers: Container[];
@@ -26,6 +27,7 @@ export const useContainers = (): ContainerHook => {
   const [otherContainerId, setContainerId] = useState<string | null>(null);
   const [isStoppingContainer, setIsStoppingContainer] = useState(false);
   const [isRunningContainer, setIsRunningContainer] = useState(false);
+  const router=useRouter();
 
   useEffect(() => {
     fetchContainers();
@@ -124,6 +126,7 @@ export const useContainers = (): ContainerHook => {
       console.error("Error stopping container:", error);
     } finally {
       setIsStoppingContainer(false);
+      router.refresh();
     }
   };
 

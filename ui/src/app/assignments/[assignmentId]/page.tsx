@@ -44,8 +44,6 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
     isContainerRunning,
     isStoppingContainer,
     isRunningContainer,
-    otherContainerId,
-    otherContainerPort,
     runContainer,
     stopContainer,
     checkContainerExists,
@@ -97,6 +95,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
   useEffect(()=>{
     console.log("port and id ",containerPort,containerId);
   },[containerId,containerPort]);
+
   // Handlers
   const handleContainerAction = async () => {
     if (isContainerRunning) {
@@ -107,6 +106,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
       const result = await runContainer(assignment?.docker_image_id ?? null, containerName);
 
       if (result) {
+        console.log("appi return ",result);
         const { container_port: port, container_id: id } = result;
         console.log(`Container running on port: ${port}, ID: ${id}`);
         setContainerPort(port);
@@ -114,7 +114,6 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
       } else {
         console.error("Failed to run the container.");
       }
-
     }
   };
 
