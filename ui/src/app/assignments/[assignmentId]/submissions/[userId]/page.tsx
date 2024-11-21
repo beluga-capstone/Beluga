@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import JSZip from "jszip";
 import { ROLES } from "@/constants";
 import { useUsers } from "@/hooks/useUsers";
+import Button from "@/components/Button";
 
 const SubmissionPage = ({
   params,
@@ -31,6 +32,7 @@ const SubmissionPage = ({
     null
   );
   const [allSubmissions, setAllSubmissions] = useState<Submission[]>([]);
+  const [zipFile, setZipfile] = useState<JSZip | null>(null);
   const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
@@ -59,6 +61,7 @@ const SubmissionPage = ({
     if (latestSubmission) {
       const unzipFiles = async (zipData: ArrayBuffer) => {
         const zip = await JSZip.loadAsync(zipData);
+        setZipfile(zip);
         const files: File[] = [];
 
         for (const relativePath of Object.keys(zip.files)) {
@@ -85,9 +88,38 @@ const SubmissionPage = ({
         <h1 className="font-bold text-4xl mb-6">{assignment?.title}</h1>
 
         <div className="flex">
-          <div className="flex flex-col mr-16">
-            {latestSubmission?.submitted_at && (
-              <>
+          {latestSubmission?.submitted_at && (
+            <>
+              <div className="flex flex-col mr-16 pt-2">
+                <Button
+                  className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
+                  onClick={() => {
+                    if (zipFile) {
+                      zipFile
+                        .generateAsync({ type: "blob" })
+                        .then((content) => {
+                          const link = document.createElement("a");
+                          link.href = URL.createObjectURL(content);
+                          if (profile?.role_id === ROLES.STUDENT) {
+                            link.download = `${assignment?.title}.zip`;
+                          } else {
+                            link.download = `${assignment?.title} ${
+                              student?.firstName
+                            } ${
+                              student?.middleName
+                                ? `${student.middleName} `
+                                : ""
+                            }${student?.lastName}.zip`;
+                          }
+                          link.click();
+                        });
+                    }
+                  }}
+                >
+                  Download Files
+                </Button>
+              </div>
+              <div className="flex flex-col mr-16">
                 <h2>Viewing Submission:</h2>
                 <select
                   className="border rounded p-1 bg-surface dark:[color-scheme:dark]"
@@ -120,9 +152,9 @@ const SubmissionPage = ({
                     </option>
                   ))}
                 </select>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
 
           <div className="flex flex-col">
             <h2>
