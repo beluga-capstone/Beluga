@@ -115,6 +115,7 @@ def get_image(docker_image_id):
         'docker_image_id': image.docker_image_id,
         'user_id': str(image.user_id),
         'description': image.description,
+        'packages': image.packages,
         'tag':result.tags
     }), 200
 

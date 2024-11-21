@@ -27,12 +27,11 @@ export default function ImageDetailsPage() {
             <div className="flex justify-between items-center">
                 <div className="flex-row">
                     <h2 className="font-bold pb-4">
-                        Courses Assigned to: {" "}
-                        {imageData?.courses?.join(", ") || "None"}
+                        Assignments assigned to this image: {" "}
                     </h2>
                     <h2 className="font-bold pb-4">
                         Packages Chosen: {" "}
-                        {imageData?.packages?.join(", ") || "None"}
+                        {imageData?.packages || "None"}
                     </h2>
                 </div>
             </div>
