@@ -285,7 +285,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
               : "not found"}
           </h2>
 
-          {latestSubmission && (
+          {profile?.role_id === ROLES.STUDENT && latestSubmission && (
             <h2 className="font-bold pb-4">
               Submitted:{" "}
               {latestSubmission?.submitted_at
@@ -325,7 +325,7 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
         {profile?.role_id === ROLES.STUDENT && latestSubmission && (
           <p className="text-blue-500 pb-8">
             <Link
-              href={`/assignments/${assignment?.assignment_id}/submissions/${latestSubmission?.submission_id}`}
+              href={`/assignments/${assignment?.assignment_id}/submissions/0`}
             >
               View Submission
             </Link>

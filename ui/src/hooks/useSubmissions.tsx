@@ -95,6 +95,20 @@ export const useSubmissions = () => {
     );
   };
 
+  const getLatestSubmissionForUser = (userId: string): Submission | null => {
+    const userSubmissions = submissions.filter(
+      (submission) => submission.user_id === userId
+    );
+
+    if (userSubmissions.length === 0) return null;
+
+    return userSubmissions.reduce((latest, current) =>
+      new Date(latest.submitted_at) > new Date(current.submitted_at)
+        ? latest
+        : current
+    );
+  };
+
   const getAllSubmissionsForAssignmentAndUser = (
     assignmentId: string,
     userId: string
@@ -115,6 +129,7 @@ export const useSubmissions = () => {
     submissions,
     submit,
     getLatestSubmission,
+    getLatestSubmissionForUser,
     getAllSubmissionsForAssignmentAndUser,
   };
 };

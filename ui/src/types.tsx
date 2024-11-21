@@ -79,10 +79,10 @@ export interface Image {
 }
 
 export interface User {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   middleName?: string;
   email: string;
-  role: string;
+  role_id: number;
 }

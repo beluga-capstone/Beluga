@@ -1,20 +1,19 @@
 "use client";
 
-import { DEFAULT_STUDENTS } from "@/constants";
 import { useAssignments } from "@/hooks/useAssignments";
+import { useUsers } from "@/hooks/useUsers";
 import Link from "next/link";
 
 const AssignmentSubmissionsPage = ({
   params,
 }: {
-  params: { assignmentId: string };
+  params: { assignmentId: string; submissionId: string };
 }) => {
   const { assignments } = useAssignments();
   const assignment = assignments.find(
-    (assignment) =>
-      assignment.assignmentId === parseInt(params.assignmentId, 10)
+    (assignment) => assignment.assignment_id === params.assignmentId
   );
-  const submissionId = 1;
+  const { users } = useUsers();
 
   return (
     <div className="container mx-auto p-4">
@@ -22,10 +21,11 @@ const AssignmentSubmissionsPage = ({
         <h1 className="font-bold text-4xl mb-6">{assignment?.title}</h1>
         <h2>
           Due:{" "}
-          {assignment?.dueAt.toLocaleDateString("en-US", {
-            dateStyle: "short",
-            timeZone: "UTC",
-          })}
+          {assignment?.due_at &&
+            assignment.due_at.toLocaleDateString("en-US", {
+              dateStyle: "short",
+              timeZone: "UTC",
+            })}
         </h2>
       </div>
       <table className="table w-full">
@@ -46,23 +46,23 @@ const AssignmentSubmissionsPage = ({
               <hr />
             </td>
           </tr>
-          {DEFAULT_STUDENTS.map((student) => (
-            <tr key={student.id}>
+          {users.map((user) => (
+            <tr key={user.id}>
               <td>
                 <Link
-                  href={`/assignments/${assignment?.assignmentId}/submissions/${submissionId}`}
+                  href={`/assignments/${assignment?.assignment_id}/submissions/${user.id}`}
                 >
-                  {student.lastName}
+                  {user.lastName}
                 </Link>
               </td>
               <td>
                 <Link
-                  href={`/assignments/${assignment?.assignmentId}/submissions/${submissionId}`}
+                  href={`/assignments/${assignment?.assignment_id}/submissions/${user.id}`}
                 >
-                  {student.firstName}
+                  {user.firstName}
                 </Link>
               </td>
-              <td>{student.middleName}</td>
+              <td>{user.middleName}</td>
               <td className="text-center">Yes</td>
               <td className="text-center">100</td>
               <td className="text-center">Yes</td>

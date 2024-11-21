@@ -7,16 +7,20 @@ import { useSubmissions } from "@/hooks/useSubmissions";
 import { Submission } from "@/types";
 import { useEffect, useState } from "react";
 import JSZip from "jszip";
+import { ROLES } from "@/constants";
 
 const SubmissionPage = ({
   params,
 }: {
-  params: { assignmentId: string; submissionId: string };
+  params: { assignmentId: string; userId: string };
 }) => {
   const { profile } = useProfile();
   const { assignments } = useAssignments();
-  const { getLatestSubmission, getAllSubmissionsForAssignmentAndUser } =
-    useSubmissions();
+  const {
+    getLatestSubmission,
+    getLatestSubmissionForUser,
+    getAllSubmissionsForAssignmentAndUser,
+  } = useSubmissions();
   const assignment = assignments.find(
     (assignment) => assignment.assignment_id === params.assignmentId
   );
@@ -29,7 +33,7 @@ const SubmissionPage = ({
   const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
-    if (profile) {
+    if (profile && profile.role_id === ROLES.STUDENT) {
       setLatestSubmission(
         getLatestSubmission(params.assignmentId, profile.user_id)
       );
@@ -37,6 +41,14 @@ const SubmissionPage = ({
         getAllSubmissionsForAssignmentAndUser(
           params.assignmentId,
           profile.user_id
+        )
+      );
+    } else if (profile) {
+      setLatestSubmission(getLatestSubmissionForUser(params.userId));
+      setAllSubmissions(
+        getAllSubmissionsForAssignmentAndUser(
+          params.assignmentId,
+          params.userId
         )
       );
     }
