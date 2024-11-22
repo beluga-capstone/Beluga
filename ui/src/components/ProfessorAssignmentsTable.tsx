@@ -1,10 +1,12 @@
 import { useAssignments } from "@/hooks/useAssignments";
+import { useSubmissions } from "@/hooks/useSubmissions";
 import { shortDate, shortTime } from "@/lib/utils";
 import { ToggleLeft, ToggleRight } from "lucide-react";
 import Link from "next/link";
 
 const ProfessorAssignmentsTable = () => {
   const { assignments, setPublished, setLateSubmissions } = useAssignments();
+  const { getSubmissionCountForAssignment } = useSubmissions();
 
   return (
     <table className="table w-full">
@@ -45,7 +47,9 @@ const ProfessorAssignmentsTable = () => {
                   )}`
                 : "-"}
             </td>
-            <td className="text-center py-2">0</td>
+            <td className="text-center py-2">
+              {getSubmissionCountForAssignment(assignment.assignment_id)}
+            </td>
             <td className="py-2">
               <div className="flex justify-center items-center">
                 {assignment.is_published ? (

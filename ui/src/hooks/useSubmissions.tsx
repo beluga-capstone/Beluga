@@ -145,6 +145,15 @@ export const useSubmissions = () => {
     saveSubmissionsToStorage(updatedSubmissions);
   };
 
+  const getSubmissionCountForAssignment = (assignmentId: string): number => {
+    const uniqueUsers = new Set(
+      submissions
+        .filter((submission) => submission.assignment_id === assignmentId)
+        .map((submission) => submission.user_id)
+    );
+    return uniqueUsers.size;
+  };
+
   return {
     submissions,
     submit,
@@ -153,5 +162,6 @@ export const useSubmissions = () => {
     getAllSubmissionsForAssignmentAndUser,
     setGrade,
     setStatus,
+    getSubmissionCountForAssignment,
   };
 };
