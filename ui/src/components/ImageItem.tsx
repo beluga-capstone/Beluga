@@ -15,7 +15,7 @@ type ImageItemProps = {
 
 const ImageItem: React.FC<ImageItemProps> = ({ image, isSelected, onToggleSelect }) => {
     const { imageData, loading, error } = useImageData(image.docker_image_id);
-
+    console.log(imageData)
     return (
         <div className="border p-4 rounded mb-4 flex justify-between items-center">
             <div className="flex items-center">
@@ -41,7 +41,8 @@ const ImageItem: React.FC<ImageItemProps> = ({ image, isSelected, onToggleSelect
                                 <span className="text-gray-400">Loading image data...</span>
                             </>
                         ) : (
-                            imageData?.tag[0] || `Image not found in repository. Image ID: ${image.docker_image_id || "Unknown"}`
+                            // imageData?.tag[0] || `Image not found in repository. Image ID: ${image.docker_image_id || "Unknown"}`
+                            imageData?.tag || `Image not found in repository. Image ID: ${image.docker_image_id || "Unknown"}`
 
                         )}
                     </h2>

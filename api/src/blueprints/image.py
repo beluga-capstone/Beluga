@@ -131,13 +131,15 @@ def get_image(docker_image_id):
     if image is None:
         return jsonify({'error': 'Image not found'}), 404
 
-    result = docker_client.images.get(docker_image_id)
+    # result = docker_client.images.get(docker_image_id)
+    image_tag = find_image_tag_from_registry(docker_image_id)
+    print('image_tag:', image_tag)
 
     return jsonify({
         'docker_image_id': image.docker_image_id,
         'user_id': str(image.user_id),
         'description': image.description,
-        'tag':result.tags
+        'tag':image_tag
     }), 200
 
 
@@ -172,3 +174,38 @@ def delete_image(docker_image_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+def find_image_tag_from_registry(image_id):
+    registry_ip = current_app.config['REGISTRY_IP']
+    registry_port = current_app.config['REGISTRY_PORT']
+
+    registry_url = f"http://{registry_ip}:{registry_port}/v2"
+    headers = {"Accept": "application/vnd.docker.distribution.manifest.v2+json"}
+
+    try:
+        repos_url = f"{registry_url}/_catalog"
+        res = requests.get(repos_url)
+        res.raise_for_status()
+        repositories = res.json().get("repositories", [])
+
+        for repo in repositories:
+            #print('repo:', repo)
+            tags_url = f"{registry_url}/{repo}/tags/list"
+            tags_res = requests.get(tags_url)
+            tags_res.raise_for_status()
+            tags = tags_res.json().get("tags", [])
+
+            for tag in tags:
+                manifest_url = f"{registry_url}/{repo}/manifests/{tag}"
+                manifest_response = requests.get(manifest_url, headers=headers)
+                manifest_response.raise_for_status()
+                manifest = manifest_response.json()
+
+                if "config" in manifest and manifest["config"]["digest"].endswith(image_id):
+                    return f"{registry_ip}:{registry_port}/{repo}:{tag}"
+
+        return "Image tag not found from ID on registry"
+
+    except Exception as e:
+        return f"Error tag from id in registry: {str(e)}"
