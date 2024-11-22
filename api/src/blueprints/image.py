@@ -131,15 +131,18 @@ def get_image(docker_image_id):
     if image is None:
         return jsonify({'error': 'Image not found'}), 404
 
-    # result = docker_client.images.get(docker_image_id)
+    registry_ip = current_app.config['REGISTRY_IP']
+    registry_port = current_app.config['REGISTRY_PORT']
+
     image_tag = find_image_tag_from_registry(docker_image_id)
-    print('image_tag:', image_tag)
+
+    return_image_tag = image_tag.replace(f"{registry_ip}:{registry_port}/", "").replace("\\", "")
 
     return jsonify({
         'docker_image_id': image.docker_image_id,
         'user_id': str(image.user_id),
         'description': image.description,
-        'tag':image_tag
+        'tag':[return_image_tag]
     }), 200
 
 

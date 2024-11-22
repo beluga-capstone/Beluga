@@ -1,6 +1,6 @@
 from sqlalchemy_utils import database_exists, create_database
 from flask_login import LoginManager
-from flask import Flask
+from flask import Flask, current_app
 from datetime import datetime
 
 from src.util.db import db, User
@@ -179,8 +179,12 @@ def init_default_images():
             'user_id': ADMIN_ID
         },
     ]
+    registry_ip = current_app.config['REGISTRY_IP']
+    registry_port = current_app.config['REGISTRY_PORT']
 
     for image_info in default_images:
+        image_tag = image_info['image_tag']
+        registry_tag = f"{registry_ip}:{registry_port}/{image_tag}"
 
         # Check if context_path exists
         context_path = image_info['context_path']
@@ -196,6 +200,10 @@ def init_default_images():
                 tag=image_info['image_tag']
             )
 
+            # Push to registry
+            image.tag(registry_tag)
+            docker_client.images.push(registry_tag)
+
             # Save image to database
             new_image = Image(
                 docker_image_id=image.id,
@@ -206,6 +214,10 @@ def init_default_images():
             db.session.add(new_image)
             db.session.commit()
             print(f"Initialized default image: {image_info['image_tag']}")
+
+            # Remove locally
+            docker_client.images.remove(image_tag)
+            docker_client.images.remove(registry_tag)
 
         except Exception as e:
             db.session.rollback()
