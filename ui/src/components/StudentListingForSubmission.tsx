@@ -6,15 +6,15 @@ import { useState } from "react";
 interface StudentListingForSubmissionProps {
   student: User;
   assignment: Assignment | undefined;
-  latestSubmission: Submission | undefined;
 }
 
 const StudentListingForSubmission: React.FC<
   StudentListingForSubmissionProps
-> = ({ student, assignment, latestSubmission }) => {
-  const { setGrade } = useSubmissions();
+> = ({ student, assignment }) => {
+  const { getLatestSubmissionForUser, setGrade, setStatus } = useSubmissions();
   const [isEditingGrade, setIsEditingGrade] = useState(false);
-  const [newGrade, setNewGrade] = useState<number | null>(null);
+  const [newGrade, setNewGrade] = useState<string>("");
+  const latestSubmission = getLatestSubmissionForUser(student.id);
 
   return (
     <tr key={student.id}>
@@ -45,10 +45,18 @@ const StudentListingForSubmission: React.FC<
               placeholder="Grade"
               value={newGrade ?? ""}
               className="border rounded p-1 bg-surface w-16"
-              onChange={(e) => setNewGrade(parseInt(e.target.value))}
+              onChange={(e) => setNewGrade(e.target.value)}
               onBlur={() => {
-                if (newGrade !== null && latestSubmission) {
-                  setGrade(latestSubmission.submission_id, newGrade);
+                if (latestSubmission) {
+                  if (newGrade === "") {
+                    setGrade(latestSubmission.submission_id, 0);
+                    setStatus(latestSubmission.submission_id, "");
+                  } else {
+                    setGrade(
+                      latestSubmission.submission_id,
+                      parseInt(newGrade)
+                    );
+                  }
                 }
                 setIsEditingGrade(false);
               }}

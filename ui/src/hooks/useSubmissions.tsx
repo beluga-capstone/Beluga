@@ -135,6 +135,16 @@ export const useSubmissions = () => {
     saveSubmissionsToStorage(updatedSubmissions);
   };
 
+  const setStatus = (submissionId: string, status: string) => {
+    const updatedSubmissions = submissions.map((submission) =>
+      submission.submission_id === submissionId
+        ? { ...submission, status }
+        : submission
+    );
+    setSubmissions(updatedSubmissions);
+    saveSubmissionsToStorage(updatedSubmissions);
+  };
+
   return {
     submissions,
     submit,
@@ -142,5 +152,6 @@ export const useSubmissions = () => {
     getLatestSubmissionForUser,
     getAllSubmissionsForAssignmentAndUser,
     setGrade,
+    setStatus,
   };
 };

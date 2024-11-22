@@ -49,13 +49,11 @@ const AssignmentSubmissionsPage = ({
             </td>
           </tr>
           {users.map((user) => {
-            const latestSubmission = getLatestSubmissionForUser(user.id);
             return (
               <StudentListingForSubmission
                 key={user.id}
                 student={user}
                 assignment={assignment}
-                latestSubmission={latestSubmission || undefined}
               />
             );
           })}
