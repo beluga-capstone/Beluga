@@ -3,7 +3,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import ImageItem from "@/components/ImageItem";
-import CheckBox from "@/components/CheckBox";
+import { CheckSquare, Square, Loader } from 'lucide-react';
 import Link from "next/link";
 import { useImages } from "@/hooks/useImages";
 
@@ -42,17 +42,21 @@ export default function Images() {
 
       {images.length > 0 && (
         <div className="flex items-center mb-4">
-          <CheckBox
-            checked={selectedImageIds.length === images.length}
-            onChange={() => {
-              // const shouldSelectAll = selectedImageIds.length !== images.length;
+          <button
+            onClick={() => {
               selectAllImages();
             }}
-            label="Select All"
-          />
+            className="flex items-center"
+          >
+            {selectedImageIds.length === images.length ? (
+              <CheckSquare className="text-blue-500 mr-2" size={20} />
+            ) : (
+              <Square className="text-gray-500 mr-2" size={20} />
+            )}
+            <span className="font-medium">Select All</span>
+          </button>
         </div>
       )}
-
       {images.map((image) => (
         <div
           key={image.docker_image_id}

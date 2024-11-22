@@ -30,63 +30,67 @@ const ProfessorAssignmentsTable = () => {
           </td>
         </tr>
         {assignments.map((assignment) => (
-          <tr key={assignment.assignment_id}>
+          <tr
+            key={assignment.assignment_id}
+            className="cursor-pointer hover:border hover:border-red-500"
+            onClick={() =>
+              window.location.href = `/assignments/${assignment.assignment_id}`
+            }
+          >
+            <td className="text-center py-2">{assignment.title}</td>
             <td className="text-center py-2">
-              <Link href={`/assignments/${assignment.assignment_id}`}>
-                {assignment.title}
-              </Link>
+              {assignment.publish_at
+                ? format_date(assignment.publish_at.toISOString())
+                : "not found"}
             </td>
             <td className="text-center py-2">
-              <Link href={`/assignments/${assignment.assignment_id}`}>
-                {assignment.publish_at?
-                  format_date(assignment.publish_at.toISOString()): "not found"
-                }
-              </Link>
+              {assignment.due_at
+                ? format_date(assignment.due_at.toISOString())
+                : "not found"}
             </td>
-            <td className="text-center py-2">
-              <Link href={`/assignments/${assignment.assignment_id}`}>
-                {assignment.due_at?
-                  format_date(assignment.due_at.toISOString()): "not found"
-                }
-              </Link>
-            </td>
-            <td className="text-center py-2">
-              <Link href={`/assignments/${assignment.assignment_id}`}>0</Link>
-            </td>
+            <td className="text-center py-2">0</td>
             <td className="py-2">
               <div className="flex justify-center items-center">
                 {assignment.is_published ? (
                   <ToggleRight
                     size={32}
                     className="text-green-500"
-                    onClick={() => setPublished(assignment.assignment_id, false)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPublished(assignment.assignment_id, false);
+                    }}
                   />
                 ) : (
                   <ToggleLeft
                     size={32}
                     className="text-red-500"
-                    onClick={() => setPublished(assignment.assignment_id, true)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPublished(assignment.assignment_id, true);
+                    }}
                   />
                 )}
               </div>
             </td>
             <td className="py-2">
               <div className="flex justify-center items-center">
-                {assignment.allows_late_submissions? (
+                {assignment.allows_late_submissions ? (
                   <ToggleRight
                     size={32}
                     className="text-green-500"
-                    onClick={() =>
-                      setLateSubmissions(assignment.assignment_id, false)
-                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLateSubmissions(assignment.assignment_id, false);
+                    }}
                   />
                 ) : (
                   <ToggleLeft
                     size={32}
                     className="text-red-500"
-                    onClick={() =>
-                      setLateSubmissions(assignment.assignment_id, true)
-                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLateSubmissions(assignment.assignment_id, true);
+                    }}
                   />
                 )}
               </div>
