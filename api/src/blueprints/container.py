@@ -9,11 +9,15 @@ import docker
 import io
 import socket
 from src.util.auth import *
-
+import subprocess
+import os
 
 docker_client = docker.from_env()
 
 container_bp = Blueprint('container', __name__)
+
+BASE_KEY_PATH = os.path.join(os.path.expanduser("~"), "beluga_data", "keys")
+
 
 # Create and start a new container (POST)
 @container_bp.route('/containers', methods=['POST'])
@@ -36,6 +40,17 @@ def create_container():
             # expose 5000 in the container as 'port' on the host
             ports={'5000/tcp':port},
         )
+
+        container_id = container.id
+        ssh_keys = get_keys_path(data['user_id'])
+        public_key_path = ssh_keys["public_key_path"]
+
+        #Create ssh dir inside container
+        container_ssh_dir = "/root/.ssh" # path inside docker container
+        subprocess.run(["docker", "exec", container_id, "mkdir", "-p", container_ssh_dir], check=True)
+
+        # Copy the key into Docker's authorized key file
+        subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
 
         # Save container information to the database
         new_container = Container(
@@ -179,3 +194,11 @@ def find_available_port(start_port: int, end_port: int) -> int:
                 return port
     raise RuntimeError(f"No available ports found in the range {start_port}-{end_port}")
 
+def get_keys_path(user_id):
+    key_dir = os.path.join(BASE_KEY_PATH, str(user_id))
+    private_key_path = os.path.join(key_dir, "id_rsa")
+    public_key_path = os.path.join(key_dir, "id_rsa.pub")
+    return {
+        "private_key_path": private_key_path,
+        "public_key_path": public_key_path
+    }
