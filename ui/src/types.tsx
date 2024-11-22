@@ -19,15 +19,13 @@ export interface Profile {
 }
 
 export interface Course {
-  id: number;
+  id: string; 
   name: string;
-  section: number;
   term: string;
+  professor: string;
   studentsEnrolled: number;
   isPublished: boolean;
-  professor: string;
 }
-
 export interface Student {
   id: number;
   firstName: string;

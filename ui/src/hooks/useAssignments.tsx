@@ -5,6 +5,7 @@ import { Assignment } from "@/types";
 
 export const useAssignments = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [searchResults, setSearchResults] = useState<Assignment[]>([]);
 
   const fetchAssignments = async () => {
     try {
@@ -13,9 +14,9 @@ export const useAssignments = () => {
         throw new Error("Failed to fetch assignments");
       }
       const data = await response.json();
-  
+
       console.log("Raw assignments data from API:", data);
-  
+
       const transformedData = data.map((assignment: any) => ({
         assignment_id: assignment.assignment_id || "",
         course_id: assignment.course_id || "",
@@ -31,18 +32,45 @@ export const useAssignments = () => {
         docker_image_id: assignment.docker_image_id || "",
         user_id: assignment.user_id || "",
       }));
-  
+
       console.log("Transformed assignments data:", transformedData);
-  
+
       setAssignments(transformedData);
     } catch (err) {
       console.error("Error fetching assignments:", err);
     }
   };
 
-  useEffect(() => {
-    fetchAssignments();
-  }, []);
+  const searchAssignments = async (courseId: string) => {
+    try {
+      const response = await fetch("http://localhost:5000/assignments/search?course_id=${courseId}");
+      if (!response.ok) {
+        throw new Error("Failed to search assignments");
+      }
+      const data = await response.json();
+
+      const transformedData = data.map((assignment: any) => ({
+        assignment_id: assignment.assignment_id || "",
+        course_id: assignment.course_id || "",
+        title: assignment.title || "",
+        description: assignment.description || "",
+        due_at: assignment.due_at ? new Date(assignment.due_at) : null,
+        lock_at: assignment.lock_at ? new Date(assignment.lock_at) : null,
+        unlock_at: assignment.unlock_at ? new Date(assignment.unlock_at) : null,
+        publish_at: assignment.publish_at ? new Date(assignment.publish_at) : null,
+        is_unlocked: assignment.is_unlocked || false,
+        is_published: assignment.is_published || false,
+        allows_late_submissions: assignment.allows_late_submissions || false,
+        docker_image_id: assignment.docker_image_id || "",
+        user_id: assignment.user_id || "",
+      }));
+
+      setSearchResults(transformedData); // Store search results separately
+      console.log("Search results:", transformedData);
+    } catch (err) {
+      console.error("Error searching assignments:", err);
+    }
+  };
 
   const saveAssignment = async (newAssignment: Assignment) => {
     try {
@@ -53,11 +81,11 @@ export const useAssignments = () => {
         },
         body: JSON.stringify(newAssignment),
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to add assignment");
       }
-  
+
       const data = await response.json();
       console.log("Saved Assignment:", data); // Log the response to ensure it's saved correctly
       setAssignments((prev) => [...prev, data]);
@@ -91,7 +119,7 @@ export const useAssignments = () => {
       allows_late_submissions: allows_late_submissions,
       docker_image_id: docker_image_id,
     };
-  
+
     try {
       await saveAssignment(newAssignment);
       setAssignments((prev) => [...prev, newAssignment]);
@@ -100,7 +128,6 @@ export const useAssignments = () => {
       console.error("Failed to add assignment:", err);
     }
   };
-  
 
   const updateAssignment = async (
     assignment_id: string,
@@ -228,7 +255,8 @@ export const useAssignments = () => {
 
   return {
     assignments,
-    fetchAssignments, // Add fetchAssignments here
+    fetchAssignments,
+    searchAssignments,
     addAssignment,
     updateAssignment,
     deleteAssignment,

@@ -1,17 +1,18 @@
 import { useState } from "react";
 
 interface Course {
-  id: number;
+  id: string; // Use course_id from the database
   name: string;
   section: number;
   term: string;
   studentsEnrolled: number;
   isPublished: boolean;
-  professor: string;
+  professor: string; // Include professor
 }
 
 export const useDashboard = () => {
   const [courses, setCourses] = useState<Course[]>([]);
+
   const fetchCourses = async () => {
     try {
       const response = await fetch("http://localhost:5000/courses");
@@ -19,16 +20,17 @@ export const useDashboard = () => {
         throw new Error("Failed to fetch courses");
       }
       const data = await response.json();
+
+      // Transform API response
       const transformedCourses = data.map((course: any) => ({
         id: course.course_id,
         name: course.name,
-        section: course.section || 0,
         term: course.term_id || "Unknown Term",
+        professor: course.user_id || "Unknown Professor",
         studentsEnrolled: course.studentsEnrolled || 0,
         isPublished: course.publish || false,
-        professor: course.professor || "Unknown",
       }));
-  
+
       setCourses(transformedCourses);
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -36,20 +38,18 @@ export const useDashboard = () => {
   };
 
   const addCourse = async (
-    title: string,
-    section: string,
+    name: string,
+    term: string,
     professor: string,
-    semester: string,
     studentsEnrolled: number
   ) => {
     const newCourse = {
-      name: title,
-      section: parseInt(section, 10),
-      professor,
-      term: semester,
+      name,
+      term_id: term,
+      user_id: professor, // Professor UUID
       studentsEnrolled,
     };
-
+  
     try {
       const response = await fetch("http://localhost:5000/courses", {
         method: "POST",
@@ -58,32 +58,28 @@ export const useDashboard = () => {
         },
         body: JSON.stringify(newCourse),
       });
-
+  
       if (!response.ok) {
         throw new Error("Failed to add course");
       }
-      await fetchCourses();
+  
+      const data = await response.json(); // Get the created course
+      await fetchCourses(); // Refresh courses
+      return data; // Return the created course object
     } catch (error) {
       console.error("Error adding course:", error);
+      throw error; // Rethrow to be caught in `handleAddCourse`
     }
   };
 
-  const updateCourse = async (
-    id: number,
-    title: string,
-    section: string | number,
-    semester: string,
-    professor: string
-  ) => {
-    try {
-      const updatedCourse = {
-        id,
-        title,
-        section,
-        semester,
-        professor,
-      };
+  const updateCourse = async (id: string, name: string, term: string, professor: string) => {
+    const updatedCourse = {
+      name,
+      term,
+      user_id: professor, // Maps `professor` to `user_id`
+    };
   
+    try {
       const response = await fetch(`http://localhost:5000/courses/${id}`, {
         method: "PUT",
         headers: {
@@ -95,22 +91,20 @@ export const useDashboard = () => {
       if (!response.ok) {
         throw new Error("Failed to update course");
       }
-  
-      await fetchCourses(); // Refresh courses
+      await fetchCourses();
     } catch (error) {
       console.error("Error updating course:", error);
     }
   };
-  
 
-  const setPublished = async (id: number, status: boolean) => {
+  const setPublished = async (id: string, status: boolean) => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}/publish`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ isPublished: status }),
+        body: JSON.stringify({ publish: status }),
       });
 
       if (!response.ok) {
@@ -127,7 +121,7 @@ export const useDashboard = () => {
     }
   };
 
-  const deleteCourse = async (id: number) => {
+  const deleteCourse = async (id: string) => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}`, {
         method: "DELETE",

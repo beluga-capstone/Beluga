@@ -13,14 +13,19 @@ import { useRouter } from "next/navigation";
 
 const NewCourse: React.FC = () => {
   const { addCourse, fetchCourses } = useDashboard();
-  const { addUsers } = useUsers();
+  const { users } = useUsers();
   const router = useRouter();
 
-  const [title, setTitle] = useState("");
-  const [section, setSection] = useState<string>("");
+  const [name, setName] = useState("");
+  const [term, setTerm] = useState("");
   const [professor, setProfessor] = useState<string>("");
-  const [semester, setSemester] = useState("");
   const [students, setStudents] = useState<User[]>([]);
+  const professors = users
+    .filter((user) => user.role === "Professor") 
+    .map((user) => ({
+      id: user.id.toString(), 
+      name: `${user.firstName} ${user.lastName}`,
+  }));
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -48,35 +53,32 @@ const NewCourse: React.FC = () => {
   });
 
   const handleAddCourse = async () => {
-    const courseId = Date.now(); 
-    await addCourse(title, section, professor, semester, students.length);
-    await fetchCourses(); 
-    const studentsWithCourseId = students.map((student) => ({
-      ...student,
-      courseId,
-    }));
-    await addUsers(studentsWithCourseId);
-  
-    router.push("/");
+    try {
+      if (!professor) {
+        throw new Error("Select a professor.");
+      }
+      await addCourse(name, term, professor, students.length);
+      await fetchCourses();
+      router.push("/");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="font-bold text-4xl mb-6">New Course</h1>
 
-      {/* Course Form */}
       <CoursesForm
-        title={title}
-        setTitle={setTitle}
-        section={section}
-        setSection={setSection}
+        name={name}
+        setName={setName}
+        term={term}
+        setTerm={setTerm}
         professor={professor}
         setProfessor={setProfessor}
-        semester={semester}
-        setSemester={setSemester}
+        professors={professors}
       />
 
-      {/* CSV Upload Section */}
       <h2 className="font-bold text-2xl mt-8 mb-4">Upload Students</h2>
       {students.length === 0 ? (
         <div
@@ -90,7 +92,6 @@ const NewCourse: React.FC = () => {
         <StudentsTable students={students} />
       )}
 
-      {/* Action Buttons */}
       <div className="flex flex-row justify-end pt-4 space-x-2">
         <Button className="bg-gray-500 text-white px-4 py-2 rounded" href="/">
           Cancel
@@ -98,7 +99,7 @@ const NewCourse: React.FC = () => {
         <Button
           className="bg-blue-500 text-white px-4 py-2 rounded"
           onClick={handleAddCourse}
-          disabled={!title || students.length === 0}
+          disabled={!name || !term || !professor}
         >
           Add Course
         </Button>

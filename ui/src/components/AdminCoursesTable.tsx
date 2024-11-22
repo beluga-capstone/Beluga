@@ -1,27 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Trash2, Edit2, ToggleLeft, ToggleRight, Plus } from "lucide-react";
 import { useDashboard } from "@/hooks/useDashboard";
-import { useUsers } from "@/hooks/useUsers";
-import { ROLES } from "@/constants";
 import Link from "next/link";
 
 const AdminCoursesTable: React.FC = () => {
   const { courses, fetchCourses, setPublished, deleteCourse } = useDashboard();
-  const { users } = useUsers();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadCourses = async () => {
-      setLoading(true); // Set loading to true at the start
-      await fetchCourses(); // Wait for courses to fetch
-      setLoading(false); // Set loading to false when done
+      setLoading(true);
+      await fetchCourses();
+      setLoading(false);
     };
     loadCourses();
   }, [fetchCourses]);
-
-  if (loading) return <div>Loading courses...</div>;
-
-  if (courses.length === 0) return <div>No courses available. Please add one!</div>;
 
   return (
     <div>
@@ -39,70 +32,48 @@ const AdminCoursesTable: React.FC = () => {
         <thead>
           <tr>
             <th>Course</th>
-            <th>Section</th>
-            <th>Term</th>
+            <th>Professor</th>
             <th>Students Enrolled</th>
             <th>Published</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {courses.map((course) => {
-            const studentsEnrolled = users.filter(
-              (user) =>
-                parseInt(user.role) === ROLES.STUDENT &&
-                user.courseId === course.id
-            ).length;
-
-            return (
-              <tr key={course.id}>
-                <td className="text-center py-2">
-                  <Link
-                    href={`/assignments/courses/${course.id}?courseId=${course.id}&name=${encodeURIComponent(
-                      course.name
-                    )}`}
-                  >
-                    <span className="cursor-pointer text-white">
-                      {course.name}
-                    </span>
-                  </Link>
-                </td>
-                <td className="text-center py-2">{course.section}</td>
-                <td className="text-center py-2">{course.term}</td>
-                <td className="text-center py-2">{studentsEnrolled}</td>
-                <td className="text-center py-2">
-                  <div className="flex justify-center items-center cursor-pointer">
-                    {course.isPublished ? (
-                      <ToggleRight
-                        size={32}
-                        className="text-green-500"
-                        onClick={() => setPublished(course.id, false)}
-                      />
-                    ) : (
-                      <ToggleLeft
-                        size={32}
-                        className="text-red-500"
-                        onClick={() => setPublished(course.id, true)}
-                      />
-                    )}
-                  </div>
-                </td>
-                <td className="text-center py-2 flex space-x-4 justify-center">
-                  <Link href={`/course/edit/${course.id}`}>
-                    <button className="py-2 text-blue-500">
-                      <Edit2 size={20} />
-                    </button>
-                  </Link>
-                  <button
-                    className="text-red-500"
-                    onClick={() => deleteCourse(course.id)}
-                  >
-                    <Trash2 size={20} />
+          {courses.map((course) => (
+            <tr key={course.id}>
+              <td className="text-center py-2">{course.name}</td>
+              <td className="text-center py-2">{course.professor}</td>
+              <td className="text-center py-2">{course.studentsEnrolled}</td>
+              <td className="text-center py-2">
+                {course.isPublished ? (
+                  <ToggleRight
+                    size={32}
+                    className="text-green-500 cursor-pointer"
+                    onClick={() => setPublished(course.id, false)}
+                  />
+                ) : (
+                  <ToggleLeft
+                    size={32}
+                    className="text-red-500 cursor-pointer"
+                    onClick={() => setPublished(course.id, true)}
+                  />
+                )}
+              </td>
+              <td className="text-center py-2 flex space-x-4 justify-center">
+                <Link href={`/course/edit/${course.id}`}>
+                  <button className="py-2 text-blue-500">
+                    <Edit2 size={20} />
                   </button>
-                </td>
-              </tr>
-            );
-          })}
+                </Link>
+                <button
+                  className="text-red-500"
+                  onClick={() => deleteCourse(course.id)}
+                >
+                  <Trash2 size={20} />
+                </button>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
