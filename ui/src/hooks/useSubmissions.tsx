@@ -125,11 +125,22 @@ export const useSubmissions = () => {
     );
   };
 
+  const setGrade = (submissionId: string, grade: number) => {
+    const updatedSubmissions = submissions.map((submission) =>
+      submission.submission_id === submissionId
+        ? { ...submission, grade, status: "graded" }
+        : submission
+    );
+    setSubmissions(updatedSubmissions);
+    saveSubmissionsToStorage(updatedSubmissions);
+  };
+
   return {
     submissions,
     submit,
     getLatestSubmission,
     getLatestSubmissionForUser,
     getAllSubmissionsForAssignmentAndUser,
+    setGrade,
   };
 };
