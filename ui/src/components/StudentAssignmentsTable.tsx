@@ -1,6 +1,7 @@
 import { useAssignments } from "@/hooks/useAssignments";
 import { useProfile } from "@/hooks/useProfile";
 import { useSubmissions } from "@/hooks/useSubmissions";
+import { shortDate, shortTime } from "@/lib/utils";
 import Link from "next/link";
 
 const StudentAssignmentsTable = () => {
@@ -43,16 +44,18 @@ const StudentAssignmentsTable = () => {
               </Link>
             </td>
             <td className="text-center py-2">
-              {assignment.publish_at?.toLocaleDateString("en-US", {
-                dateStyle: "short",
-                timeZone: "UTC",
-              })}
+              {assignment?.publish_at
+                ? `${shortDate(assignment.publish_at)} at ${shortTime(
+                    assignment.publish_at
+                  )}`
+                : "-"}
             </td>
             <td className="text-center py-2">
-              {assignment.due_at?.toLocaleDateString("en-US", {
-                dateStyle: "short",
-                timeZone: "UTC",
-              })}
+              {assignment?.due_at
+                ? `${shortDate(assignment.due_at)} at ${shortTime(
+                    assignment.due_at
+                  )}`
+                : "-"}
             </td>
 
             <td className="text-center py-2">

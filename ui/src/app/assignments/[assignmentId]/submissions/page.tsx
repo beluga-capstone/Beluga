@@ -2,8 +2,8 @@
 
 import StudentListingForSubmission from "@/components/StudentListingForSubmission";
 import { useAssignments } from "@/hooks/useAssignments";
-import { useSubmissions } from "@/hooks/useSubmissions";
 import { useUsers } from "@/hooks/useUsers";
+import { shortDate, shortTime } from "@/lib/utils";
 
 const AssignmentSubmissionsPage = ({
   params,
@@ -15,19 +15,17 @@ const AssignmentSubmissionsPage = ({
     (assignment) => assignment.assignment_id === params.assignmentId
   );
   const { users } = useUsers();
-  const { getLatestSubmissionForUser } = useSubmissions();
 
   return (
     <div className="container mx-auto p-4">
       <div className="mb-4 flex justify-between items-center">
         <h1 className="font-bold text-4xl mb-6">{assignment?.title}</h1>
         <h2>
-          Due:{" "}
-          {assignment?.due_at &&
-            assignment.due_at.toLocaleDateString("en-US", {
-              dateStyle: "short",
-              timeZone: "UTC",
-            })}
+          {assignment?.due_at
+            ? `Due: ${shortDate(assignment?.due_at)} at ${shortTime(
+                assignment?.due_at
+              )}`
+            : "No due date"}
         </h2>
       </div>
       <table className="table w-full">

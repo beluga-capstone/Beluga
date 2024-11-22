@@ -1,5 +1,6 @@
 import { useSubmissions } from "@/hooks/useSubmissions";
-import { Assignment, Submission, User } from "@/types";
+import { shortDate, shortTime } from "@/lib/utils";
+import { Assignment, User } from "@/types";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -73,21 +74,11 @@ const StudentListingForSubmission: React.FC<
         {latestSubmission?.status === "graded" ? "Yes" : "No"}
       </td>
       <td className="py-2 text-center">
-        {latestSubmission?.submitted_at ? (
-          <>
-            {latestSubmission.submitted_at.toLocaleDateString("en-US", {
-              dateStyle: "short",
-              timeZone: "UTC",
-            })}{" "}
-            at{" "}
-            {latestSubmission.submitted_at.toLocaleTimeString("en-US", {
-              timeStyle: "short",
-              timeZone: "UTC",
-            })}
-          </>
-        ) : (
-          "-"
-        )}
+        {latestSubmission?.submitted_at
+          ? `${shortDate(latestSubmission.submitted_at)} at ${shortTime(
+              latestSubmission.submitted_at
+            )}`
+          : "-"}
       </td>
     </tr>
   );

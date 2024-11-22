@@ -14,14 +14,7 @@ import { useEffect } from "react";
 import { Assignment, Submission } from "@/types";
 import { useImageData } from "@/hooks/useImageData";
 import { useSubmissions } from "@/hooks/useSubmissions";
-
-// Function to format the date
-const format_date = (date: string) =>
-  new Date(date).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+import { shortDate, shortTime } from "@/lib/utils";
 
 const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
   const { profile } = useProfile();
@@ -279,19 +272,21 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
       <div className="flex-row">
         <div className="flex justify-between">
           <h2 className="font-bold pb-4">
-            Due Date:{" "}
             {assignment?.due_at
-              ? format_date(assignment.due_at.toISOString())
-              : "not found"}
+              ? `Due: ${shortDate(assignment?.due_at)} at ${shortTime(
+                  assignment?.due_at
+                )}`
+              : "No due date"}
           </h2>
 
           {profile?.role_id === ROLES.STUDENT && latestSubmission && (
             <div className="flex flex-col">
               <h2 className="font-bold">
-                Submitted:{" "}
                 {latestSubmission?.submitted_at
-                  ? format_date(latestSubmission?.submitted_at.toISOString())
-                  : "not found"}
+                  ? `Submitted: ${shortDate(
+                      latestSubmission?.submitted_at
+                    )} at ${shortTime(latestSubmission?.submitted_at)}`
+                  : "Not yet submitted"}
               </h2>
 
               <h2 className="font-bold">
@@ -303,16 +298,13 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
           )}
         </div>
 
-        <h2 className="font-bold pb-4">
-          Available:{" "}
-          {assignment?.publish_at
-            ? format_date(assignment.publish_at.toISOString())
-            : "not found"}{" "}
-          to{" "}
-          {assignment?.lock_at
-            ? format_date(assignment.lock_at.toISOString())
-            : "not found"}
-        </h2>
+        {assignment?.publish_at && assignment?.lock_at && (
+          <h2 className="font-bold pb-4">
+            Available {shortDate(assignment.publish_at)} at{" "}
+            {shortTime(assignment.publish_at)} to{" "}
+            {shortDate(assignment.lock_at)} at {shortTime(assignment.lock_at)}
+          </h2>
+        )}
 
         {assignment?.description && (
           <h2 className="font-bold pb-4">

@@ -1,12 +1,7 @@
 import { useAssignments } from "@/hooks/useAssignments";
+import { shortDate, shortTime } from "@/lib/utils";
 import { ToggleLeft, ToggleRight } from "lucide-react";
 import Link from "next/link";
-
-const format_date = (date:string) => new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-});
 
 const ProfessorAssignmentsTable = () => {
   const { assignments, setPublished, setLateSubmissions } = useAssignments();
@@ -37,14 +32,18 @@ const ProfessorAssignmentsTable = () => {
               </Link>
             </td>
             <td className="text-center py-2">
-              {assignment.publish_at?
-                format_date(assignment.publish_at.toISOString()): "not found"
-              }
+              {assignment.publish_at
+                ? `${shortDate(assignment.publish_at)} at ${shortTime(
+                    assignment.publish_at
+                  )}`
+                : "-"}
             </td>
             <td className="text-center py-2">
-              {assignment.due_at?
-                format_date(assignment.due_at.toISOString()): "not found"
-              }
+              {assignment.due_at
+                ? `${shortDate(assignment.due_at)} at ${shortTime(
+                    assignment.due_at
+                  )}`
+                : "-"}
             </td>
             <td className="text-center py-2">0</td>
             <td className="py-2">
@@ -53,7 +52,9 @@ const ProfessorAssignmentsTable = () => {
                   <ToggleRight
                     size={32}
                     className="text-green-500"
-                    onClick={() => setPublished(assignment.assignment_id, false)}
+                    onClick={() =>
+                      setPublished(assignment.assignment_id, false)
+                    }
                   />
                 ) : (
                   <ToggleLeft
@@ -66,7 +67,7 @@ const ProfessorAssignmentsTable = () => {
             </td>
             <td className="py-2">
               <div className="flex justify-center items-center">
-                {assignment.allows_late_submissions? (
+                {assignment.allows_late_submissions ? (
                   <ToggleRight
                     size={32}
                     className="text-green-500"
