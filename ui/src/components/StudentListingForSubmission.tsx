@@ -48,7 +48,15 @@ const StudentListingForSubmission: React.FC<
               placeholder="Grade"
               value={newGrade ?? ""}
               className="border rounded p-1 bg-surface w-16"
-              onChange={(e) => setNewGrade(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (
+                  value === "" ||
+                  (parseInt(value) >= 0 && parseInt(value) <= 100)
+                ) {
+                  setNewGrade(value);
+                }
+              }}
               onBlur={() => {
                 if (latestSubmission) {
                   if (newGrade === "") {
