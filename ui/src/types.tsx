@@ -19,13 +19,14 @@ export interface Profile {
 }
 
 export interface Course {
-  id: string; 
+  id: string;
   name: string;
   term: string;
   professor: string;
   studentsEnrolled: number;
   isPublished: boolean;
 }
+
 export interface Student {
   id: number;
   firstName: string;
@@ -68,11 +69,15 @@ export interface Image {
 }
 
 export interface User {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   middleName?: string;
   email: string;
-  role: string;
-  courseId?: number;
+  role: string; 
+}
+
+export interface Term {
+  id: string;
+  name: string;
 }

@@ -42,32 +42,32 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
   },
 ];
 
-export const DEFAULT_COURSES: Course[] = [
-  {
-    id: 1,
-    name: "CSCE 120",
-    section: 500,
-    term: "Fall 2024",
-    studentsEnrolled: 50,
-    isPublished: true,
-  },
-  {
-    id: 2,
-    name: "CSCE 313",
-    section: 200,
-    term: "Fall 2024",
-    studentsEnrolled: 67,
-    isPublished: true,
-  },
-  {
-    id: 3,
-    name: "CSCE 410",
-    section: 500,
-    term: "Spring 2024",
-    studentsEnrolled: 0,
-    isPublished: false,
-  },
-];
+// export const DEFAULT_COURSES: Course[] = [
+//   {
+//     id: 1,
+//     name: "CSCE 120",
+//     section: 500,
+//     term: "Fall 2024",
+//     studentsEnrolled: 50,
+//     isPublished: true,
+//   },
+//   {
+//     id: 2,
+//     name: "CSCE 313",
+//     section: 200,
+//     term: "Fall 2024",
+//     studentsEnrolled: 67,
+//     isPublished: true,
+//   },
+//   {
+//     id: 3,
+//     name: "CSCE 410",
+//     section: 500,
+//     term: "Spring 2024",
+//     studentsEnrolled: 0,
+//     isPublished: false,
+//   },
+// ];
 
 export const DEFAULT_STUDENTS: Student[] = [
   {

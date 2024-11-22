@@ -10,8 +10,13 @@ const AdminCoursesTable: React.FC = () => {
   useEffect(() => {
     const loadCourses = async () => {
       setLoading(true);
-      await fetchCourses();
-      setLoading(false);
+      try {
+        await fetchCourses();
+      } catch (error) {
+        console.error("Failed to load courses:", error);
+      } finally {
+        setLoading(false);
+      }
     };
     loadCourses();
   }, [fetchCourses]);
@@ -49,13 +54,25 @@ const AdminCoursesTable: React.FC = () => {
                   <ToggleRight
                     size={32}
                     className="text-green-500 cursor-pointer"
-                    onClick={() => setPublished(course.id, false)}
+                    onClick={async () => {
+                      try {
+                        await setPublished(course.id, false);
+                      } catch (error) {
+                        console.error("Failed to update publish status:", error);
+                      }
+                    }}
                   />
                 ) : (
                   <ToggleLeft
                     size={32}
                     className="text-red-500 cursor-pointer"
-                    onClick={() => setPublished(course.id, true)}
+                    onClick={async () => {
+                      try {
+                        await setPublished(course.id, true);
+                      } catch (error) {
+                        console.error("Failed to update publish status:", error);
+                      }
+                    }}
                   />
                 )}
               </td>
@@ -67,7 +84,13 @@ const AdminCoursesTable: React.FC = () => {
                 </Link>
                 <button
                   className="text-red-500"
-                  onClick={() => deleteCourse(course.id)}
+                  onClick={async () => {
+                    try {
+                      await deleteCourse(course.id);
+                    } catch (error) {
+                      console.error("Failed to delete course:", error);
+                    }
+                  }}
                 >
                   <Trash2 size={20} />
                 </button>
