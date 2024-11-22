@@ -79,15 +79,27 @@ const AssignmentSubmissionsPage = ({
                   {latestSubmission?.status === "graded" ? "Yes" : "No"}
                 </td>
                 <td className="text-center">
-                  {latestSubmission?.submitted_at.toLocaleDateString("en-US", {
-                    dateStyle: "short",
-                    timeZone: "UTC",
-                  })}{" "}
-                  at{" "}
-                  {latestSubmission?.submitted_at.toLocaleTimeString("en-US", {
-                    timeStyle: "short",
-                    timeZone: "UTC",
-                  })}
+                  {latestSubmission?.submitted_at ? (
+                    <>
+                      {latestSubmission.submitted_at.toLocaleDateString(
+                        "en-US",
+                        {
+                          dateStyle: "short",
+                          timeZone: "UTC",
+                        }
+                      )}{" "}
+                      at{" "}
+                      {latestSubmission.submitted_at.toLocaleTimeString(
+                        "en-US",
+                        {
+                          timeStyle: "short",
+                          timeZone: "UTC",
+                        }
+                      )}
+                    </>
+                  ) : (
+                    "-"
+                  )}
                 </td>
               </tr>
             );
