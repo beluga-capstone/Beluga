@@ -24,13 +24,13 @@ const ImageItem: React.FC<ImageItemProps> = ({ image, isSelected, onToggleSelect
                         e.stopPropagation();
                         onToggleSelect(image.docker_image_id);
                     }}
-                    className="mr-4"
-                >
-                    {isSelected ? (
-                        <CheckSquare className="text-blue-500" />
-                    ) : (
-                        <Square className="text-gray-500" />
-                    )}
+                    className={`w-5 h-5 flex items-center justify-center border rounded ${
+                        isSelected
+                        ? "bg-blue-500 border-blue-500 text-white"
+                        : "bg-white border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-500"
+                    } transition duration-150 ease-in-out`}
+                    >
+                    {isSelected ? "✓" : ""}
                 </button>
                 
                 <div>
