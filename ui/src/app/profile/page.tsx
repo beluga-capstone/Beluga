@@ -28,7 +28,7 @@ const ProfilePage: React.FC = () => {
         {profile?.firstName} {profile?.middleName} {profile?.lastName}
       </h2>
       <h2 className="font-bold pb-4">{profile?.email}</h2>
-      <h2 className="font-bold pb-4">Role: {getRoleName(profile?.role_id)}</h2>
+      <h2 className="font-bold pb-4">Role: {getRoleName(profile?.role_id).charAt(0).toUpperCase() + getRoleName(profile?.role_id).slice(1).toLowerCase()}</h2>
     </div>
   );
 };

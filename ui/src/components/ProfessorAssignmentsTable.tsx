@@ -37,16 +37,22 @@ const ProfessorAssignmentsTable = () => {
               </Link>
             </td>
             <td className="text-center py-2">
-              {assignment.publish_at?
-                format_date(assignment.publish_at.toISOString()): "not found"
-              }
+              <Link href={`/assignments/${assignment.assignment_id}`}>
+                {assignment.publish_at?
+                  format_date(assignment.publish_at.toISOString()): "not found"
+                }
+              </Link>
             </td>
             <td className="text-center py-2">
-              {assignment.due_at?
-                format_date(assignment.due_at.toISOString()): "not found"
-              }
+              <Link href={`/assignments/${assignment.assignment_id}`}>
+                {assignment.due_at?
+                  format_date(assignment.due_at.toISOString()): "not found"
+                }
+              </Link>
             </td>
-            <td className="text-center py-2">0</td>
+            <td className="text-center py-2">
+              <Link href={`/assignments/${assignment.assignment_id}`}>0</Link>
+            </td>
             <td className="py-2">
               <div className="flex justify-center items-center">
                 {assignment.is_published ? (

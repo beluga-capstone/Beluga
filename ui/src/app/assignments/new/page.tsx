@@ -2,26 +2,55 @@
 
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
-import React, {useState,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import AssignmentForm from "../../../components/AssignmentsForm";
+import { useRouter } from "next/navigation";
 
 const NewAssignment: React.FC = () => {
-  const { addAssignment } = useAssignments();
+  const { assignments, addAssignment } = useAssignments();
+  const router = useRouter();
   const courseId = "6d37fdc4-77ed-42cc-bb57-4dc59fd683a0";
-  const [title, setTitle] = React.useState("");
-  const [description, setDescription] = React.useState("");
-  const [publishAt, setPublishAt] = React.useState("");
-  const [dueAt, setDueAt] = React.useState("");
-  const [lockAt, setLockAt] = React.useState("");
-  const [unlockAt, setUnlockAt] = React.useState("");
-  const [allowsLateSubmissions, setAllowsLateSubmissions] =
-    React.useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [publishAt, setPublishAt] = useState("");
+  const [dueAt, setDueAt] = useState("");
+  const [lockAt, setLockAt] = useState("");
+  const [unlockAt, setUnlockAt] = useState("");
+  const [allowsLateSubmissions, setAllowsLateSubmissions] = useState(false);
   const [imageId, setImageId] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
-  // if select image, then unselect,imageid will be -1, fix it
-  useEffect(()=>{
+  useEffect(() => {
     if (imageId === "-1") setImageId(null);
   }, [imageId]);
+
+  const handleAddAssignment = () => {
+    const isDuplicate = assignments.some(
+      (assignment) =>
+        assignment.title &&
+        assignment.title.toLowerCase() === title.toLowerCase()
+    );
+  
+    if (isDuplicate) {
+      setError("Assignment title must be unique.");
+      return;
+    }
+    setError("");
+  
+    addAssignment(
+      courseId,
+      title,
+      description,
+      new Date(dueAt),
+      allowsLateSubmissions ? new Date(lockAt) : new Date(dueAt),
+      new Date(unlockAt),
+      new Date(publishAt),
+      allowsLateSubmissions,
+      imageId || null
+    );
+    router.push("/assignments");
+  };
+  
 
   return (
     <div className="container mx-auto p-4">
@@ -46,6 +75,8 @@ const NewAssignment: React.FC = () => {
         setImageId={setImageId}
       />
 
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+
       <div className="flex flex-column justify-end">
         <div className="p-2">
           <Button
@@ -58,20 +89,7 @@ const NewAssignment: React.FC = () => {
         <div className="p-2">
           <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={() =>
-              addAssignment(
-                courseId,
-                title,
-                description,
-                new Date(dueAt),
-                allowsLateSubmissions ? new Date(lockAt) : new Date(dueAt),
-                new Date(unlockAt),
-                new Date(publishAt),
-                allowsLateSubmissions,
-                imageId || null
-              )
-            }
-            href="/assignments"
+            onClick={handleAddAssignment}
             disabled={!title}
           >
             Add Assignment

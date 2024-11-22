@@ -19,19 +19,24 @@ const ImageItem: React.FC<ImageItemProps> = ({ image, isSelected, onToggleSelect
     return (
         <div className="border p-4 rounded mb-4 flex justify-between items-center">
             <div className="flex items-center">
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleSelect(image.docker_image_id);
-                    }}
-                    className={`w-5 h-5 flex items-center justify-center border rounded ${
-                        isSelected
-                        ? "bg-blue-500 border-blue-500 text-white"
-                        : "bg-white border-gray-300 text-gray-500 hover:border-blue-500 hover:text-blue-500"
-                    } transition duration-150 ease-in-out`}
+                <label
+                    className="flex items-center cursor-pointer"
+                    onClick={(e) => e.stopPropagation()}
                     >
-                    {isSelected ? "✓" : ""}
-                </button>
+                    <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => onToggleSelect(image.docker_image_id)}
+                        className="hidden"
+                    />
+                    <span
+                        className={`w-4 h-4 border rounded-md flex items-center justify-center mr-2 ${
+                        isSelected ? "bg-blue-500 border-blue-500" : "border-gray-300"
+                        }`}
+                    >
+                        {isSelected && <span className="text-white">✓</span>}
+                    </span>
+                </label>
                 
                 <div>
                     <h2 className="font-bold flex items-center">
