@@ -11,6 +11,7 @@ const ProfilePage: React.FC = () => {
   const { profile } = useProfile();
   const { users, insertUser } = useUsers();
 
+  // TODO: Remove:
   // Adding profile to users for testing purposes
   useEffect(() => {
     if (profile) {

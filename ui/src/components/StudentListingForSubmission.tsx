@@ -37,8 +37,10 @@ const StudentListingForSubmission: React.FC<
       <td className="py-2 text-center">{latestSubmission ? "Yes" : "No"}</td>
       <td>
         <div
-          className="w-16 text-center cursor-pointer mx-auto"
-          onClick={() => setIsEditingGrade(true)}
+          className={`w-16 text-center mx-auto ${
+            latestSubmission ? "cursor-pointer" : ""
+          }`}
+          onClick={() => latestSubmission && setIsEditingGrade(true)}
         >
           {isEditingGrade ? (
             <input
