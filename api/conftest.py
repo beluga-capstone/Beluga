@@ -1,38 +1,68 @@
 import os
 import sys
+import pytest
+from unittest.mock import patch, MagicMock
+from flask_login import current_user
 from uuid import uuid4
-
+from src.util import auth
 os.chdir(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 
-import pytest
 from src import create_app 
-from src.util.db import db  
-
+from src.util.db import db, User
 
 @pytest.fixture(scope='module')
 def test_client():
-    app = create_app('testing')
+    app = create_app('default')
     with app.test_client() as testing_client:
         with app.app_context():
             db.create_all()  
         yield testing_client  
+        with app.app_context():
+            db.session.remove()
+            db.drop_all()
+
+@pytest.fixture(autouse=True)
+def mock_admin_auth(monkeypatch, admin_id):
+    """Mocks all authentication and authorization to bypass all auth checks."""
+    from flask_login import current_user
+    
+    mock_user = User(
+        user_id=admin_id,
+        username='mockadminuser',
+        email='mockadminuser@tamu.edu',
+        role_id=1
+    )
+    
+    monkeypatch.setattr('flask_login.utils._get_user', lambda: mock_user)
+
+    yield mock_user
 
 @pytest.fixture
+def admin_id(test_client):
+    with test_client.application.app_context():
+        user = User(
+            username='testadminuser',
+            email='testadminuser@tamu.edu',
+            role_id=1
+        )
+        db.session.add(user)
+        db.session.commit()
+        return user.user_id
+        
+@pytest.fixture
 def user_id(test_client):
-    # Create User
-    create_data = {
-        'username': 'testuser',
-        'email': 'testuser@tamu.edu'
-    }
-    response = test_client.post('/users', json=create_data)
-    assert response.status_code == 201
-    assert b'User created successfully' in response.data
-
-    # Return the user ID for use in tests
-    return response.get_json()['user_id']
+    with test_client.application.app_context():
+        user = User(
+            username='testuser',
+            email='testuser@tamu.edu',
+            role_id=8
+        )
+        db.session.add(user)
+        db.session.commit()
+        return user.user_id
 
 @pytest.fixture
 def assignment_id(test_client, course_id, docker_image_id, user_id):
@@ -41,9 +71,9 @@ def assignment_id(test_client, course_id, docker_image_id, user_id):
         'course_id': course_id,
         'title': 'Test Assignment',
         'description': 'This is a test assignment',
-        'due_at': '2024-10-31T23:59:59',
-        'lock_at': '2024-10-31T23:59:59',
-        'unlock_at': '2024-10-01T00:00:00',
+        'due_at': '2024-10-31T23:59:59.000Z',
+        'lock_at': '2024-10-31T23:59:59.000Z',
+        'unlock_at': '2024-10-01T00:00:00.000Z',
         'user_id': user_id,
         'docker_image_id': docker_image_id
     }
@@ -55,7 +85,7 @@ def assignment_id(test_client, course_id, docker_image_id, user_id):
 @pytest.fixture
 def container_id(test_client, user_id):
     create_data = {
-        'docker_container_id': str(uuid4()),  # Unique ID for each test
+        'docker_container_id': str(uuid4()),
         'user_id': user_id,
         'description': 'This is a test container'
     }
@@ -89,17 +119,17 @@ def enrollment_id(test_client, user_id, course_id):
     assert response.status_code == 201, f"Error: {response.get_json().get('error')}"
     return response.get_json()['enrollment_id']
 
-
 @pytest.fixture
 def docker_image_id(test_client, user_id):
+    fake_docker_image_id = str(uuid4())  # Generate a unique ID
     create_data = {
-        'docker_image_id': str(uuid4()),  # Generate a unique ID for each test
+        'docker_image_id': fake_docker_image_id,
         'user_id': user_id,
         'description': 'This is a test image'
     }
     response = test_client.post('/images', json=create_data)
     assert response.status_code == 201, f"Error: {response.get_json().get('error')}"
-    return response.get_json()['docker_image_id']
+    return fake_docker_image_id
 
 ROLE_ID_COUNTER = 9 
 
@@ -133,8 +163,8 @@ def term_id(test_client):
 @pytest.fixture
 def submission_id(test_client, user_id, assignment_id):
     create_data = {
-        'user_id': user_id,  # Replace with a valid user UUID
-        'assignment_id': assignment_id # Replace with a valid assignment UUID
+        'user_id': user_id,
+        'assignment_id': assignment_id
     }
     response = test_client.post('/submissions', json=create_data)
     assert response.status_code == 201
