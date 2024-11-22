@@ -286,12 +286,20 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
           </h2>
 
           {profile?.role_id === ROLES.STUDENT && latestSubmission && (
-            <h2 className="font-bold pb-4">
-              Submitted:{" "}
-              {latestSubmission?.submitted_at
-                ? format_date(latestSubmission?.submitted_at.toISOString())
-                : "not found"}
-            </h2>
+            <div className="flex flex-col">
+              <h2 className="font-bold">
+                Submitted:{" "}
+                {latestSubmission?.submitted_at
+                  ? format_date(latestSubmission?.submitted_at.toISOString())
+                  : "not found"}
+              </h2>
+
+              <h2 className="font-bold">
+                {latestSubmission?.status === "graded"
+                  ? `Grade: ${latestSubmission?.grade}`
+                  : "Not yet graded"}
+              </h2>
+            </div>
           )}
         </div>
 
