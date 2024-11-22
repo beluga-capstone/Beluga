@@ -207,5 +207,3 @@ def init_default_images():
         except Exception as e:
             db.session.rollback()
             print(f"Failed to initialize default image {image_info['image_tag']}: {e}")
-
-
