@@ -99,7 +99,7 @@ class VirtualBox:
             textwrap.dedent(
                 f"""
                 VBoxManage storageattach {vm.name}
-                    --storagectl "STAT Controller"
+                    --storagectl "SATA Controller"
                     --port 0 --device 0 --type hdd
                     --medium {disk_path}
                 """
