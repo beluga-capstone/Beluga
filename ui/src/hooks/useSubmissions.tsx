@@ -154,6 +154,14 @@ export const useSubmissions = () => {
     return uniqueUsers.size;
   };
 
+  const assignmentIsSubmitted = (assignmentId: string, userId: string) => {
+    return submissions.some(
+      (submission) =>
+        submission.assignment_id === assignmentId &&
+        submission.user_id === userId
+    );
+  };
+
   return {
     submissions,
     submit,
@@ -163,5 +171,6 @@ export const useSubmissions = () => {
     setGrade,
     setStatus,
     getSubmissionCountForAssignment,
+    assignmentIsSubmitted,
   };
 };
