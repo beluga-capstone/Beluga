@@ -92,7 +92,7 @@ const NewContainer: React.FC = () => {
             onClick={handleAddContainer}
             disabled={isSubmitting || !title || !imageId || titleExists} // Disable if title or imageId is invalid or if title exists
           >
-            Add Container
+            {isSubmitting ? "Creating..." : "Create Container"}
           </Button>
         </div>
       </div>

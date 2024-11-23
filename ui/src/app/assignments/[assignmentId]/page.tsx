@@ -135,12 +135,14 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
           // Create container
           const result = await runContainer(
             assignment?.docker_image_id ?? null,
-            containerName
+            containerName,
+            assignment?.description??null
           );
           if (result) {
             setContainerPort(result.container_port);
-            setContainerStatus("stopped");
+            setContainerStatus("running");
             toast.success("Container created successfully");
+            router.refresh();
           } else {
             throw new Error("Failed to create the container");
           }
