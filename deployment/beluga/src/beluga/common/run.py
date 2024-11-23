@@ -22,7 +22,7 @@ class RunContext:
     def __init__(
         self,
         become_password: str = "",
-        become_expect: str = rb"\[sudo via beulga\] password:",
+        become_expect: str = rb"\[sudo via beluga\] password:",
         become_prompt: str = "[sudo via beluga] password:",
     ):
         self._become_password = become_password
@@ -43,7 +43,9 @@ class RunContext:
         timeout: Optional[int] = None,
     ) -> tuple[bytes, bool]:
         """
-        Run a command. Polling mode will bridge stdout to the subprocess. Set `become` to a username to execute the command as that user using authenticated sudo. Returns captured stdout.
+        Run a command. Polling mode will bridge stdout to the subprocess. Set
+        `become` to a username to execute the command as that user using
+        authenticated sudo. Returns captured stdout.
         """
         cmd_prefix = ""
         if become:

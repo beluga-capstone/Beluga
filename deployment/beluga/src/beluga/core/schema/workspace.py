@@ -25,7 +25,7 @@ class Meta:
     deploy_data: Path = field(
         default_factory=lambda: get_project_root().joinpath("data")
     )
-    challenges: dict[str, Path]
+    services: dict[str, Path]
 
 
 @dataclass(kw_only=True, slots=True)
@@ -64,14 +64,15 @@ class Settings:
 class MachineType(StrEnum):
     containers = "containers"
     images = "images"
+    local = "local"
 
 
 @dataclass(kw_only=True, slots=True)
 class Machine:
     name: str
-    cores: int
-    memory: int
-    disk_size: int
+    cores: int = 0
+    memory: int = 0
+    disk_size: int = 0
     type: MachineType
     ip: IPv4Address
 
@@ -122,7 +123,7 @@ class WorkspaceSchema:
         workspace = pythonize_toml_dict(workspace)
 
         self.meta = Meta(
-            challenges={
+            services={
                 p.parent.name: p.parent for p in project_path.glob("*/config.toml")
             }
         )
@@ -147,4 +148,4 @@ class WorkspaceSchema:
                     setattr(self, k, obj(**workspace[k]))
             else:
                 if v := workspace["workspace"].get(k):
-                    setattr(self, k, v) 
+                    setattr(self, k, v)

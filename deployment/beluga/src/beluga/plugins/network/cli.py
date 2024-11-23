@@ -15,6 +15,35 @@ class Nginx(Beluga):
         super().__init__(**kwargs)
         self._nginx = nginx.Nginx(self._workspace)
 
+    @cli_group.command()
+    def build(self, **_):
+        """
+        Build nginx configs for all services
+        """
+        self._nginx.build()
+
+    @cli_group.option("--force", "-f", help="force replace staged nginx configs.")
+    @cli_group.command()
+    def stage(self, force: bool = False, **_):
+        """
+        Make generated nginx configs available to nginx service.
+        """
+        self._nginx.stage(force)
+
+    @cli_group.command()
+    def enable(self, **_):
+        """
+        Enable nginx configs that are available to nginx service.
+        """
+        self._nginx.enable()
+
+    @cli_group.command()
+    def disable(self, **_):
+        """
+        Disable nginx configs that are available to nginx service.
+        """
+        self._nginx.disable()
+
 
 cli_group.parser.description = Nginx.__doc__
 
