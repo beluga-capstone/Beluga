@@ -4,15 +4,33 @@ import { useProfile } from "@/hooks/useProfile";
 import { Edit2 } from "lucide-react";
 import Link from "next/link";
 import { ROLES } from "@/constants";
+import { useUsers } from "@/hooks/useUsers";
+import { useEffect } from "react";
 
 const ProfilePage: React.FC = () => {
   const { profile } = useProfile();
+  const { users, insertUser } = useUsers();
+
+  // TODO: Remove:
+  // Adding profile to users for testing purposes
+  useEffect(() => {
+    if (profile) {
+      insertUser({
+        id: profile.user_id,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        middleName: profile.middleName,
+        email: profile.email,
+        role_id: profile.role_id,
+      });
+      console.log(users);
+    }
+  }, [profile]);
 
   // Helper function to get the role name from role_id
   const getRoleName = (roleId: number | undefined) => {
     if (!roleId) return "Unknown Role";
     const roleEntry = Object.entries(ROLES).find(([_, id]) => id === roleId);
-    console.log(roleId);
     return roleEntry ? roleEntry[0] : "Unknown Role";
   };
 
@@ -34,4 +52,3 @@ const ProfilePage: React.FC = () => {
 };
 
 export default ProfilePage;
-
