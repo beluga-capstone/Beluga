@@ -61,9 +61,9 @@ const ContainerItem: React.FC<ContainerItemProps> = ({
         {/* Container status */}
         <div
           className={`text-sm font-semibold ${
-            containerStatus === "Running"
+            containerStatus === "running"
               ? "text-green-500"
-              : containerStatus === "Stopped"
+              : containerStatus === "stopped"
               ? "text-red-500"
               : "text-yellow-500"
           }`}
@@ -79,4 +79,5 @@ const ContainerItem: React.FC<ContainerItemProps> = ({
 };
 
 export default ContainerItem;
+
 

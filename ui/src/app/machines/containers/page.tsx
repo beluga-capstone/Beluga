@@ -233,8 +233,8 @@ const Containers: React.FC = () => {
                 <Button
                   className={`px-4 py-3 rounded-md flex items-center justify-center transition-all ${
                     status === "running"
-                      ? "bg-red-600 hover:bg-red-700 focus:ring-red-500"
-                      : "bg-green-600 hover:bg-green-700 focus:ring-green-500"
+                      ? "focus:ring-red-500"
+                      : "focus:ring-green-500"
                   } text-white focus:outline-none focus:ring-2`}
                   onClick={() => handleStartStop(
                     container.docker_container_id,
