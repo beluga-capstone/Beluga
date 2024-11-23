@@ -38,7 +38,7 @@ def build_image():
 
     # Construct base Dockerfile content
     base_dockerfile = (
-        "FROM beluga_base_ubuntu\n"
+        f"FROM {registry_ip}:{registry_port}/beluga_base_ubuntu\n"
         "RUN apt update && apt install -y git curl wget build-essential {}\n".format(additional_packages)
     )
 
@@ -52,7 +52,6 @@ def build_image():
 
         # Use the low-level API client for more granular log handling
         api_client = docker.APIClient()
-        
         # Start building the image and stream logs
         logs = api_client.build(
             fileobj=io.BytesIO(dockerfile_content.encode('utf-8')),
@@ -60,7 +59,6 @@ def build_image():
             rm=True,
             decode=True  # Ensures each log entry is JSON-decoded
         )
-
         for log in logs:
             # Emit each line of the build log to the frontend
             message = log.get('stream') or log.get('status', '').strip()
@@ -69,7 +67,6 @@ def build_image():
 
         # After successful build, retrieve the image by tag
         image = docker_client.images.get(image_tag_registry)
-
         # Check if an image with the same tag already exists in the database
         existing_image = Image.query.filter_by(docker_image_id=image.id).first()
 
@@ -93,7 +90,6 @@ def build_image():
         # Push to registry
 
         push_logs = api_client.push(image_tag_registry, stream=True, decode=True)
-
         for push_log in push_logs:
             push_message = push_log.get('status') or push_log.get('error', '').strip()
             if push_message:

