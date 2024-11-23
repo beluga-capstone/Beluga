@@ -1,35 +1,36 @@
 import React from "react";
-import { LucideProps } from "lucide-react";
+import clsx from "clsx";
 
-interface IconButtonProps {
-  title: string;
-  onClick: () => void;
-  disabled?: boolean;
+interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  children: React.ReactNode;
   className?: string;
-  icon: React.ForwardRefExoticComponent<
-    Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
-  >;
-  iconColor: string;
+  disabled?: boolean;
 }
 
+/**
+ * IconButton - A button designed for icon-based actions.
+ */
 const IconButton: React.FC<IconButtonProps> = ({
-  title,
-  onClick,
-  disabled,
+  children,
   className,
-  icon,
-  iconColor,
-}) => (
-  <button
-    onClick={onClick}
-    title={title}
-    disabled={disabled}
-    className={`p-1 rounded ${disabled ? "" : "hover:bg-hover-on-surface"} ${className}`}
-  >
-    {React.createElement(icon, {
-      className: `text-${iconColor} ${disabled ? "text-opacity-50" : ""}`,
-    })}
-  </button>
-);
+  disabled,
+  ...props
+}) => {
+  return (
+    <button
+      className={clsx(
+        "flex items-center justify-center transition-colors duration-200",
+        "focus:outline-none focus:ring-2 focus:ring-offset-2",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
+        className
+      )}
+      disabled={disabled}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
 
 export default IconButton;
+

@@ -62,14 +62,10 @@ export interface Submission {
 }
 
 export interface Container {
-  id: number;
-  name: string;
-  status: "running" | "paused" | "stopped";
-  launchTime: string;
-  image: Image;
-  cpuCores: number;
-  memoryGBs: number;
-  storageGBs: number;
+  docker_container_id: string,
+  docker_container_name:string,
+  user_id: string,
+  description: string,
 }
 
 export interface Image {

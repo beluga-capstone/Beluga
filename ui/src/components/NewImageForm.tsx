@@ -10,7 +10,6 @@ const normalizeDockerImageName = (name: string) => {
   return name
     .toLowerCase() // Convert to lowercase
     .replace(/[^a-z0-9_.-]+/g, "_") // Replace invalid characters with '_'
-    .replace(/^[_.-]+|[_.-]+$/g, ""); // Remove leading or trailing '_', '.', '-'
 };
 
 function NewImageForm() {
