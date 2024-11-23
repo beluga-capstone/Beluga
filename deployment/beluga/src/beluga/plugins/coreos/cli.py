@@ -24,7 +24,7 @@ class CoreOS(Beluga):
             selected = [
                 vm
                 for vm in self._workspace.virtual_machines.all()
-                if vm.name in vm_names and vm.name is not 'localhost'
+                if vm.name in vm_names
             ]
             if not selected:
                 raise Exception(f"Selected VMs are not defined: {vm_names}")
