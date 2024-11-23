@@ -31,17 +31,19 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
     fetchParams();
   }, [params]);
 
-  useEffect(()=>{
-    const startup = async() => {
-      const {exists, appPort, sshPort} = await checkContainerExists(container?.docker_container_name ?? "");
-      if (exists) {
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      const { exists, appPort, sshPort } = await checkContainerExists(container?.docker_container_name ?? "");
+      if (exists && appPort) {
         setSocketPort(appPort);
         setSshPort(sshPort);
+        clearInterval(intervalId); // Stop checking once the port is found
       }
-    };
-    startup();
-
-  },[]);
+    }, 1000); // Check every 1 second
+  
+    return () => clearInterval(intervalId); // Cleanup interval on component unmount
+  }, [container?.docker_container_name]);
+  
 
   useEffect(() => {
     if (containerId !== null) {
