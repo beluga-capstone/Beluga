@@ -157,7 +157,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
             Starting...
           </div>
         ) : (
-          isContainerRunning ? "Stop Container" : "Run Container"
+          isContainerRunning ? "Stop Container" : "Create Container"
         )}
       </Button>
     );

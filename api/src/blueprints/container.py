@@ -33,7 +33,7 @@ def normalize_container_name(name: str) -> str:
 
 
 @container_bp.route('/containers', methods=['GET'])
-def get_all_containers():
+def get_containers():
     try:
         # Get all containers from Docker including stopped ones
         docker_containers = docker_client.containers.list(all=True)
@@ -109,19 +109,6 @@ def create_container():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
-
-# Get all containers (GET)
-@container_bp.route('/containers', methods=['GET'])
-@admin_required
-def get_containers():
-    containers = db.session.scalars(db.select(Container)).all()
-    containers_list = [{
-        'docker_container_id': container.docker_container_id,
-        'user_id': str(container.user_id),
-        'description': container.description
-    } for container in containers]
-
-    return jsonify(containers_list), 200
 
 # Dynamic search for containers (GET)
 @container_bp.route('/containers/search', methods=['GET'])
@@ -204,33 +191,31 @@ def get_container(container_name):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
-# Delete a container (DELETE)
-@container_bp.route('/containers/<string:container_name>', methods=['DELETE'])
+# Delete a container by ID (DELETE)
+@container_bp.route('/containers/<string:container_id>', methods=['DELETE'])
 @student_required
-def delete_container(container_name):
+def delete_container(container_id):
     try:
-        # get the container id from the name
-        containers = docker_client.containers.list(all=True)  # Include stopped containers
-        for container in containers:
-            if f"/{container_name}" in container.attrs['Name'] or container_name in container.name:
-                container = db.session.get(Container, container.id)
-                if not container:
-                    return jsonify({'error': 'Container not found'}), 404
+        # Retrieve the container record from the database
+        container = db.session.get(Container, container_id)
+        if not container:
+            return jsonify({'error': 'Container not found in the database'}), 404
 
-                # Stop and remove the Docker container
-                docker_container = docker_client.containers.get(container.docker_container_id)
-                docker_container.stop()
-                docker_container.remove()
-                
-                # Remove the container record from the database
-                db.session.delete(container)
-                db.session.commit()
+        # Retrieve the Docker container using its ID
+        try:
+            docker_container = docker_client.containers.get(container.docker_container_id)
+            # Stop and remove the Docker container
+            docker_container.stop()
+            docker_container.remove()
+        except docker.errors.NotFound:
+            return jsonify({'error': 'Docker container not found'}), 404
+
+        # Remove the container record from the database
+        db.session.delete(container)
+        db.session.commit()
 
         return jsonify({'message': 'Container deleted successfully'}), 200
 
-    except docker.errors.NotFound:
-        return jsonify({'error': 'Docker container not found'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -242,4 +227,69 @@ def find_available_port(start_port: int, end_port: int) -> int:
             if sock.connect_ex(('127.0.0.1', port)) != 0:
                 return port
     raise RuntimeError(f"No available ports found in the range {start_port}-{end_port}")
+
+
+@container_bp.route('/containers/<string:container_name>/start', methods=['PUT'])
+@student_required
+def start_container(container_name):
+    try:
+        # Normalize container name
+        container_name = normalize_container_name(container_name)
+        
+        # Get the container using the Docker API
+        docker_container = docker_client.containers.get(container_name)
+        
+        # Start the container if it's not running
+        docker_container.start()
+
+        return jsonify({'message': f'Container {container_name} started successfully'}), 200
+
+    except docker.errors.NotFound:
+        return jsonify({'error': f'Container {container_name} not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@container_bp.route('/containers/<string:container_name>/stop', methods=['PUT'])
+@student_required
+def stop_container(container_name):
+    try:
+        # Normalize container name
+        container_name = normalize_container_name(container_name)
+        
+        # Get the container using the Docker API
+        docker_container = docker_client.containers.get(container_name)
+        docker_container.stop()
+
+        return jsonify({'message': f'Container {container_name} stopped successfully'}), 200
+
+    except docker.errors.NotFound:
+        return jsonify({'error': f'Container {container_name} not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@container_bp.route('/containers/<string:container_name>/attach', methods=['GET'])
+@student_required
+def attach_container(container_name):
+    try:
+        # Normalize container name
+        container_name = normalize_container_name(container_name)
+        
+        # Get the container using the Docker API
+        docker_container = docker_client.containers.get(container_name)
+
+        if docker_container.status != "running":
+            return jsonify({'error': f'Container {container_name} is not running'}), 400
+
+        # Attach to the container logs (real-time streaming)
+        logs = docker_container.logs(stream=True, follow=True)
+        log_output = ''.join([line.decode('utf-8') for line in logs])
+
+        return jsonify({'logs': log_output}), 200
+
+    except docker.errors.NotFound:
+        return jsonify({'error': f'Container {container_name} not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 

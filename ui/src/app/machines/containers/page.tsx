@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { Plus, Trash2, Loader2, CheckSquare, Square } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Plus, Trash2, Loader2, CheckSquare, Square, Play, StopCircle } from "lucide-react";
 import ContainerItem from "@/components/ContainerItem";
 import Button from "@/components/Button";
 import { useContainers } from "@/hooks/useContainers";
@@ -13,8 +13,28 @@ const Containers: React.FC = () => {
     isLoading,
     error,
     deleteContainer,
+    checkContainerExists,
+    stopContainer,
+    startContainer,
   } = useContainers();
   const [selectedContainers, setSelectedContainers] = useState<string[]>([]);
+  const [containerStatus, setContainerStatus] = useState<Map<string, string>>(new Map());
+
+  useEffect(() => {
+    // Check container status on component mount or when containers list changes
+    const fetchContainerStatuses = async () => {
+      const statusMap = new Map<string, string>();
+      for (const container of containers) {
+        const { exists, port, status } = await checkContainerExists(container.docker_container_name);
+        statusMap.set(container.docker_container_id, status);
+      }
+      setContainerStatus(statusMap);
+    };
+
+    if (containers.length > 0) {
+      fetchContainerStatuses();
+    }
+  }, [containers]); // Re-run when containers are updated
 
   const handleToggleSelect = (id: string) => {
     setSelectedContainers(prev =>
@@ -26,11 +46,23 @@ const Containers: React.FC = () => {
 
   const handleSelectAll = () => {
     if (selectedContainers.length === containers.length) {
-      // If all containers are already selected, deselect all
       setSelectedContainers([]);
     } else {
-      // Select all container IDs
       setSelectedContainers(containers.map(container => container.docker_container_id));
+    }
+  };
+
+  const handleStartStop = async (containerId: string, action: "start" | "stop") => {
+    try {
+      if (action === "start") {
+        await startContainer(containerId);
+        setContainerStatus(prevStatus => new Map(prevStatus).set(containerId, "running"));
+      } else {
+        await stopContainer(containerId);
+        setContainerStatus(prevStatus => new Map(prevStatus).set(containerId, "stopped"));
+      }
+    } catch (err) {
+      console.error("Error managing container:", err);
     }
   };
 
@@ -108,17 +140,42 @@ const Containers: React.FC = () => {
         )}
       </div>
       <div className="space-y-4">
-        {containers.map(container => (
-          <ContainerItem
-            key={container.docker_container_id}
-            container={container}
-            onToggleSelect={handleToggleSelect}
-            isSelected={selectedContainers.includes(container.docker_container_id)}
-          />
-        ))}
+        {containers.map(container => {
+          const status = containerStatus.get(container.docker_container_id) || "stopped";
+          return (
+            <ContainerItem
+              key={container.docker_container_id}
+              container={container}
+              onToggleSelect={handleToggleSelect}
+              isSelected={selectedContainers.includes(container.docker_container_id)}
+              containerStatus={status}
+            >
+              <div className="flex space-x-2">
+                {status === "running" ? (
+                  <Button
+                    className="bg-red-500 text-white px-4 py-2 rounded flex items-center"
+                    onClick={() => handleStartStop(container.docker_container_id, "stop")}
+                  >
+                    <StopCircle className="h-4 w-4 mr-2" />
+                    Stop
+                  </Button>
+                ) : (
+                  <Button
+                    className="bg-green-500 text-white px-4 py-2 rounded flex items-center"
+                    onClick={() => handleStartStop(container.docker_container_id, "start")}
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    Start
+                  </Button>
+                )}
+              </div>
+            </ContainerItem>
+          );
+        })}
       </div>
     </div>
   );
 };
 
 export default Containers;
+

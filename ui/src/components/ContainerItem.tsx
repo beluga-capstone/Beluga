@@ -8,12 +8,16 @@ interface ContainerItemProps {
   container: Container;
   onToggleSelect: (id: string) => void;
   isSelected: boolean;
+  containerStatus:string;
+  children?: React.ReactNode;
 }
 
 const ContainerItem: React.FC<ContainerItemProps> = ({
   container,
   onToggleSelect,
   isSelected,
+  containerStatus,
+  children,
 }) => {
   const router = useRouter();
 
@@ -49,6 +53,11 @@ const ContainerItem: React.FC<ContainerItemProps> = ({
             <p className="text-gray-500">{container.description}</p>
           )}
         </div>
+
+        <div>
+          {containerStatus}
+        </div>
+        <div>{children}</div>
       </div>
 
     </div>

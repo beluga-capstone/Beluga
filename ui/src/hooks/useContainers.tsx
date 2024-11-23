@@ -3,6 +3,8 @@ import { useProfile } from './useProfile';
 import { Container } from '@/types';
 import { useRouter } from 'next/navigation';
 
+const API_BASE_URL = "http://localhost:5000";
+
 interface ContainerHook {
   containers: Container[];
   isLoading: boolean;
@@ -12,22 +14,43 @@ interface ContainerHook {
   otherContainerId: string | null;
   isDeletingContainer: boolean;
   isRunningContainer: boolean;
-  runContainer: (imageId: string | null, containerName: string | null) => Promise<{ container_id: string | null; container_port: number | null } | null>;
-  deleteContainer: (containerName: string | null) => Promise<void>;
-  checkContainerExists: (containerName: string) => Promise<{ exists: boolean; port: number }>;
+  runContainer: (
+    imageId: string | null,
+    containerName: string | null
+  ) => Promise<{ container_id: string | null; container_port: number | null } | null>;
+  stopContainer: (containerName: string | null) => Promise<void>;
+  startContainer: (containerName: string | null) => Promise<void>;
+  deleteContainer: (containerId: string | null) => Promise<void>;
+  checkContainerExists: (
+    containerName: string
+  ) => Promise<{ exists: boolean; port: number; status:string }>;
 }
 
 export const useContainers = (): ContainerHook => {
   const { profile } = useProfile();
   const [containers, setContainers] = useState<Container[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isContainerRunning, setIsContainerRunning] = useState(false);
-  const [otherContainerPort, setContainerPort] = useState<number | null>(null);
-  const [otherContainerId, setContainerId] = useState<string | null>(null);
-  const [isDeletingContainer, setIsDeletingContainer] = useState(false);
-  const [isRunningContainer, setIsRunningContainer] = useState(false);
-  const router=useRouter();
+  const [state, setState] = useState({
+    isLoading: true,
+    isDeletingContainer: false,
+    isRunningContainer: false,
+    isContainerRunning: false,
+    error: null as string | null,
+  });
+  const [otherContainerPort, setOtherContainerPort] = useState<number | null>(null);
+  const [otherContainerId, setOtherContainerId] = useState<string | null>(null);
+  const router = useRouter();
+
+  const updateState = (partialState: Partial<typeof state>) =>
+    setState((prev) => ({ ...prev, ...partialState }));
+
+  const handleFetch = async (url: string, options: RequestInit) => {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || `Failed: ${response.statusText}`);
+    }
+    return response.json();
+  };
 
   useEffect(() => {
     fetchContainers();
@@ -35,34 +58,24 @@ export const useContainers = (): ContainerHook => {
 
   const fetchContainers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/containers');
-      if (!response.ok) throw new Error('Failed to fetch containers');
-      const data = await response.json();
+      const data = await handleFetch(`${API_BASE_URL}/containers`, { method: "GET" });
       setContainers(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      updateState({ error: err instanceof Error ? err.message : "An error occurred" });
     } finally {
-      setIsLoading(false);
+      updateState({ isLoading: false });
     }
   };
 
-  // Existing functions from the original hook...
   const checkContainerExists = async (containerName: string) => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/containers/${containerName}`,
-        { method: "GET" }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setIsContainerRunning(true);
-        return { exists: true, port: data.port }; 
-      } else {
-        return { exists: false, port: 0 };  
-      }
-    } catch (error) {
-      console.error("Error checking container existence:", error);
-      return { exists: false, port: 0 };
+      const data = await handleFetch(`${API_BASE_URL}/containers/${containerName}`, {
+        method: "GET",
+      });
+      updateState({ isContainerRunning: true });
+      return { exists: true, port: data.port, status: data.status };
+    } catch {
+      return { exists: false, port: 0, status:"" };
     }
   };
 
@@ -71,11 +84,10 @@ export const useContainers = (): ContainerHook => {
     containerName: string | null
   ): Promise<{ container_id: string | null; container_port: number | null } | null> => {
     if (!imageId || !containerName) return null;
-
-    setIsRunningContainer(true);
+    updateState({ isRunningContainer: true });
 
     try {
-      const response = await fetch("http://localhost:5000/containers", {
+      const data = await handleFetch(`${API_BASE_URL}/containers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -84,63 +96,79 @@ export const useContainers = (): ContainerHook => {
           user_id: profile?.user_id,
         }),
       });
-
-      const data = await response.json();
-      if (response.ok) {
-        setContainerPort(data.port);
-        setIsContainerRunning(true);
-        setContainerId(data.docker_container_id);
-        await fetchContainers(); // Refresh the list
-        return { container_id: data.docker_container_id, container_port: data.port };
-      } else {
-        console.error("Error starting container:", data.error);
-        return { container_id: null, container_port: null };
-      }
-    } catch (error) {
-      console.error("Error running container:", error);
-      return { container_id: null, container_port: null };
+      setOtherContainerPort(data.port);
+      setOtherContainerId(data.docker_container_id);
+      updateState({ isContainerRunning: true });
+      await fetchContainers();
+      return { container_id: data.docker_container_id, container_port: data.port };
+    } catch (err) {
+      console.error(err);
+      return null;
     } finally {
-      setIsRunningContainer(false);
+      updateState({ isRunningContainer: false });
     }
   };
 
-  const deleteContainer = async (containerId: string | null) => {
-    if (!containerId) return;
-    
-    setIsDeletingContainer(true);
-    console.log("deleting",containerId);
+  const stopContainer = async (containerName: string | null): Promise<void> => {
+    if (!containerName) throw new Error("Container name is required");
+
     try {
-      const response = await fetch(`http://localhost:5000/containers/${containerId}`, {
-        method: "DELETE",
+      await handleFetch(`${API_BASE_URL}/containers/${containerName}/stop`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
       });
-      if (response.ok) {
-        setIsContainerRunning(false);
-        setContainerPort(null);
-        await fetchContainers(); // Refresh the list
-      } else {
-        const data = await response.json();
-        console.error(`Error deleting container: ${data.error}`);
-      }
-    } catch (error) {
-      console.error("Error deleting container:", error);
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const startContainer = async (containerName: string | null): Promise<void> => {
+    if (!containerName) throw new Error("Container name is required");
+
+    try {
+      await handleFetch(`${API_BASE_URL}/containers/${containerName}/start`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const deleteContainer = async (containerId: string | null): Promise<void> => {
+    if (!containerId) return;
+    updateState({ isDeletingContainer: true });
+
+    try {
+      await handleFetch(`${API_BASE_URL}/containers/${containerId}`, { method: "DELETE" });
+      setOtherContainerPort(null);
+      setOtherContainerId(null);
+      updateState({ isContainerRunning: false });
+      await fetchContainers();
+    } catch (err) {
+      console.error(err);
     } finally {
-      setIsDeletingContainer(false);
+      updateState({ isDeletingContainer: false });
       router.refresh();
     }
   };
 
   return {
     containers,
-    isLoading,
-    error,
-    isContainerRunning,
+    isLoading: state.isLoading,
+    error: state.error,
+    isContainerRunning: state.isContainerRunning,
     otherContainerPort,
     otherContainerId,
-    isDeletingContainer,
-    isRunningContainer,
+    isDeletingContainer: state.isDeletingContainer,
+    isRunningContainer: state.isRunningContainer,
     runContainer,
+    stopContainer,
+    startContainer,
     deleteContainer,
     checkContainerExists,
   };
 };
+
