@@ -51,16 +51,6 @@ export interface Assignment {
   user_id?: string;
 }
 
-export interface Submission {
-  submission_id: string;
-  user_id: string;
-  assignment_id: string;
-  submitted_at: Date;
-  grade: number;
-  status: string;
-  data: File;
-}
-
 export interface Container {
   docker_container_id: string,
   docker_container_name:string,
@@ -75,10 +65,10 @@ export interface Image {
 }
 
 export interface User {
-  id: string;
+  id: number;
   firstName: string;
   lastName: string;
   middleName?: string;
   email: string;
-  role_id: number;
+  role: string;
 }
