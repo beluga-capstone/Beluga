@@ -90,7 +90,7 @@ const NewAssignment: React.FC = () => {
           <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
             onClick={handleAddAssignment}
-            disabled={!title}
+            disabled={!title || error !== ""}
           >
             Add Assignment
           </Button>
