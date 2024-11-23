@@ -70,11 +70,11 @@ export interface Image {
 }
 
 export interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
+  user_id: string;
+  first_name: string;
+  last_name: string;
   middleName?: string;
   email: string;
-  role: string;
+  role_id: string;
   courseId?: number;
 }

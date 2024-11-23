@@ -19,10 +19,6 @@ const AdminCoursesTable: React.FC = () => {
     loadCourses();
   }, [fetchCourses]);
 
-  if (loading) return <div>Loading courses...</div>;
-
-  if (courses.length === 0) return <div>No courses available. Please add one!</div>;
-
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -50,7 +46,7 @@ const AdminCoursesTable: React.FC = () => {
           {courses.map((course) => {
             const studentsEnrolled = users.filter(
               (user) =>
-                parseInt(user.role) === ROLES.STUDENT &&
+                parseInt(user.role_id) === ROLES.STUDENT &&
                 user.courseId === course.id
             ).length;
 

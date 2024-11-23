@@ -6,21 +6,30 @@ import Papa from "papaparse";
 import Button from "@/components/Button";
 import CoursesForm from "@/components/CoursesForm";
 import { useDashboard } from "@/hooks/useDashboard";
-import { useUsers } from "@/hooks/useUsers";
+import { useProfile } from "@/hooks/useProfile"; // Import the hook
 import StudentsTable from "../../students/StudentsTable";
-import { User } from "@/types";
 import { useRouter } from "next/navigation";
 
 const NewCourse: React.FC = () => {
   const { addCourse, fetchCourses } = useDashboard();
-  const { addUsers } = useUsers();
+  const { profile } = useProfile(); // Access the logged-in user's profile
   const router = useRouter();
 
   const [title, setTitle] = useState("");
   const [section, setSection] = useState<string>("");
-  const [professor, setProfessor] = useState<string>("");
   const [semester, setSemester] = useState("");
-  const [students, setStudents] = useState<User[]>([]);
+
+  // Explicitly define the type for students
+  const [students, setStudents] = useState<Array<{
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    middleName?: string;
+    email: string;
+    role_id: string;
+  }>>([]);
+
+  const loggedInUserId = profile?.user_id; // Get the logged-in user's ID
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -30,12 +39,12 @@ const NewCourse: React.FC = () => {
         const parsedStudents = results.data
           .filter((student: any) => student["First Name"] && student["Last Name"])
           .map((student: any, index: number) => ({
-            id: Date.now() + index,
-            firstName: student["First Name"],
-            lastName: student["Last Name"],
+            user_id: (Date.now() + index).toString(),
+            first_name: student["First Name"],
+            last_name: student["Last Name"],
             middleName: student["Middle Name"] || "",
             email: student["Email"],
-            role: "Student",
+            role_id: "Student",
           }));
         setStudents(parsedStudents);
       },
@@ -48,15 +57,20 @@ const NewCourse: React.FC = () => {
   });
 
   const handleAddCourse = async () => {
-    const courseId = Date.now(); 
-    await addCourse(title, section, professor, semester, students.length);
-    await fetchCourses(); 
-    const studentsWithCourseId = students.map((student) => ({
-      ...student,
-      courseId,
-    }));
-    await addUsers(studentsWithCourseId);
-  
+    if (!loggedInUserId) {
+      console.error("Unable to create course: User ID is missing");
+      return;
+    }
+
+    await addCourse(
+      title,
+      section,
+      loggedInUserId, // Use the logged-in user's ID
+      semester,
+      "Course description goes here",
+      students.length
+    );
+    await fetchCourses();
     router.push("/");
   };
 
@@ -70,10 +84,11 @@ const NewCourse: React.FC = () => {
         setTitle={setTitle}
         section={section}
         setSection={setSection}
-        professor={professor}
-        setProfessor={setProfessor}
+        professor={profile?.firstName + " " + profile?.lastName || ""} // Pre-fill professor's name
+        setProfessor={() => {}} // Disable manual professor selection
         semester={semester}
         setSemester={setSemester}
+        professors={[]} // No dropdown needed
       />
 
       {/* CSV Upload Section */}
