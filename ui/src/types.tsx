@@ -40,10 +40,10 @@ export interface Assignment {
   course_id: string;
   title: string;
   description: string;
-  due_at: Date | null;
-  lock_at: Date | null;
-  unlock_at: Date | null;
-  publish_at?: Date | null;
+  due_at?: Date;
+  lock_at?: Date;
+  unlock_at?: Date;
+  publish_at?: Date;
   is_unlocked?: boolean;
   is_published?: boolean;
   allows_late_submissions: boolean;
