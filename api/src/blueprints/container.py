@@ -59,13 +59,12 @@ def get_containers():
         current_app.logger.error(f"Error getting containers: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-
 @container_bp.route('/containers', methods=['POST'])
 @student_required
 def create_container():
     data = request.get_json()
     
-    # get a port number to give to the container
+    # Get a port number to give to the container
     port = find_available_port(current_app.config["CONTAINER_START_PORT"], current_app.config["CONTAINER_END_PORT"])
     
     if not data or not data.get('docker_image_id') or not data.get('user_id'):
@@ -75,25 +74,36 @@ def create_container():
     container_name = data.get('container_name', f"container_{data['docker_image_id']}")
     container_name = normalize_container_name(container_name)
     
+    # Check if the container name already exists
+    existing_container = None
+    try:
+        existing_container = docker_client.containers.get(container_name)
+    except docker.errors.NotFound:
+        # No container found with that name
+        pass
+    
+    if existing_container:
+        return jsonify({'error': f'A container "{container_name}" already exists'}), 400
+    
     try:
         container = docker_client.containers.run(
             data['docker_image_id'],
             detach=True,
             name=container_name,  # Use normalized container name
 
-            # expose 5000 in the container as 'port' on the host
+            # Expose 5000 in the container as 'port' on the host
             ports={'5000/tcp': port},
         )
 
-        # get the image tag
-        image_tag=""
+        # Get the image tag
+        image_tag = ""
         image = docker_client.images.get(data['docker_image_id'])
-        image_tag=image.tags[0]
+        image_tag = image.tags[0]
 
-        # set alt description
+        # Set alt description
         alt_desc = f"Container running with image {data['docker_image_id']}"
         if image_tag != "":
-            alt_desc= f"Container running with image {image_tag}"
+            alt_desc = f"Container running with image {image_tag}"
 
         # Save container information to the database
         new_container = Container(
@@ -109,6 +119,7 @@ def create_container():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
 
 # Dynamic search for containers (GET)
 @container_bp.route('/containers/search', methods=['GET'])

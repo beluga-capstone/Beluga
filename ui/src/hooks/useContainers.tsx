@@ -17,7 +17,8 @@ interface ContainerHook {
   isStoppingContainer: boolean;
   runContainer: (
     imageId: string | null,
-    containerName: string | null
+    containerName: string | null,
+    description: string | null
   ) => Promise<{ container_id: string | null; container_port: number | null } | null>;
   stopContainer: (containerName: string | null) => Promise<void>;
   startContainer: (containerName: string | null) => Promise<void>;
@@ -83,7 +84,8 @@ export const useContainers = (): ContainerHook => {
 
   const runContainer = async (
     imageId: string | null,
-    containerName: string | null
+    containerName: string | null,
+    description: string | null,
   ): Promise<{ container_id: string | null; container_port: number | null } | null> => {
     if (!imageId || !containerName) return null;
     updateState({ isRunningContainer: true });
@@ -96,13 +98,14 @@ export const useContainers = (): ContainerHook => {
           container_name: containerName,
           docker_image_id: imageId,
           user_id: profile?.user_id,
+          description:description,
         }),
       });
       setOtherContainerPort(data.port);
       setOtherContainerId(data.docker_container_id);
       updateState({ isContainerRunning: true });
       await fetchContainers();
-      return { container_id: data.docker_container_id, container_port: data.port };
+      return { container_id: data.docker_container_id, container_port: data.port};
     } catch (err) {
       console.error(err);
       return null;
