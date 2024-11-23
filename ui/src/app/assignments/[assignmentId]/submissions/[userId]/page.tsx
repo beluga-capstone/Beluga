@@ -83,6 +83,28 @@ const SubmissionPage = ({
     }
   }, [latestSubmission]);
 
+  const handleSubmission = async () => {
+    try {
+      const response = await fetch(
+          `http://localhost:5000/submissions`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              container_name: containerName,
+              docker_image_id: imageId,
+              user_id: profile?.user_id,
+            })
+          }
+        );
+    } catch (error) {
+      console.error("Error:", error)
+    }
+
+  }
+
   return (
     <div className="container mx-auto p-4">
       <div className="mb-4 flex justify-between items-center">

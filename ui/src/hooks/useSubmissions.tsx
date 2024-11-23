@@ -49,6 +49,29 @@ const saveSubmissionsToStorage = async (submissions: Submission[]) => {
   localStorage.setItem("submissions", JSON.stringify(submissionsWithBase64));
 };
 
+const pushSubmissionDB = async (submission) => {
+  try {
+      const fileBase64_data = await fileToBase64(submission.data)
+      submission.data = fileBase64_data
+
+      const res = await fetch("http://localhost:5000/submissions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(submission),
+        });
+
+      if (!res.ok) {
+        throw new Error('reponse error');
+      }
+      const responseData = await res.json();
+      console.log('Submission successful:', responseData);
+    } catch (error) {
+      console.log("error in pushSubmissionDB:", error)
+    }
+}
+
 export const useSubmissions = () => {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
 
@@ -70,6 +93,8 @@ export const useSubmissions = () => {
       status: "submitted",
       data,
     };
+
+    pushSubmissionDB(submission)
 
     const newSubmissions = [...submissions, submission];
     setSubmissions(newSubmissions);
