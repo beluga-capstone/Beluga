@@ -25,6 +25,7 @@
     "react-syntax-highlighter": "^15.6.1",
     "save-dev": "^0.0.1-security",
     "socket.io-client": "^4.8.1",
+    "sonner": "^1.7.0",
     "tailwind-merge": "^2.5.3"
   },
   "devDependencies": {

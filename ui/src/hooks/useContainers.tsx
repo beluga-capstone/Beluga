@@ -140,6 +140,8 @@ export const useContainers = (): ContainerHook => {
     } catch (err) {
       console.error(err);
       throw err;
+    } finally {
+      router.refresh();
     }
   };
 
