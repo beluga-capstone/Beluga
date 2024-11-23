@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useProfile } from './useProfile';
 import { Container } from '@/types';
 import { useRouter } from 'next/navigation';
+import test from 'node:test';
 
 const API_BASE_URL = "http://localhost:5000";
 
@@ -10,8 +11,6 @@ interface ContainerHook {
   isLoading: boolean;
   error: string | null;
   isContainerRunning: boolean;
-  otherContainerPort: number | null;
-  otherContainerId: string | null;
   isDeletingContainer: boolean;
   isRunningContainer: boolean;
   isStoppingContainer: boolean;
@@ -19,14 +18,19 @@ interface ContainerHook {
     imageId: string | null,
     containerName: string | null,
     description: string | null
-  ) => Promise<{ container_id: string | null; container_port: number | null } | null>;
+  )=> Promise<{ container_id: string | null; appPort: number | null, sshPort: number | null } | null>;
   stopContainer: (containerName: string | null) => Promise<void>;
   startContainer: (containerName: string | null) => Promise<void>;
   deleteContainer: (containerId: string | null) => Promise<void>;
   checkContainerExists: (
     containerName: string
-  ) => Promise<{ docker_image_id:string; exists: boolean; port: number; status:string }>;
-}
+  ) => Promise<{ 
+    docker_image_id: string;
+    exists: boolean; 
+    appPort: number | null;
+    sshPort: number | null;
+    status: string 
+  }>;}
 
 export const useContainers = (): ContainerHook => {
   const { profile } = useProfile();
@@ -39,8 +43,6 @@ export const useContainers = (): ContainerHook => {
     isContainerRunning: false,
     error: null as string | null,
   });
-  const [otherContainerPort, setOtherContainerPort] = useState<number | null>(null);
-  const [otherContainerId, setOtherContainerId] = useState<string | null>(null);
   const router = useRouter();
 
   const updateState = (partialState: Partial<typeof state>) =>
@@ -70,23 +72,48 @@ export const useContainers = (): ContainerHook => {
     }
   };
 
-  const checkContainerExists = async (containerName: string) => {
+  const checkContainerExists = async (containerName: string) : Promise<{ 
+    docker_image_id: string;
+    exists: boolean; 
+    appPort: number | null;
+    sshPort: number | null;
+    status: string 
+  }> => {
     try {
       const data = await handleFetch(`${API_BASE_URL}/containers/${containerName}`, {
         method: "GET",
       });
+  
       updateState({ isContainerRunning: true });
-      return { docker_image_id:data.docker_image_id, exists: true, port: data.port, status: data.status };
+
+      console.log(data.ports)
+  
+      // Extract ports from the response
+      const ports = data.ports as { [key: string]: string };
+  
+      // For example, get the host port mapped to '5000/tcp'
+      const appPort = ports['5000/tcp'] ? parseInt(ports['5000/tcp']) : null;
+      const sshPort = ports['22/tcp'] ? parseInt(ports['22/tcp']) : null;
+  
+      return {
+        docker_image_id:data.docker_image_id,
+        exists: true,
+        appPort: appPort,
+        sshPort: sshPort,
+        status: data.status
+      };
     } catch {
-      return { docker_image_id: "", exists: false, port: 0, status:"" };
+      return { docker_image_id:"", exists: false, appPort: null, sshPort: null, status: "" };
     }
   };
+  
+  
 
   const runContainer = async (
     imageId: string | null,
     containerName: string | null,
     description: string | null,
-  ): Promise<{ container_id: string | null; container_port: number | null } | null> => {
+  ): Promise<{ container_id: string | null; appPort: number | null, sshPort: number | null } | null>  => {
     if (!imageId || !containerName) return null;
     updateState({ isRunningContainer: true });
 
@@ -101,11 +128,15 @@ export const useContainers = (): ContainerHook => {
           description:description,
         }),
       });
-      setOtherContainerPort(data.port);
-      setOtherContainerId(data.docker_container_id);
+      const ports = data.ports as { [key: string]: string };
+  
+      // For example, get the host port mapped to '5000/tcp'
+      const appPort = ports['5000/tcp'] ? parseInt(ports['5000/tcp']) : null;
+      const sshPort = ports['22/tcp'] ? parseInt(ports['22/tcp']) : null;
+  
       updateState({ isContainerRunning: true });
       await fetchContainers();
-      return { container_id: data.docker_container_id, container_port: data.port};
+      return { container_id: data.docker_container_id, appPort: appPort, sshPort: sshPort };
     } catch (err) {
       console.error(err);
       return null;
@@ -154,8 +185,6 @@ export const useContainers = (): ContainerHook => {
 
     try {
       await handleFetch(`${API_BASE_URL}/containers/${containerId}`, { method: "DELETE" });
-      setOtherContainerPort(null);
-      setOtherContainerId(null);
       updateState({ isContainerRunning: false });
       await fetchContainers();
     } catch (err) {
@@ -171,8 +200,6 @@ export const useContainers = (): ContainerHook => {
     isLoading: state.isLoading,
     error: state.error,
     isContainerRunning: state.isContainerRunning,
-    otherContainerPort,
-    otherContainerId,
     isDeletingContainer: state.isDeletingContainer,
     isRunningContainer: state.isRunningContainer,
     isStoppingContainer: state.isStoppingContainer,
