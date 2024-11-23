@@ -89,6 +89,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         allowsLateSubmissions,
         imageId,
       );
+      window.history.back();
     } catch (error) {
       console.error("Error updating assignment:", error);
     }
@@ -150,7 +151,6 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
             <Button
               className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
               onClick={handleUpdate}
-              href="/assignments"
               disabled={!title.trim()}
             >
               Save
