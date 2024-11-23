@@ -173,12 +173,14 @@ def get_container(container_name):
                 docker_container = docker_client.containers.get(container_name)
                 port_mapping = docker_container.attrs['NetworkSettings']['Ports']
                 status = docker_container.attrs['State']['Status']
+                docker_image_id = docker_container.attrs['Config']['Image']
                 for container_port, host_ports in port_mapping.items():
                     if host_ports: 
                         return jsonify({
                             'message': 'container and port found', 
                             'port': f"{host_ports[0]['HostPort']}",
-                            'status': status
+                            'status': status,
+                            'docker_image_id': docker_image_id
                         })
                     else:
                         return jsonify({

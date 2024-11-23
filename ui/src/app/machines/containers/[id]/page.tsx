@@ -10,6 +10,8 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
     const [container, setContainer] = useState<Container | null>(null);
     const [loading, setLoading] = useState(true); 
     const [notFound, setNotFound] = useState(false); 
+    const [status, setStatus] = useState<string | null>(null);
+    const [imageId, setImageId] = useState<string | null> (null);
     const [containerId, setContainerId] = useState<string | null>(null);
     const [containerPort, setContainerPort] = useState<number | null>(null);
 
@@ -32,9 +34,12 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 setLoading(false);
                 const getContainer = async () => {
                 // Check if container exists
-                const { exists, port } = await checkContainerExists(container?.docker_container_name??"");
+                const { docker_image_id, exists, port, status} = await checkContainerExists(container?.docker_container_name??"");
                 if (exists) {
+                  console.log("it exists,",port,docker_image_id,status);
                   setContainerPort(port);
+                  setImageId(docker_image_id);
+                  setStatus(status);
                 }
         };
 
@@ -62,7 +67,7 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
     if (notFound) {
         return (
             <div className="container mx-auto p-4">
-                <h1 className="font-bold text-4xl mb-6">Container not found</h1>
+               <h1 className="font-bold text-4xl mb-6">Container not found</h1>
             </div>
         );
     }
@@ -72,6 +77,7 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
             <div className="container mx-auto p-4">
                 <h1 className="font-bold text-4xl mb-6">Container "{container.docker_container_name}"</h1>
                 <br/>
+              <span>{status} {imageId}</span>
                 <ContainerPageTerminal 
                   isRunning={true}
                   containerPort={containerPort}

@@ -37,7 +37,7 @@ const ContainerPageTerminal: React.FC<ContainerPageTerminalProps> = ({
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    console.log(isRunning,containerPort,isConnected);
+    //console.log(isRunning,containerPort,isConnected);
     if (isRunning && containerPort && !isConnected) {
       initializeTerminal();
     }

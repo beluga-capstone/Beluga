@@ -24,7 +24,7 @@ interface ContainerHook {
   deleteContainer: (containerId: string | null) => Promise<void>;
   checkContainerExists: (
     containerName: string
-  ) => Promise<{ exists: boolean; port: number; status:string }>;
+  ) => Promise<{ docker_image_id:string; exists: boolean; port: number; status:string }>;
 }
 
 export const useContainers = (): ContainerHook => {
@@ -75,9 +75,9 @@ export const useContainers = (): ContainerHook => {
         method: "GET",
       });
       updateState({ isContainerRunning: true });
-      return { exists: true, port: data.port, status: data.status };
+      return { docker_image_id:data.docker_image_id, exists: true, port: data.port, status: data.status };
     } catch {
-      return { exists: false, port: 0, status:"" };
+      return { docker_image_id: "", exists: false, port: 0, status:"" };
     }
   };
 
