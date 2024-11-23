@@ -10,7 +10,8 @@ import io
 import re
 import socket
 from src.util.auth import *
-
+import os
+import subprocess
 
 docker_client = docker.from_env()
 
@@ -64,9 +65,8 @@ def get_containers():
 def create_container():
     data = request.get_json()
     
-    # Get a port number to give to the container
-    port = find_available_port(current_app.config["CONTAINER_START_PORT"], current_app.config["CONTAINER_END_PORT"])
-    
+    # get a port number to give to the container    
+    ports = {'5000/tcp': None, '22/tcp': None}
     if not data or not data.get('docker_image_id') or not data.get('user_id'):
         return jsonify({'error': 'Image ID and User ID are required'}), 400
 
@@ -91,9 +91,32 @@ def create_container():
             detach=True,
             name=container_name,  # Use normalized container name
 
-            # Expose 5000 in the container as 'port' on the host
-            ports={'5000/tcp': port},
+            # expose 5000 in the container as 'port' on the host
+            ports=ports,
         )
+        
+        container_id = container.id
+        user_id = data['user_id']
+
+
+
+        public_key_path = os.path.join(current_app.config["BASE_KEY_PATH"], str(user_id), 'id_rsa.pub')
+        if not os.path.exists(public_key_path):
+            return jsonify({'error': 'Public key not found for user'}), 400
+        
+        # Create .ssh directory in container
+        container_ssh_dir = "/root/.ssh"
+        subprocess.run(["docker", "exec", container_id, "mkdir", "-p", container_ssh_dir], check=True)
+
+        # Copy the public key into the container's authorized_keys
+        subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
+
+        # # Set the permissions of .ssh directory and authorized_keys file
+        # subprocess.run(["docker", "exec", container_id, "chmod", "700", container_ssh_dir], check=True)
+        # subprocess.run(["docker", "exec", container_id, "chmod", "600", f"{container_ssh_dir}/authorized_keys"], check=True)
+
+        # # Start sshd in the container
+        # subprocess.run(["docker", "exec", container_id, "/usr/sbin/sshd"], check=True)
 
         # Get the image tag
         image_tag = ""
@@ -115,7 +138,16 @@ def create_container():
         db.session.add(new_container)
         db.session.commit()
 
-        return jsonify({'message': 'Container created and started successfully', 'port': port, 'docker_container_id': container.id}), 201
+        container.reload()  # Refresh container attributes
+        port_bindings = container.attrs['NetworkSettings']['Ports']
+        assigned_ports = {}
+        for container_port, bindings in port_bindings.items():
+            if bindings:
+                assigned_ports[container_port] = bindings[0]['HostPort']
+            else:
+                assigned_ports[container_port] = None
+
+        return jsonify({'message': 'Container created and started successfully', 'ports': assigned_ports, 'docker_container_id': container.id}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -182,21 +214,25 @@ def get_container(container_name):
                 
                 # it exists, get the port
                 docker_container = docker_client.containers.get(container_name)
-                port_mapping = docker_container.attrs['NetworkSettings']['Ports']
+                port_bindings = docker_container.attrs['NetworkSettings']['Ports']
+                assigned_ports = {}
+                for container_port, bindings in port_bindings.items():
+                    if bindings:
+                        assigned_ports[container_port] = bindings[0]['HostPort']
+                    else:
+                        assigned_ports[container_port] = None
+
                 status = docker_container.attrs['State']['Status']
                 docker_image_id = docker_container.attrs['Config']['Image']
-                for container_port, host_ports in port_mapping.items():
-                    if host_ports: 
-                        return jsonify({
-                            'message': 'container and port found', 
-                            'port': f"{host_ports[0]['HostPort']}",
-                            'status': status,
-                            'docker_image_id': docker_image_id
-                        })
-                    else:
-                        return jsonify({
-                            'message': "container found but not port"
-                        })
+
+                port_mapping = docker_container.attrs['NetworkSettings']['Ports']
+                
+                return jsonify({
+                    'message': 'container and port found', 
+                    'ports': assigned_ports,
+                    'status': status,
+                    'docker_image_id': docker_image_id
+                })
 
                 return jsonify({'message': 'Container found'}), 200
     except docker.errors.NotFound:

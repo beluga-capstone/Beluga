@@ -7,7 +7,7 @@ import AssignmentForm from "../../../components/AssignmentsForm";
 
 const NewAssignment: React.FC = () => {
   const { addAssignment } = useAssignments();
-  const courseId = "36174364-1c11-43b6-a7f4-d2ca4b5dc301";
+  const courseId = "1f3999da-09c1-4e6b-898b-139d417cddac";
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [publishAt, setPublishAt] = React.useState("");

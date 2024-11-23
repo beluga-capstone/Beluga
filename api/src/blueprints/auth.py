@@ -6,6 +6,7 @@ from flask import Blueprint, flash, redirect, render_template, request, session,
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import login_required, current_user, login_user, logout_user
 from urllib.parse import urlencode
+from src.util.util import create_user_helper
 
 import functools
 import secrets
@@ -108,9 +109,23 @@ def oauth_callback(provider):
         flash('Login successful', 'success')
         return redirect(current_app.config["LOGIN_REDIRECT"])
     else:
-        user = User(username=username, email=email, first_name=fname, last_name=lname, role_id=role)
-        db.session.add(user)
-        db.session.commit()
+        result, status_code = create_user_helper(
+            username=username,
+            email=email,
+            first_name=fname,
+            last_name=lname,
+            role_id=role
+        )
+
+        if status_code != 201:
+            flash('User creation failed. Please contact support.', 'danger')
+            return redirect('/auth/login')
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            flash('User creation failed. Please contact support.', 'danger')
+            return redirect('/auth/login')
+
         login_user(user)
-        flash('Login successful', 'success')
+        flash('Login successful', 'success')        
         return redirect(current_app.config["LOGIN_REDIRECT"])

@@ -47,13 +47,15 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [containerName, setContainerName] = useState<string | null>(null);
-  const [containerPort, setContainerPort] = useState<number | null>(null);
   const [containerStatus, setContainerStatus] = useState<string>("none"); // "none" | "created" | "running" | "stopped"
   const [isProcessing, setIsProcessing] = useState(false);
   const [imageName, setImageName] = useState<string | null>(null);
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
   const [zipFile, setZipFile] = useState<File | null>(null);
+  const [socketPort, setSocketPort] = useState<number | null>(null);
+  const [sshPort, setSshPort] = useState<number | null>(null);
+
 
   const { imageData } = useImageData(assignment?.docker_image_id ?? null);
 
@@ -78,18 +80,20 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
         setContainerName(name);
 
         try {
-          const { exists, status, port } = await checkContainerExists(name);
-          if (exists) {
-            setContainerPort(port);
+          const { exists, appPort, sshPort, status } = await checkContainerExists(name);
+          if (exists && appPort) {
+            // Extract the ports
+            setSocketPort(appPort);
+            setSshPort(sshPort);
             setContainerStatus(status === "running" ? "running" : "stopped");
           } else {
             setContainerStatus("none");
-          }
+          } 
         } catch (error) {
           console.error("Error checking container:", error);
           toast.error("Failed to check container status");
         }
-      }
+      } 
     };
 
     initializeAssignment();
@@ -101,13 +105,15 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
     const checkStatus = async () => {
       try {
-        const { exists, status, port } = await checkContainerExists(containerName);
+        const { exists, appPort, sshPort, status } = await checkContainerExists(containerName);
         if (exists) {
           setContainerStatus(status === "running" ? "running" : "stopped");
-          setContainerPort(port);
+          setSocketPort(appPort);
+          setSshPort(sshPort);
         } else {
           setContainerStatus("none");
-          setContainerPort(null);
+          setSocketPort(null);
+          setSshPort(null);
         }
       } catch (error) {
         console.error("Error checking container status:", error);
@@ -139,7 +145,8 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
             assignment?.description??null
           );
           if (result) {
-            setContainerPort(result.container_port);
+            setSocketPort(result.appPort);
+            setSshPort(result.sshPort);
             setContainerStatus("running");
             toast.success("Container created successfully");
             router.refresh();
@@ -152,9 +159,10 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
           // Start container
           await startContainer(containerName);
           setContainerStatus("running");
-          const { exists, status, port } = await checkContainerExists(containerName);
+          const { exists, appPort, sshPort, status } = await checkContainerExists(containerName);
           if (exists) {
-            setContainerPort(port);
+            setSocketPort(appPort);
+            setSshPort(sshPort);
           }
           toast.success("Container started successfully");
           router.refresh();
@@ -164,7 +172,8 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
           // Stop container
           await stopContainer(containerName);
           setContainerStatus("stopped");
-          setContainerPort(null);
+          setSocketPort(null);
+          setSshPort(null);
           toast.success("Container stopped successfully");
           break;
       }
@@ -314,6 +323,9 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
               ? `Image name: ${imageName}`
               : null}
           </h2>
+          <p className="text-lg">Socket Port: {socketPort ?? "N/A"}</p>
+          <p className="text-lg">SSH Port: {sshPort ?? "N/A"}</p>
+
 
           {renderContainerButton()}
         </div>
@@ -323,7 +335,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
         {assignment && (
           <ContainerPageTerminal
             isRunning={containerStatus === "running"}
-            containerPort={containerPort}
+            containerPort={socketPort}
           />
         )}
       </div>

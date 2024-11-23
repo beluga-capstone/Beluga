@@ -7,6 +7,7 @@ import { Play, StopCircle, Loader2 } from "lucide-react";
 import Button from "@/components/Button";
 import ContainerPageTerminal from "@/components/ContainerPageTerminal";
 import { toast } from "sonner";
+import { setHeapSnapshotNearHeapLimit } from "v8";
 
 const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { containers, checkContainerExists, startContainer, stopContainer, isStoppingContainer, isDeletingContainer} = useContainers();
@@ -16,7 +17,8 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const [status, setStatus] = useState<string | null>(null);
   const [imageId, setImageId] = useState<string | null>(null);
   const [containerId, setContainerId] = useState<string | null>(null);
-  const [containerPort, setContainerPort] = useState<number | null>(null);
+  const [socketPort, setSocketPort] = useState<number | null>(null);
+  const [sshPort, setSshPort] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   // type handling for containerId
@@ -31,9 +33,10 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
   useEffect(()=>{
     const startup = async() => {
-      const {exists, port} = await checkContainerExists(container?.docker_container_name ?? "");
+      const {exists, appPort, sshPort} = await checkContainerExists(container?.docker_container_name ?? "");
       if (exists) {
-        setContainerPort(port);
+        setSocketPort(appPort);
+        setSshPort(sshPort);
       }
     };
     startup();
@@ -49,10 +52,11 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
         setLoading(false);
         const getContainer = async () => {
           // Check if container exists
-          const { docker_image_id, exists, port, status } = await checkContainerExists(container?.docker_container_name ?? "");
+          const { docker_image_id, exists, appPort, sshPort, status } = await checkContainerExists(container?.docker_container_name ?? "");
           if (exists) {
             //console.log("it exists,", port, docker_image_id, status);
-            setContainerPort(port);
+            setSocketPort(appPort);
+            setSshPort(sshPort);
             setImageId(docker_image_id);
             setStatus(status);
           }
@@ -77,13 +81,14 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
     try {
       const actionFn = action === "start" ? startContainer : stopContainer;
       await actionFn(containerId);
-      const { exists, port} = await checkContainerExists(container?.docker_container_name ?? "");
+      const { exists, appPort, sshPort} = await checkContainerExists(container?.docker_container_name ?? "");
       if (exists) {
-        setContainerPort(port);
+        setSocketPort(appPort);
+        setSshPort(sshPort);
       }
 
       // Update status immediately
-      setStatus(action === "start" ? "running" : "stopped");
+      setStatus(action === "start" ? "running" : "gstopped");
       toast.success(`Container ${action === "start" ? "started" : "stopped"} successfully`);
     } catch (err) {
       console.error(`Error ${action}ing container:`, err);
@@ -144,7 +149,7 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </Button>
         </div>
         <br/>
-        <ContainerPageTerminal isRunning={status === "running"} containerPort={containerPort} />
+        <ContainerPageTerminal isRunning={status === "running"} containerPort={socketPort} />
       </div>
     );
   }
@@ -153,4 +158,3 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
 };
 
 export default ContainerPage;
-
