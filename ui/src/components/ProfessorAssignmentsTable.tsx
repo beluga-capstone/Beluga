@@ -32,7 +32,7 @@ const ProfessorAssignmentsTable = () => {
         {assignments.map((assignment) => (
           <tr
             key={assignment.assignment_id}
-            className="cursor-pointer hover:border hover:border-red-500"
+            className="cursor-pointer hover:border"
             onClick={() =>
               window.location.href = `/assignments/${assignment.assignment_id}`
             }
