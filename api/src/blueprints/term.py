@@ -2,11 +2,13 @@ from flask import Blueprint, request, jsonify
 from src.util.db import db, Term
 from datetime import datetime
 import uuid
+from src.util.auth import *
 
 term_bp = Blueprint('term', __name__)
 
 # Create a new term (POST)
 @term_bp.route('/terms', methods=['POST'])
+@admin_required
 def create_term():
     data = request.get_json()
 
@@ -25,6 +27,7 @@ def create_term():
 
 # Get all terms (GET)
 @term_bp.route('/terms', methods=['GET'])
+@login_required
 def get_terms():
     terms = db.session.scalars(db.select(Term)).all()
     terms_list = [{
@@ -36,6 +39,7 @@ def get_terms():
 
 # Get a specific term (GET)
 @term_bp.route('/terms/<uuid:term_id>', methods=['GET'])
+@login_required
 def get_term(term_id):
     term = db.session.get(Term, term_id)
     if term is None:
@@ -48,6 +52,7 @@ def get_term(term_id):
 
 # Update a term (PUT)
 @term_bp.route('/terms/<uuid:term_id>', methods=['PUT'])
+@admin_required
 def update_term(term_id):
     term = db.session.get(Term, term_id)
     if term is None:
@@ -65,6 +70,7 @@ def update_term(term_id):
 
 # Delete a term (DELETE)
 @term_bp.route('/terms/<uuid:term_id>', methods=['DELETE'])
+@admin_required
 def delete_term(term_id):
     term = db.session.get(Term, term_id)
     if term is None:
