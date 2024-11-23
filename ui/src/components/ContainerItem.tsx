@@ -1,14 +1,13 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Square, CheckSquare } from "lucide-react";
-import IconButton from "./IconButton";
 import { Container } from "@/types";
 
 interface ContainerItemProps {
   container: Container;
   onToggleSelect: (id: string) => void;
   isSelected: boolean;
-  containerStatus:string;
+  containerStatus: string;
   children?: React.ReactNode;
 }
 
@@ -26,40 +25,55 @@ const ContainerItem: React.FC<ContainerItemProps> = ({
   };
 
   return (
-    <div className="border p-4 rounded mb-4 flex justify-between items-center">
-      <div className="flex items-center">
+    <div className="border p-4 rounded-md mb-4 flex justify-between items-start shadow-md hover:shadow-lg transition-shadow duration-200">
+      <div className="flex items-center space-x-4">
+        {/* Checkbox for selecting the container */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             onToggleSelect(container.docker_container_id);
           }}
-          className="mr-4"
+          className="flex-shrink-0"
         >
           {isSelected ? (
-            <CheckSquare className="text-blue-500" />
+            <CheckSquare className="text-blue-500 w-6 h-6" />
           ) : (
-            <Square className="text-gray-500" />
+            <Square className="text-gray-500 w-6 h-6" />
           )}
         </button>
 
-        <div>
+        {/* Container details */}
+        <div className="flex flex-col justify-center">
           <h2
-            className="font-bold flex items-center cursor-pointer hover:text-blue-600"
+            className="font-semibold text-lg cursor-pointer hover:text-blue-600"
             onClick={handleContainerClick}
           >
-            {container.docker_container_name || `Container ID: ${container.docker_container_id}`}
+            {container.docker_container_name ||
+              `Container ID: ${container.docker_container_id}`}
           </h2>
           {container.description && (
-            <p className="text-gray-500">{container.description}</p>
+            <p className="text-gray-500 text-sm mt-1">{container.description}</p>
           )}
         </div>
-
-        <div>
-          {containerStatus}
-        </div>
-        <div>{children}</div>
       </div>
 
+      <div className="flex items-center space-x-4">
+        {/* Container status */}
+        <div
+          className={`text-sm font-semibold ${
+            containerStatus === "Running"
+              ? "text-green-500"
+              : containerStatus === "Stopped"
+              ? "text-red-500"
+              : "text-yellow-500"
+          }`}
+        >
+          {containerStatus}
+        </div>
+
+        {/* Additional children components */}
+        <div className="mt-1">{children}</div>
+      </div>
     </div>
   );
 };

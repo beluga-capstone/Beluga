@@ -14,6 +14,7 @@ interface ContainerHook {
   otherContainerId: string | null;
   isDeletingContainer: boolean;
   isRunningContainer: boolean;
+  isStoppingContainer: boolean;
   runContainer: (
     imageId: string | null,
     containerName: string | null
@@ -32,6 +33,7 @@ export const useContainers = (): ContainerHook => {
   const [state, setState] = useState({
     isLoading: true,
     isDeletingContainer: false,
+    isStoppingContainer: false,
     isRunningContainer: false,
     isContainerRunning: false,
     error: null as string | null,
@@ -112,14 +114,18 @@ export const useContainers = (): ContainerHook => {
   const stopContainer = async (containerName: string | null): Promise<void> => {
     if (!containerName) throw new Error("Container name is required");
 
+    updateState({ isStoppingContainer: true });
     try {
       await handleFetch(`${API_BASE_URL}/containers/${containerName}/stop`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
       });
+      await fetchContainers();  // Refresh the container list and statuses
     } catch (err) {
       console.error(err);
       throw err;
+    } finally {
+      updateState({ isStoppingContainer: false });
     }
   };
 
@@ -164,6 +170,7 @@ export const useContainers = (): ContainerHook => {
     otherContainerId,
     isDeletingContainer: state.isDeletingContainer,
     isRunningContainer: state.isRunningContainer,
+    isStoppingContainer: state.isStoppingContainer,
     runContainer,
     stopContainer,
     startContainer,
