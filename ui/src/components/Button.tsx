@@ -2,7 +2,7 @@ import Link from "next/link";
 import React from "react";
 
 interface ButtonProps {
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent) => void;
   href?: string;
   disabled?: boolean;
   className: string;

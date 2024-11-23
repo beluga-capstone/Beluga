@@ -1,10 +1,13 @@
 from flask import Blueprint, request, jsonify
 from src import socketio
 from src.util.db import db, Image
+from src.util.query_utils import apply_filters
 from flask_socketio import emit
 from datetime import datetime
 import docker
 import io
+
+from src.util.auth import *
 
 docker_client = docker.from_env()
 
@@ -13,6 +16,30 @@ image_bp = Blueprint('image', __name__)
 
 # Create a new image (POST)
 @image_bp.route('/images', methods=['POST'])
+@professor_required
+def create_image():
+    data = request.get_json()
+    
+    if not data or not data.get('docker_image_id') or not data.get('user_id'):
+        return jsonify({'error': 'Docker Image ID and User ID are required'}), 400
+    
+    new_image = Image(
+        docker_image_id=data['docker_image_id'],
+        user_id=data['user_id'],
+        description=data.get('description')
+    )
+
+    try:
+        db.session.add(new_image)
+        db.session.commit()
+        return jsonify({'message': 'Image created successfully', 'docker_image_id': new_image.docker_image_id}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@image_bp.route('/images/build', methods=['POST'])
+@professor_required
 def build_image():
     data = request.get_json()
     if not isinstance(data, dict):
@@ -90,8 +117,33 @@ def build_image():
         return jsonify({'error': str(e)}), 500
 
 
+# Dynamic search for images (GET)
+@image_bp.route('/images/search', methods=['GET'])
+@login_required
+def search_images():
+    filters = request.args.to_dict()  # Get all query parameters as filters
+
+    try:
+        # Dynamically apply filters using the helper function `apply_filters`
+        query = apply_filters(Image, filters)
+        images = query.all()
+
+        # Format the response
+        images_list = [{
+            'docker_image_id': image.docker_image_id,
+            'user_id': str(image.user_id),
+            'description': image.description
+        } for image in images]
+
+        return jsonify(images_list), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 # Get all images (GET)
 @image_bp.route('/images', methods=['GET'])
+@admin_required
 def get_images():
     images = db.session.scalars(db.select(Image)).all()
     images_list = [{
@@ -104,6 +156,7 @@ def get_images():
 
 # Get a specific image (GET)
 @image_bp.route('/images/<string:docker_image_id>', methods=['GET'])
+@login_required
 def get_image(docker_image_id):
     image = db.session.get(Image, docker_image_id)
     if image is None:
@@ -122,6 +175,7 @@ def get_image(docker_image_id):
 
 # Update an image (PUT)
 @image_bp.route('/images/<string:docker_image_id>', methods=['PUT'])
+@professor_required
 def update_image(docker_image_id):
     image = db.session.get(Image, docker_image_id)
     if image is None:
@@ -139,6 +193,7 @@ def update_image(docker_image_id):
 
 # Delete an image (DELETE)
 @image_bp.route('/images/<string:docker_image_id>', methods=['DELETE'])
+@professor_required
 def delete_image(docker_image_id):
     image = db.session.get(Image, docker_image_id)
     if image is None:

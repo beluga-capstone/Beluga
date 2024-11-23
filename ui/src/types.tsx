@@ -51,15 +51,21 @@ export interface Assignment {
   user_id?: string;
 }
 
+export interface Submission {
+  submission_id: string;
+  user_id: string;
+  assignment_id: string;
+  submitted_at: Date;
+  grade: number;
+  status: string;
+  data: File;
+}
+
 export interface Container {
-  id: number;
-  name: string;
-  status: "running" | "paused" | "stopped";
-  launchTime: string;
-  image: Image;
-  cpuCores: number;
-  memoryGBs: number;
-  storageGBs: number;
+  docker_container_id: string,
+  docker_container_name:string,
+  user_id: string,
+  description: string,
 }
 
 export interface Image {
@@ -70,10 +76,10 @@ export interface Image {
 }
 
 export interface User {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   middleName?: string;
   email: string;
-  role: string;
+  role_id: number;
 }
