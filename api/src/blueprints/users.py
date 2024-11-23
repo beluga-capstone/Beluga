@@ -62,16 +62,10 @@ def create_user():
         key_paths = create_ssh_key_pair(new_user.user_id)
         if key_paths is None:
             return jsonify({'message': 'User created, but SSH key generation failed'}), 201
-        
-        with open(key_paths['private_key_path'], 'r') as f:
-            private_key = f.read().strip()
-        
-        os.remove(key_paths['private_key_path'])
 
         return jsonify({
             'message': 'User created successfully',
-            'user_id': str(new_user.user_id),
-            'private_key': private_key
+            'user_id': str(new_user.user_id)
         }), 201
     except Exception as e:
         db.session.rollback()
@@ -168,7 +162,12 @@ def get_current_user():
     user = db.session.get(User, current_user.user_id)
     if user is None:
         return jsonify({'error': 'User not found'}), 404
+
+    private_key_path = os.path.join(BASE_KEY_PATH, str(user_id), 'id_rsa')
     
+    with open(private_key_path, 'r') as f:
+        private_key = f.read().strip()
+
     user_data = {
         'user_id': user.user_id,
         'username': user.username,
@@ -178,6 +177,7 @@ def get_current_user():
         'last_name': user.last_name,
         'role_id': user.role_id,
         'created_at': user.created_at,  
-        'updated_at': user.update_at
+        'updated_at': user.update_at,
+        'private_key': private_key
     }
     return jsonify(user_data), 200
