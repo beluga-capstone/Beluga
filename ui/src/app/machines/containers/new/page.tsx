@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 const NewContainer: React.FC = () => {
   const { runContainer, checkContainerExists } = useContainers();
   const [title, setTitle] = React.useState("");
-  const [description, setDescription] = React.useState("");
+  const [description, setDescription] = React.useState("No description");
   const [imageId, setImageId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false); // Track form submission
   const [titleExists, setTitleExists] = useState(false); // Track if title exists
