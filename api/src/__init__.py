@@ -52,7 +52,7 @@ def create_app(config_name="default"):
         # init the database
         init_roles()
         init_admin_user()
-        init_default_images()
+        #init_default_images()
         create_example_course()
         
         return app
@@ -200,9 +200,10 @@ def init_default_images():
                 description=image_info['description'],
                 user_id=image_info['user_id']
             )
-            db.session.add(new_image)
-            db.session.commit()
-            print(f"Initialized default image: {image_info['image_tag']}")
+            if db.session.query(Image).filter_by(docker_image_id=image.id).first() is None:
+                db.session.add(new_image)
+                db.session.commit()
+                print(f"Initialized default image: {image_info['image_tag']}")
 
         except Exception as e:
             db.session.rollback()

@@ -15,7 +15,7 @@ class Config:
     FLASK_RUN_PORT = environ.get('FLASK_PORT', 5000)
     FLASK_RUN_HOST = environ.get('FLASK_HOST', '127.0.0.1')
 
-    SQLALCHEMY_DATABASE_URI = environ.get('DATABASE_URI', 'postgresql://postgres:temppassword@localhost:5432/your_db')
+    SQLALCHEMY_DATABASE_URI = environ.get('DATABASE_URI', 'postgresql://beluga:temppassword@127.0.0.1:5432/beluga')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = environ.get("SQLALCHEMY_ECHO")
 
