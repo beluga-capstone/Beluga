@@ -1,42 +1,18 @@
 import os
-import subprocess
 import shutil
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_login import login_required, current_user
 from datetime import datetime
 import uuid
 
+from src.util.util import create_user_helper
 from src.util.auth import admin_required
 from src.util.db import db, User
 from src.util.auth import *
 
 
 users_bp = Blueprint('users', __name__)
-
-BASE_KEY_PATH = os.path.join(os.path.expanduser("~"), "beluga_data", "keys")
-
-def create_ssh_key_pair(user_id):
-    key_dir = os.path.join(BASE_KEY_PATH, str(user_id))
-    private_key_path = os.path.join(key_dir, "id_rsa")
-    public_key_path = os.path.join(key_dir, "id_rsa.pub")
-    
-    try:
-        os.makedirs(key_dir, exist_ok=True)
-        
-        subprocess.run(
-            ["ssh-keygen", "-t", "ed25519", "-f", private_key_path, "-q", "-N", ""],
-            check=True
-        )
-        
-        return {
-            "private_key_path": private_key_path,
-            "public_key_path": public_key_path
-        }
-    except Exception as e:
-        print(f"Error generating SSH keys: {e}")
-        return None
-
 
 # Create User (POST)
 @users_bp.route('/users', methods=['POST'])
@@ -46,7 +22,7 @@ def create_user():
     if not data or not data.get('username') or not data.get('email'):
         return jsonify({'error': 'Username and email are required'}), 400
     
-    new_user = User(
+    result, status_code = create_user_helper(
         username=data['username'],
         email=data['email'],
         first_name=data.get('first_name'),
@@ -55,21 +31,7 @@ def create_user():
         role_id=data.get('role_id')
     )
     
-    try:
-        db.session.add(new_user)
-        db.session.commit()
-
-        key_paths = create_ssh_key_pair(new_user.user_id)
-        if key_paths is None:
-            return jsonify({'message': 'User created, but SSH key generation failed'}), 201
-
-        return jsonify({
-            'message': 'User created successfully',
-            'user_id': str(new_user.user_id)
-        }), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+    return jsonify(result), status_code
 
 # Read All Users (GET)
 @users_bp.route('/users', methods=['GET'])
@@ -161,9 +123,9 @@ def delete_user(user_id):
 def get_current_user():
     user = db.session.get(User, current_user.user_id)
     if user is None:
-        return jsonify({'error': 'User not found'}), 404
+        return jsonify({'error': 'User not found'}), 404        
 
-    private_key_path = os.path.join(BASE_KEY_PATH, str(user_id), 'id_rsa')
+    private_key_path = os.path.join(current_app.config["BASE_KEY_PATH"], str(current_user.user_id), 'id_rsa')
     
     with open(private_key_path, 'r') as f:
         private_key = f.read().strip()

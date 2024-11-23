@@ -16,8 +16,7 @@ docker_client = docker.from_env()
 
 container_bp = Blueprint('container', __name__)
 
-BASE_KEY_PATH = os.path.join(os.path.expanduser("~"), "beluga_data", "keys")
-
+#current_app.config["BASE_KEY_PATH"]
 
 # Create and start a new container (POST)
 @container_bp.route('/containers', methods=['POST'])
