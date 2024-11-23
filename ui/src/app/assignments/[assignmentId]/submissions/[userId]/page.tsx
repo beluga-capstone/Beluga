@@ -11,6 +11,7 @@ import { ROLES } from "@/constants";
 import { useUsers } from "@/hooks/useUsers";
 import Button from "@/components/Button";
 import { shortDate, shortTime } from "@/lib/utils";
+import GradeEntry from "@/components/GradeEntry";
 
 const SubmissionPage = ({
   params,
@@ -171,14 +172,10 @@ const SubmissionPage = ({
               )}
             </h2>
 
-            <h2>
-              {latestSubmission?.submitted_at &&
-                (latestSubmission?.status === "graded" ? (
-                  <>Grade: {latestSubmission?.grade}</>
-                ) : (
-                  "Not yet graded"
-                ))}
-            </h2>
+            <div className="flex flex-row items-center">
+              <h2 className="pr-2">Grade:</h2>
+              <GradeEntry userId={profile?.user_id ?? ""} />
+            </div>
           </div>
         </div>
       </div>
