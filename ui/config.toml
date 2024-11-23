@@ -1,0 +1,9 @@
+[settings]
+subdomain = ""
+
+[nginx]
+port = 11443
+
+[environ]
+host = "127.0.0.1"
+port = 8124

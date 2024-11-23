@@ -1,0 +1,35 @@
+[workspace]
+
+[network]
+base_ssh_port = 40000
+base_pty_port = 50000
+frontend_proxy_port = 8100
+backend_proxy_port = 8200
+
+[nginx]
+domain = "beluga.tacex.dev"
+become = "root"
+cert-path = "/etc/letsencrypt"
+
+[virtual-machines]
+
+[virtual-machines.settings]
+vnetif = "vboxnet1"
+ipv4_range = "192.168.100.0/24"
+install-path = "/home/bode/beluga-test"
+
+[virtual-machines.registry]
+name = "beluga-registry"
+cores = 2
+memory = 2048
+disk-size = 10240
+type = "images"
+ip = "192.168.100.2"
+
+[virtual-machines.container]
+name = "beluga-containers"
+cores = 10
+memory = 8192
+disk-size = 20480
+type = "containers"
+ip = "192.168.100.4"
