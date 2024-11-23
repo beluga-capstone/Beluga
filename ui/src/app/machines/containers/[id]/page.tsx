@@ -9,7 +9,7 @@ import ContainerPageTerminal from "@/components/ContainerPageTerminal";
 import { toast } from "sonner";
 
 const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
-  const { containers, checkContainerExists, startContainer, stopContainer } = useContainers();
+  const { containers, checkContainerExists, startContainer, stopContainer, isStoppingContainer, isDeletingContainer} = useContainers();
   const [container, setContainer] = useState<Container | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -112,6 +112,14 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
   if (container) {
     return (
       <div className="container mx-auto p-4">
+      {(isStoppingContainer || isDeletingContainer) && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="p-6 rounded-lg shadow-xl flex items-center">
+            <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+            <p>{isDeletingContainer ? "Deleting" : "Stopping"} container(s)...</p>
+          </div>
+        </div>
+      )}
         <h1 className="font-bold text-4xl mb-6">Container "{container.docker_container_name}"</h1>
         <br />
         <span>{status} {imageId}</span>
@@ -132,7 +140,7 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
             ) : (
               <Play className="h-6 w-6" />
             )}
-            {status === "running" ? "Stop" : "Start"}
+            {status === "running" ? "" : ""}
           </Button>
         </div>
         <br/>
