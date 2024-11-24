@@ -86,8 +86,6 @@ export const useContainers = (): ContainerHook => {
   
       updateState({ isContainerRunning: true });
 
-      console.log(data.ports)
-  
       // Extract ports from the response
       const ports = data.ports as { [key: string]: string };
   

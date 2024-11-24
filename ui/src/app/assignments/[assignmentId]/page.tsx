@@ -120,9 +120,9 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
       }
     };
 
-    const intervalId = setInterval(checkStatus, 30000);
+    const intervalId = setInterval(checkStatus, 1000);
     return () => clearInterval(intervalId);
-  }, [containerName, checkContainerExists]);
+  }, [containerName]);
 
   useEffect(() => {
     if (imageData?.tag?.[0]) {
