@@ -38,9 +38,9 @@ const ProfilePage: React.FC = () => {
         <h1 className="font-bold text-4xl">Profile</h1>
       </div>
       <h2 className="font-bold py-4">
-        {profile?.firstName} {profile?.middleName} {profile?.lastName}
+        Name: {profile?.firstName} {profile?.middleName} {profile?.lastName}
       </h2>
-      <h2 className="font-bold pb-4">{profile?.email}</h2>
+      <h2 className="font-bold pb-4">Email: {profile?.email}</h2>
       <h2 className="font-bold pb-4">Role: {getRoleName(profile?.role_id)}</h2>
 
       {/* Download Private Key Button */}
