@@ -1,89 +1,83 @@
 import React from "react";
-import { useRouter } from "next/navigation"; // Import useRouter
-import { Trash2, Pause, Play, Square, CheckSquare } from "lucide-react";
-import ContainerStatus from "./ContainerStatus";
+import { useRouter } from "next/navigation";
+import { Square, CheckSquare } from "lucide-react";
 import { Container } from "@/types";
-import IconButton from "./IconButton";
 
 interface ContainerItemProps {
   container: Container;
-  onDelete: (id: number) => void;
-  onPause: (id: number) => void;
-  onRun: (id: number) => void;
-  onStop: (id: number) => void;
-  onToggleSelect: (id: number) => void;
+  onToggleSelect: (id: string) => void;
   isSelected: boolean;
+  containerStatus: string;
+  children?: React.ReactNode;
 }
 
 const ContainerItem: React.FC<ContainerItemProps> = ({
   container,
-  onDelete,
-  onPause,
-  onRun,
-  onStop,
   onToggleSelect,
   isSelected,
+  containerStatus,
+  children,
 }) => {
   const router = useRouter();
 
   const handleContainerClick = () => {
-    router.push(`/machines/containers/${container.id}`);
+    router.push(`/machines/containers/${container.docker_container_id}`);
   };
 
   return (
-    <div className="flex items-center space-x-4 p-4 border rounded-lg mb-4">
-      <button
-        onClick={() => onToggleSelect(container.id)}
-        className="focus:outline-none"
-      >
-        {isSelected ? (
-          <CheckSquare className="text-blue-500" />
-        ) : (
-          <Square className="text-gray-400" />
-        )}
-      </button>
-      <div className="flex-grow">
-        <h3 className="font-semibold cursor-pointer" onClick={handleContainerClick}>
-          {container.name}{" "}
-          <span className={`px-1 py-0.25 rounded bg-on-surface text-light-surface`}>
-            {container.status}
-          </span>
-        </h3>
-        <p className="text-sm text-on-surface">
-          Launch Time: {container.launchTime}
-        </p>
+    <div className="border p-4 rounded-md mb-4 flex justify-between items-start shadow-md hover:shadow-lg transition-shadow duration-200">
+      <div className="flex items-center space-x-4">
+        {/* Checkbox for selecting the container */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSelect(container.docker_container_id);
+          }}
+          className="flex-shrink-0"
+        >
+          {isSelected ? (
+            <CheckSquare className="text-blue-500 w-6 h-6" />
+          ) : (
+            <Square className="text-gray-500 w-6 h-6" />
+          )}
+        </button>
+
+        {/* Container details */}
+        <div className="flex flex-col justify-center">
+          <h2
+            className="font-semibold text-lg cursor-pointer hover:text-blue-600"
+            onClick={handleContainerClick}
+          >
+            {container.docker_container_name ||
+              `Container ID: ${container.docker_container_id}`}
+          </h2>
+          {container.description && (
+            <p className="text-gray-500 text-sm mt-1">{container.description}</p>
+          )}
+        </div>
       </div>
-      <div className="flex items-center space-x-2">
-        <IconButton
-          title="Pause"
-          onClick={() => onPause(container.id)}
-          disabled={container.status === "paused" || container.status === "stopped"}
-          icon={Pause}
-          iconColor="yellow-500"
-        />
-        <IconButton
-          title="Start"
-          onClick={() => onRun(container.id)}
-          disabled={container.status === "running"}
-          icon={Play}
-          iconColor="green-500"
-        />
-        <IconButton
-          title="Stop"
-          onClick={() => onStop(container.id)}
-          disabled={container.status === "stopped"}
-          icon={Square}
-          iconColor="red-500"
-        />
-        <IconButton
-          title="Delete"
-          onClick={() => onDelete(container.id)}
-          icon={Trash2}
-          iconColor="red-500"
-        />
+
+      <div className="flex items-center space-x-4">
+        {/* Container status */}
+        <div
+          className={`text-sm font-semibold ${
+            containerStatus === "running"
+              ? "text-green-500"
+              : containerStatus === "stopped"
+              ? "text-red-500"
+              : "text-yellow-500"
+          }`}
+        >
+          {containerStatus}
+        </div>
+
+        {/* Additional children components */}
+        <div className="mt-1">{children}</div>
       </div>
     </div>
   );
 };
 
 export default ContainerItem;
+
+

@@ -8,7 +8,7 @@ load_dotenv(path.join(PROJECT_DIR, '.env'))
 
 class Config:
     ENVIRONMENT = environ.get('ENVIRONMENT', 'production')
-
+    BASE_KEY_PATH = path.join(path.expanduser("~"), "beluga_data", "keys")
     FLASKAPP = 'app.py'
     DEBUG = environ.get('FLASK_DEBUG')
     SECRET_KEY = environ.get('SECRET_KEY', uuid4().hex)
