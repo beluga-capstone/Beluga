@@ -40,7 +40,9 @@ export const useDashboard = () => {
     section: string,
     professor: string,
     semester: string,
-    studentsEnrolled: number
+    studentsEnrolled: number,
+    userId: string,
+    termId: string
   ) => {
     const newCourse = {
       name: title,
@@ -48,8 +50,10 @@ export const useDashboard = () => {
       professor,
       term: semester,
       studentsEnrolled,
+      user_id: userId, // Add user_id
+      term_id: termId, // Add term_id
     };
-
+  
     try {
       const response = await fetch("http://localhost:5000/courses", {
         method: "POST",
@@ -58,7 +62,7 @@ export const useDashboard = () => {
         },
         body: JSON.stringify(newCourse),
       });
-
+  
       if (!response.ok) {
         throw new Error("Failed to add course");
       }

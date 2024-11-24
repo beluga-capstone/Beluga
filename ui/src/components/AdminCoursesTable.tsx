@@ -12,16 +12,12 @@ const AdminCoursesTable: React.FC = () => {
 
   useEffect(() => {
     const loadCourses = async () => {
-      setLoading(true); // Set loading to true at the start
-      await fetchCourses(); // Wait for courses to fetch
-      setLoading(false); // Set loading to false when done
+      setLoading(true);
+      await fetchCourses();
+      setLoading(false);
     };
     loadCourses();
   }, [fetchCourses]);
-
-  if (loading) return <div>Loading courses...</div>;
-
-  if (courses.length === 0) return <div>No courses available. Please add one!</div>;
 
   return (
     <div>

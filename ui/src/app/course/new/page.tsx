@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import Papa from "papaparse";
 import Button from "@/components/Button";
@@ -10,10 +10,12 @@ import { useUsers } from "@/hooks/useUsers";
 import StudentsTable from "../../students/StudentsTable";
 import { User } from "@/types";
 import { useRouter } from "next/navigation";
+import { useProfile } from "@/hooks/useProfile";
 
 const NewCourse: React.FC = () => {
   const { addCourse, fetchCourses } = useDashboard();
   const { addUsers } = useUsers();
+  const { profile } = useProfile();
   const router = useRouter();
 
   const [title, setTitle] = useState("");
@@ -21,6 +23,32 @@ const NewCourse: React.FC = () => {
   const [professor, setProfessor] = useState<string>("");
   const [semester, setSemester] = useState("");
   const [students, setStudents] = useState<User[]>([]);
+  const [termId, setTermId] = useState<string | null>(null);
+
+  // Fetch termId dynamically based on semester
+  useEffect(() => {
+    const fetchTermId = async () => {
+      if (!semester) return;
+
+      try {
+        const response = await fetch(`http://localhost:5000/terms?name=${semester}`, {
+          method: "GET",
+        });
+        const data = await response.json();
+
+        if (data.length > 0) {
+          setTermId(data[0].term_id);
+        } else {
+          setTermId(null); // Fallback for unknown terms
+        }
+      } catch (error) {
+        console.error("Error fetching term ID:", error);
+        setTermId(null);
+      }
+    };
+
+    fetchTermId();
+  }, [semester]); // Re-fetch termId whenever semester changes
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -48,15 +76,29 @@ const NewCourse: React.FC = () => {
   });
 
   const handleAddCourse = async () => {
-    const courseId = Date.now(); 
-    await addCourse(title, section, professor, semester, students.length);
-    await fetchCourses(); 
+    if (!profile || !termId) {
+      alert("Profile or Term ID is missing!");
+      return;
+    }
+
+    const courseId = Date.now();
+    await addCourse(
+      title,
+      section,
+      professor,
+      semester,
+      students.length,
+      profile.user_id, // Include user ID from profile
+      termId // Include term ID
+    );
+    await fetchCourses();
+
     const studentsWithCourseId = students.map((student) => ({
       ...student,
       courseId,
     }));
     await addUsers(studentsWithCourseId);
-  
+
     router.push("/");
   };
 
