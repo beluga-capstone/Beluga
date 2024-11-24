@@ -18,36 +18,27 @@ const saveUsersToStorage = (users: User[]) => {
 
 export const useUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
 
   useState(() => {
     const loadedUsers = loadUsersFromStorage();
     setUsers(loadedUsers);
   });
 
-  const insertUser = (user: User) => {
-    if (users.some((u) => u.id === user.id)) {
-      return;
-    }
-    const updatedUsers = [...users, user];
-    setUsers(updatedUsers);
-    saveUsersToStorage(updatedUsers);
-  };
-
   const addUser = (
     firstname: string,
     lastname: string,
     middlename: string | undefined,
     email: string,
-    role: number
+    role: string
   ) => {
     const newUser: User = {
-      id: Date.now().toLocaleString(),
+      id: Date.now(),
       firstName: firstname,
       lastName: lastname,
       middleName: middlename,
       email: email,
-      role_id: role,
+      role: role,
     };
 
     const updatedUsers = [...users, newUser];
@@ -62,12 +53,12 @@ export const useUsers = () => {
   };
 
   const updateUser = (
-    id: string,
+    id: number,
     firstname: string,
     lastname: string,
     middlename: string | undefined,
     email: string,
-    role_id: number
+    role: string
   ) => {
     const updatedUser = {
       id: id,
@@ -75,7 +66,7 @@ export const useUsers = () => {
       lastName: lastname,
       middleName: middlename,
       email: email,
-      role_id: role_id,
+      role: role,
     };
 
     const updatedUsers = users.map((user) => {
@@ -89,11 +80,7 @@ export const useUsers = () => {
     saveUsersToStorage(updatedUsers);
   };
 
-  const getUser = (id: string) => {
-    return users.find((user) => user.id === id);
-  };
-
-  const deleteUser = (id: string) => {
+  const deleteUser = (id: number) => {
     const updatedUsers = users.filter((user) => user.id !== id);
     setUsers(updatedUsers);
     saveUsersToStorage(updatedUsers);
@@ -102,11 +89,9 @@ export const useUsers = () => {
 
   return {
     users,
-    insertUser,
     addUser,
     addUsers,
     updateUser,
-    getUser,
     deleteUser,
   };
 };
