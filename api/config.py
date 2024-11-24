@@ -19,7 +19,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = environ.get("SQLALCHEMY_ECHO")
 
-    LOGIN_REDIRECT = '/'
+    LOGIN_REDIRECT = 'https://beluga.tacex.dev'
     CONTAINER_START_PORT = 8000
     CONTAINER_END_PORT = 18000
 
@@ -42,7 +42,6 @@ class Config:
             ],
         }
     }
-    # REGISTRY_IP = environ.get("REGISTRY_IP", "127.0.0.1")
     REGISTRY_IP = environ.get("REGISTRY_IP", "localhost")
     REGISTRY_PORT = environ.get("REGISTRY_PORT", "8000")
 
