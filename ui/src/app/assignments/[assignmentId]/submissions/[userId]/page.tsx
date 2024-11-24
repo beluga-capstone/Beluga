@@ -36,27 +36,45 @@ const SubmissionPage = ({
   const [zipFile, setZipfile] = useState<JSZip | null>(null);
   const [files, setFiles] = useState<File[]>([]);
 
+  // useEffect(() => {
+  //   if (profile && profile.role_id === ROLES.STUDENT) {
+  //     setLatestSubmission(
+  //       getLatestSubmission(params.assignmentId, profile.user_id)
+  //     );
+  //     setAllSubmissions(
+  //       getAllSubmissionsForAssignmentAndUser(
+  //         params.assignmentId,
+  //         profile.user_id
+  //       )
+  //     );
+  //   } else if (profile) {
+  //     setLatestSubmission(getLatestSubmissionForUser(params.userId));
+  //     setAllSubmissions(
+  //       getAllSubmissionsForAssignmentAndUser(
+  //         params.assignmentId,
+  //         params.userId
+  //       )
+  //     );
+  //   }
+  // }, [assignments, params.assignmentId]);
+
   useEffect(() => {
+  const fetchSubmissions = async () => {
     if (profile && profile.role_id === ROLES.STUDENT) {
-      setLatestSubmission(
-        getLatestSubmission(params.assignmentId, profile.user_id)
-      );
-      setAllSubmissions(
-        getAllSubmissionsForAssignmentAndUser(
-          params.assignmentId,
-          profile.user_id
-        )
-      );
+      const latestSubmission = await getLatestSubmission(params.assignmentId, profile.user_id);
+      const allSubmissions = await getAllSubmissionsForAssignmentAndUser(params.assignmentId, profile.user_id);
+      setLatestSubmission(latestSubmission);
+      setAllSubmissions(allSubmissions);
     } else if (profile) {
-      setLatestSubmission(getLatestSubmissionForUser(params.userId));
-      setAllSubmissions(
-        getAllSubmissionsForAssignmentAndUser(
-          params.assignmentId,
-          params.userId
-        )
-      );
+      const latestSubmission = await getLatestSubmissionForUser(params.userId);
+      const allSubmissions = await getAllSubmissionsForAssignmentAndUser(params.assignmentId, params.userId);
+      setLatestSubmission(latestSubmission);
+      setAllSubmissions(allSubmissions);
     }
-  }, [assignments, params.assignmentId]);
+  };
+
+  fetchSubmissions();
+}, [assignments, params.assignmentId, profile, params.userId]);
 
   useEffect(() => {
     if (latestSubmission) {

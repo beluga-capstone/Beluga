@@ -1,5 +1,5 @@
 import { Submission } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -39,6 +39,21 @@ const loadSubmissionsFromStorage = async (): Promise<Submission[]> => {
   );
 };
 
+const makeSubmissionList = async (res: Response): Promise<Submission[]> => {
+  const submissions = await res.json();
+  const itemList = submissions.map(submission => ({
+    submissionId: submission.submission_id,
+    userId: submission.user_id,
+    assignmentId: submission.assignment_id,
+    submissionDate: submission.submissionDate,
+    grade: submission.grade,
+    status: submission.status,
+    data: submission.data,
+  }));
+
+  return itemList
+}
+
 const saveSubmissionsToStorage = async (submissions: Submission[]) => {
   const submissionsWithBase64 = await Promise.all(
     submissions.map(async (submission) => ({
@@ -77,8 +92,19 @@ export const useSubmissions = () => {
 
   useEffect(() => {
     const loadSubmissions = async () => {
-      const loadedSubmissions = await loadSubmissionsFromStorage();
-      setSubmissions(loadedSubmissions);
+      //const loadedSubmissions = await loadSubmissionsFromStorage();
+      // setSubmissions(loadedSubmissions);
+      const response = await fetch("http://localhost:5000/submissions", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+      if (!response.ok) {
+      throw new Error(`Error: ${response.status} - ${response.statusText}`);
+    }
+    const submissions = await makeSubmissionList(response)
+    setSubmissions(submissions)
     };
     loadSubmissions();
   }, []);
@@ -101,54 +127,133 @@ export const useSubmissions = () => {
     saveSubmissionsToStorage(newSubmissions);
   };
 
+  const getAllSubmissionPerUser = async (userID: string): Promise<Submission[]> => {
+    const loadSubmissions = async () => {
+      const response = await fetch(`http://localhost:5000/submissions/user/${userID}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+      }
+      return await makeSubmissionList(response)
+    }
+    return loadSubmissions()
+
+  }
+
   const getLatestSubmission = (
     assignmentId: string,
     userId: string
-  ): Submission | null => {
-    const userSubmissions = submissions.filter(
-      (submission) =>
-        submission.assignment_id === assignmentId &&
-        submission.user_id === userId
-    );
+  ):Promise<Submission | null> => {
 
-    if (userSubmissions.length === 0) return null;
+    // const userSubmissions = submissions.filter(
+    //   (submission) =>
+    //     submission.assignment_id === assignmentId &&
+    //     submission.user_id === userId
+    // );
 
-    return userSubmissions.reduce((latest, current) =>
-      new Date(latest.submitted_at) > new Date(current.submitted_at)
-        ? latest
-        : current
-    );
+   const fetchSubmissions = (): Promise<Submission> => {
+    return fetch(
+      `http://localhost:5000/submissions/user/${userId}/assignment/${assignmentId}/latest`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch submissions: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        const submissions = makeSubmissionList(data); // Ensure makeSubmissionList is defined
+        return submissions.length > 0 ? submissions[0] : null;
+      })
+      .catch((error) => {
+        console.error("Error in fetching submissions:", error);
+        return [];
+      });
   };
 
-  const getLatestSubmissionForUser = (userId: string): Submission | null => {
-    const userSubmissions = submissions.filter(
-      (submission) => submission.user_id === userId
-    );
+  return fetchSubmissions();
 
-    if (userSubmissions.length === 0) return null;
+  }
 
-    return userSubmissions.reduce((latest, current) =>
-      new Date(latest.submitted_at) > new Date(current.submitted_at)
-        ? latest
-        : current
-    );
+
+  const getLatestSubmissionForUser = (userId: string): Promise<Submission | null> => {
+    // const userSubmissions = submissions.filter(
+    //   (submission) => submission.user_id === userId
+    // );
+
+    const userSubmissionsFunc = (): Promise<Submission | null> => {
+    return fetch(`http://localhost:5000/submissions/user/${userId}/latest`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch submissions: ${res.status}`);
+        }
+        return res.json(); // Assuming `makeSubmissionList` expects parsed JSON
+      })
+      .then((data) => {
+        const submissions = makeSubmissionList(data); // Ensure makeSubmissionList is defined
+        return submissions.length > 0 ? submissions[0] : null;
+      })
+      .catch((error) => {
+        console.error("Error fetching latest submission:", error);
+        return null;
+      });
   };
 
-  const getAllSubmissionsForAssignmentAndUser = (
-    assignmentId: string,
-    userId: string
-  ): Submission[] => {
-    const userSubmissions = submissions.filter(
-      (submission) =>
-        submission.assignment_id === assignmentId &&
-        submission.user_id === userId
-    );
+  return userSubmissionsFunc();
 
-    return userSubmissions.sort(
+  };
+
+const getAllSubmissionsForAssignmentAndUser = (
+  assignmentId: string,
+  userId: string
+): Promise<Submission[]> => {
+  const fetchSubmissions = (): Promise<Submission[]> => {
+    return fetch(
+      `http://localhost:5000/submissions/search?assignment_id=${assignmentId}&user_id=${userId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch submissions: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        return makeSubmissionList(data);
+      })
+      .catch((error) => {
+        console.error("Error in getAllSubmissionsForAssignmentAndUser:", error);
+        return [];
+      });
+  };
+
+  return fetchSubmissions().then((submissions) => {
+    return submissions.sort(
       (a, b) =>
         new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime()
     );
-  };
+  });
+};
 
   const setGrade = (submissionId: string, grade: number) => {
     const updatedSubmissions = submissions.map((submission) =>
@@ -170,14 +275,30 @@ export const useSubmissions = () => {
     saveSubmissionsToStorage(updatedSubmissions);
   };
 
-  const getSubmissionCountForAssignment = (assignmentId: string): number => {
-    const uniqueUsers = new Set(
-      submissions
-        .filter((submission) => submission.assignment_id === assignmentId)
-        .map((submission) => submission.user_id)
-    );
-    return uniqueUsers.size;
-  };
+  const getSubmissionCountForAssignment = useCallback(
+    async (assignmentId: string): Promise<number> => {
+      try {
+        const res = await fetch(`http://localhost:5000/submissions/assignment/${assignmentId}/count`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Failed to fetch submission count: ${res.status}`);
+        }
+
+        const data = await res.json();
+        return data.submission_count;
+      } catch (error) {
+        console.error("Error in getSubmissionCountForAssignment:", error);
+        return 0;
+      }
+    },
+    [] // Empty array means the function will be memoized and only created once
+  );
+
 
   return {
     submissions,
