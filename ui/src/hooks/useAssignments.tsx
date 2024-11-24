@@ -8,7 +8,7 @@ export const useAssignments = () => {
 
   const fetchAssignments = async () => {
     try {
-      const response = await fetch('http://localhost:5000/assignments');
+      const response = await fetch(`${process.env.backend}/assignments`);
       if (!response.ok) {
         throw new Error('Failed to fetch assignments');
       }
@@ -39,7 +39,7 @@ export const useAssignments = () => {
   // add an assignment to the db
   const saveAssignment = async (newAssignment: Assignment) => {
     try {
-      const response = await fetch('http://localhost:5000/assignments', {
+      const response = await fetch(`${process.env.backend}/assignments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ export const useAssignments = () => {
     console.log("updating with",assignment_id,course_id,title,description,due_at,lock_at,unlock_at,docker_image_id)
 
     try {
-      const response = await fetch(`http://localhost:5000/assignments/${assignment_id}`, {
+      const response = await fetch(`${process.env.backend}/assignments/${assignment_id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -140,7 +140,7 @@ export const useAssignments = () => {
 
   const deleteAssignment = async (assignmentId: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`, {
+      const response = await fetch(`${process.env.backend}/assignments/${assignmentId}`, {
         method: 'DELETE',
       });
 
@@ -161,7 +161,7 @@ export const useAssignments = () => {
     try {
       const updatedAssignment = { isPublished };
 
-      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}/publish`, {
+      const response = await fetch(`${process.env.backend}/assignments/${assignmentId}/publish`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -190,7 +190,7 @@ export const useAssignments = () => {
     try {
       const updatedAssignment = { allowsLateSubmissions };
 
-      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}/late-submissions`, {
+      const response = await fetch(`${process.env.backend}/assignments/${assignmentId}/late-submissions`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

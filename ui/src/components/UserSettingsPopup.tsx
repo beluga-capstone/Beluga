@@ -9,7 +9,7 @@ export default function UserSettingsPopup({
 }: UserSettingsPopupProps) {
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://localhost:5000/auth/logout', {
+      const response = await fetch(`${process.env.backend}/auth/logout`, {
         method: 'GET',
         credentials: 'include', // Include cookies
       });

@@ -12,7 +12,7 @@ export const useImages = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:5000/assignments/search?docker_image_id=${docker_image_id}`);
+      const response = await fetch(`${process.env.backend}/assignments/search?docker_image_id=${docker_image_id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch docker image id');
       }
@@ -31,7 +31,7 @@ export const useImages = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:5000/images');
+      const response = await fetch(`${process.env.backend}/images`);
       if (!response.ok) {
         throw new Error('Failed to fetch images');
       }
@@ -51,7 +51,7 @@ export const useImages = () => {
 
   const editImage = async (updatedImage: Image) => {
     try {
-      const response = await fetch(`http://localhost:5000/images/${updatedImage.docker_image_id}`, {
+      const response = await fetch(`${process.env.backend}/images/${updatedImage.docker_image_id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ export const useImages = () => {
 
   const deleteImage = async (docker_image_id: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/images/${docker_image_id}`, {
+      const response = await fetch(`${process.env.backend}/images/${docker_image_id}`, {
         method: 'DELETE',
       });
 
@@ -112,7 +112,7 @@ export const useImages = () => {
     try {
       await Promise.all(
         selectedImageIds.map(docker_image_id =>
-          fetch(`http://localhost:5000/images/${docker_image_id}`, {
+          fetch(`${process.env.backend}/images/${docker_image_id}`, {
             method: 'DELETE',
           })
         )
