@@ -38,12 +38,8 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
   const router = useRouter();
   const { profile } = useProfile();
   const { assignments } = useAssignments();
-  const {
-    runContainer,
-    startContainer,
-    stopContainer,
-    checkContainerExists,
-  } = useContainers();
+  const { runContainer, startContainer, stopContainer, checkContainerExists } =
+    useContainers();
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [containerName, setContainerName] = useState<string | null>(null);
@@ -55,7 +51,6 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
   const [zipFile, setZipFile] = useState<File | null>(null);
   const [socketPort, setSocketPort] = useState<number | null>(null);
   const [sshPort, setSshPort] = useState<number | null>(null);
-
 
   const { imageData } = useImageData(assignment?.docker_image_id ?? null);
 
@@ -80,7 +75,8 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
         setContainerName(name);
 
         try {
-          const { exists, appPort, sshPort, status } = await checkContainerExists(name);
+          const { exists, appPort, sshPort, status } =
+            await checkContainerExists(name);
           if (exists && appPort) {
             // Extract the ports
             setSocketPort(appPort);
@@ -88,12 +84,12 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
             setContainerStatus(status === "running" ? "running" : "stopped");
           } else {
             setContainerStatus("none");
-          } 
+          }
         } catch (error) {
           console.error("Error checking container:", error);
           toast.error("Failed to check container status");
         }
-      } 
+      }
     };
 
     initializeAssignment();
@@ -105,7 +101,9 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
     const checkStatus = async () => {
       try {
-        const { exists, appPort, sshPort, status } = await checkContainerExists(containerName);
+        const { exists, appPort, sshPort, status } = await checkContainerExists(
+          containerName
+        );
         if (exists) {
           setContainerStatus(status === "running" ? "running" : "stopped");
           setSocketPort(appPort);
@@ -142,7 +140,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
           const result = await runContainer(
             assignment?.docker_image_id ?? null,
             containerName,
-            assignment?.description??null
+            assignment?.description ?? null
           );
           if (result) {
             setSocketPort(result.appPort);
@@ -159,7 +157,8 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
           // Start container
           await startContainer(containerName);
           setContainerStatus("running");
-          const { exists, appPort, sshPort, status } = await checkContainerExists(containerName);
+          const { exists, appPort, sshPort, status } =
+            await checkContainerExists(containerName);
           if (exists) {
             setSocketPort(appPort);
             setSshPort(sshPort);
@@ -180,28 +179,19 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
       router.refresh();
     } catch (error) {
       console.error("Container action failed:", error);
-      toast.error(`Failed to ${
-        containerStatus === "none" 
-          ? "create" 
-          : containerStatus === "running" 
-            ? "stop" 
+      toast.error(
+        `Failed to ${
+          containerStatus === "none"
+            ? "create"
+            : containerStatus === "running"
+            ? "stop"
             : "start"
-      } container`);
+        } container`
+      );
     } finally {
       setIsProcessing(false);
     }
   };
-
-  const renderDescription = () => {
-      if (!assignment?.description) return null;
-      return assignment.description.split("\n").map((line, index) => (
-        <span key={index}>
-          {line}
-          <br />
-        </span>
-      ));
-    };
-
 
   const renderContainerButton = () => {
     if (!assignment?.docker_image_id) return null;
@@ -209,7 +199,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
     let buttonConfig = {
       text: "Create Container",
       bgColor: "bg-blue-500",
-      loadingText: "Creating..."
+      loadingText: "Creating...",
     };
 
     switch (containerStatus) {
@@ -217,14 +207,14 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
         buttonConfig = {
           text: "Start Container",
           bgColor: "bg-green-500",
-          loadingText: "Starting..."
+          loadingText: "Starting...",
         };
         break;
       case "running":
         buttonConfig = {
           text: "Stop Container",
           bgColor: "bg-red-500",
-          loadingText: "Stopping..."
+          loadingText: "Stopping...",
         };
         break;
     }
@@ -279,7 +269,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
         </div>
       );
     }
-  }
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -313,19 +303,21 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
           </h2>
 
           {assignment?.description && (
-            <h2 className="font-bold pb-4">
-              Description: {renderDescription()}
-            </h2>
+            <div className="font-bold pb-4">
+              <h2>Description:</h2>
+              {assignment.description.split("\n").map((line, index) => (
+                <p key={index} className="mt-2">
+                  {line}
+                </p>
+              ))}
+            </div>
           )}
 
           <h2 className="font-bold pb-4">
-            {assignment?.docker_image_id
-              ? `Image name: ${imageName}`
-              : null}
+            {assignment?.docker_image_id ? `Image name: ${imageName}` : null}
           </h2>
           <p className="text-lg">Socket Port: {socketPort ?? "N/A"}</p>
           <p className="text-lg">SSH Port: {sshPort ?? "N/A"}</p>
-
 
           {renderContainerButton()}
         </div>
