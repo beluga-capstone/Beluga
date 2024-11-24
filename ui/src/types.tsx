@@ -21,12 +21,14 @@ export interface Profile {
 export interface Course {
   id: number;
   name: string;
-  section: number;
   term: string;
+  term_id?: string;
+  user_id?: string;
   studentsEnrolled: number;
   isPublished: boolean;
   professor: string;
 }
+
 
 export interface Student {
   id: number;

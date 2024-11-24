@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 interface Course {
+  user_id: any;
   id: number;
   name: string;
   section: number;
@@ -22,13 +23,12 @@ export const useDashboard = () => {
       const transformedCourses = data.map((course: any) => ({
         id: course.course_id,
         name: course.name,
-        section: course.section || 0,
         term: course.term_id || "Unknown Term",
+        user_id: course.user_id,
         studentsEnrolled: course.studentsEnrolled || 0,
         isPublished: course.publish || false,
         professor: course.professor || "Unknown",
       }));
-  
       setCourses(transformedCourses);
     } catch (error) {
       console.error("Error fetching courses:", error);
