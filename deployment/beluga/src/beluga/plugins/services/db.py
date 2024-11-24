@@ -26,7 +26,7 @@ class DB:
         db = self._workspace.services.db
         cmd = textwrap.dedent(
             f"""
-            docker container rm -rf {db.name}
+            docker container rm -f {db.name}
             """
         )
         run.context.run_cmd(cmd, shell=True)
