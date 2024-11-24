@@ -12,6 +12,7 @@ def main():
     from beluga.plugins.coreos.cli import CoreOS
     from beluga.plugins.virtualbox.cli import VirtualBox
     from beluga.plugins.network.cli import Nginx, Ssh
+    from beluga.plugins.docker.cli import Docker
     
     # initialize cli
     args = beluga_cli.parser.parse_args()

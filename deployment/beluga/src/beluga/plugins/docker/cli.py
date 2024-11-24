@@ -23,7 +23,7 @@ class Docker(Beluga):
         self._docker = docker.Docker(self._workspace)
 
     @cli_group.option(
-        "--deploy", "-d", help="type of service to deploy", choices=DeployType
+        "--deploy-type", "-d", help="type of service to deploy", choices=DeployType
     )
     @cli_group.command()
     def deploy(self, deploy_type: DeployType):
