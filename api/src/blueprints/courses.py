@@ -20,7 +20,7 @@ def create_course():
         user_id=data.get('user_id'),
         description=data.get('description'),
         publish=data.get('publish', False),
-        start_at=data.get('start_at'),
+        start_at=data.get('start_at') or datetime.now(),
         term_id=data.get('term_id')
     )
 
