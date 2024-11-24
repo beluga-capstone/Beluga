@@ -7,6 +7,24 @@ interface UserSettingsPopupProps {
 export default function UserSettingsPopup({
   setMenuIsOpen,
 }: UserSettingsPopupProps) {
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/auth/logout', {
+        method: 'GET',
+        credentials: 'include', // Include cookies
+      });
+
+      if (response.ok) {
+        // Redirect to login or home after logout
+        window.location.href = '/';
+      } else {
+        console.error('Failed to log out', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error during logout', error);
+    }
+  };
+
   return (
     <div className="absolute right-0 mt-2 w-48 bg-background shadow-lg rounded-md z-50">
       <ul className="py-2 text-sm">
@@ -29,13 +47,15 @@ export default function UserSettingsPopup({
           </Link>
         </li>
         <li>
-          <Link
-            href="/logout"
-            onClick={() => setMenuIsOpen(false)}
-            className="block px-4 py-2 hover:bg-surface"
+          <button
+            onClick={() => {
+              setMenuIsOpen(false);
+              handleLogout();
+            }}
+            className="block w-full text-left px-4 py-2 hover:bg-surface"
           >
             Logout
-          </Link>
+          </button>
         </li>
       </ul>
     </div>

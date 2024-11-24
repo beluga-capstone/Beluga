@@ -22,7 +22,8 @@ export const useProfile = () => {
       role_id: data['role_id'],
       user_id:data['user_id'],
       created_at:data['created_at'],
-      updated_at:data['updated_at']
+      updated_at:data['updated_at'],
+      private_key:data['private_key']
     } 
 
     setProfile(profile);
