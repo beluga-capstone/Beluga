@@ -9,7 +9,7 @@ import {
 } from "./types";
 
 export const ROLES = {
-  ADMIN: 8,
+  ADMIN: 1,
   PROFESSOR: 2,
   TA: 4,
   STUDENT: 2,
