@@ -108,6 +108,36 @@ class VirtualMachines:
         return [self.registry, self.container]
 
 
+@dataclass(kw_only=True, slots=True)
+class DB:
+    name: str
+    pwd: str
+    db: str
+    port: int
+
+
+@dataclass(kw_only=True, slots=True)
+class API:
+    port: int
+
+
+@dataclass(kw_only=True, slots=True)
+class UI:
+    port: int
+
+
+@dataclass(kw_only=True, slots=True)
+class Services:
+    db: DB
+    api: API
+    ui: UI
+
+    def __post_init__(self):
+        self.db = DB(**self.db)
+        self.api = API(**self.api)
+        self.ui = UI(**self.ui)
+
+
 class WorkspaceSchema:
     __slots__ = ("remote", "__dict__")
 
@@ -116,6 +146,7 @@ class WorkspaceSchema:
     network: Network = Network
     nginx: Nginx = Nginx
     virtual_machines: VirtualMachines = VirtualMachines
+    services: Services = Services
 
     def __init__(self, project_path: Path):
         with project_path.joinpath("workspace.toml").open("rb") as f:
