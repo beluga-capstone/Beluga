@@ -3,6 +3,7 @@ from flask_login import LoginManager
 from flask import Flask
 from datetime import datetime
 
+from src.util.util import create_ssh_key_pair
 from src.util.db import db, User
 from config import config_options
 from flask_socketio import SocketIO
@@ -16,6 +17,9 @@ ADMIN_ID='dd85014a-edad-4298-b9c6-808268b3d15e'
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
+
+#@login_manager.request_loader
+#def load_user_from_request(request): return User.query.get(ADMIN_ID)
 
 
 def create_app(config_name="default"):
@@ -73,7 +77,14 @@ def init_admin_user():
         )
         db.session.add(admin_user)
         db.session.commit()
-    
+
+        # Generate SSH key pair for the admin user
+        key_paths = create_ssh_key_pair(ADMIN_ID)
+        if key_paths:
+            print(f"SSH keys created for admin user: {key_paths}")
+        else:
+            print("Failed to create SSH keys for admin user.")
+
 def init_roles():
     from src.util.db import Role
     # List of default roles to be added
@@ -143,6 +154,7 @@ def create_example_course():
     course = Course.query.filter_by(name="Introduction to Programming").first()
     if not course:
         course = Course(
+            course_id="1f3999da-09c1-4e6b-898b-139d417cddac",
             name="Introduction to Programming",
             user_id=instructor.user_id,
             description="An introductory course on programming concepts and Python.",
@@ -167,6 +179,7 @@ def init_default_images():
             'dockerfile': 'Dockerfile',
             'image_tag': 'beluga_base_ubuntu',
             'description': 'Base image for ubuntu machines',
+            'packages':"",
             'user_id': ADMIN_ID
         },
         {
@@ -174,6 +187,7 @@ def init_default_images():
             'dockerfile': 'Dockerfile',
             'image_tag': 'beluga_base_fedora',
             'description': 'Base image for fedora machines',
+            'packages':"",
             'user_id': ADMIN_ID
         },
     ]
@@ -198,7 +212,8 @@ def init_default_images():
             new_image = Image(
                 docker_image_id=image.id,
                 description=image_info['description'],
-                user_id=image_info['user_id']
+                user_id=image_info['user_id'],
+                packages=image_info['packages'],
             )
             db.session.add(new_image)
             db.session.commit()

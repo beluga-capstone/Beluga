@@ -16,6 +16,7 @@ export interface Profile {
   user_id:string;
   created_at:string;
   updated_at:string;
+  private_key:string;
 }
 
 export interface Course {
@@ -52,20 +53,17 @@ export interface Assignment {
 }
 
 export interface Container {
-  id: number;
-  name: string;
-  status: "running" | "paused" | "stopped";
-  launchTime: string;
-  image: Image;
-  cpuCores: number;
-  memoryGBs: number;
-  storageGBs: number;
+  docker_container_id: string,
+  docker_container_name:string,
+  user_id: string,
+  description: string,
 }
 
 export interface Image {
   docker_image_id: string;
   user_id: string;
   description: string;
+  packages:string;
 }
 
 export interface User {
@@ -74,5 +72,5 @@ export interface User {
   lastName: string;
   middleName?: string;
   email: string;
-  role: string;
+  role: number;
 }

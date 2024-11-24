@@ -122,13 +122,13 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
       <div className="pt-2 pb-8">
         <select
           title="Image"
-          value={imageId}
+          value={imageId??""}
           onChange={(e) => setImageId(e.target.value)} 
           className="border rounded p-1 bg-surface"
         >
           <option value={-1}>Select an image</option>
           {images.map((image) => (
-            <ImageOption image={image}/>
+            <ImageOption key={image.docker_image_id} image={image}/>
           ))}
         </select>
       </div>

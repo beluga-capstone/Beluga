@@ -1,330 +1,343 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowUpFromLine, Edit2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+
 import Button from "@/components/Button";
 import SubmissionZone from "@/components/SubmissionZone";
+import ContainerPageTerminal from "@/components/ContainerPageTerminal";
 import { ROLES } from "@/constants";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useProfile } from "@/hooks/useProfile";
-import { ArrowUpFromLine, Edit2, Loader2 } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import ContainerPageTerminal from "@/components/ContainerPageTerminal";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { Assignment } from "@/types";
+import { useContainers } from "@/hooks/useContainers";
 import { useImageData } from "@/hooks/useImageData";
+import { Assignment } from "@/types";
 
-// Function to format the date
-const format_date = (date: string) =>
+const formatDate = (date: string) =>
   new Date(date).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
 
-const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
+const normalizeDockerName = (name: string) => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9_.-]+/g, "_")
+    .replace(/^[_.-]+|[_.-]+$/g, "");
+};
+
+interface AssignmentPageProps {
+  params: { assignmentId: string };
+}
+
+const AssignmentPage = ({ params }: AssignmentPageProps) => {
+  const router = useRouter();
   const { profile } = useProfile();
   const { assignments } = useAssignments();
-  const [isContainerRunning, setIsContainerRunning] = useState(false);
-  const [containerPort, setContainerPort] = useState<number | null>(null);
+  const {
+    runContainer,
+    startContainer,
+    stopContainer,
+    checkContainerExists,
+  } = useContainers();
+
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [containerName, setContainerName] = useState<string | null>(null);
+  const [containerStatus, setContainerStatus] = useState<string>("none"); // "none" | "created" | "running" | "stopped"
+  const [isProcessing, setIsProcessing] = useState(false);
   const [imageName, setImageName] = useState<string | null>(null);
-  const router = useRouter();
-
-  // New state for container stop loading
-  const [isStoppingContainer, setIsStoppingContainer] = useState(false);
-  const [isRunningContainer, setIsRunningContainer] = useState(false);
-
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
   const [zipFile, setZipFile] = useState<File | null>(null);
+  const [socketPort, setSocketPort] = useState<number | null>(null);
+  const [sshPort, setSshPort] = useState<number | null>(null);
 
-  const checkContainerExists = async (containerName: string) => {
-    try {
-      const response = await fetch(
-        `http://localhost:5000/containers/${containerName}`,
-        {
-          method: "GET",
-        }
-      );
-      const data = await response.json();
-
-      if (response.ok) {
-        console.log("Container exists");
-        return { exists: true, port: data.port }; 
-      } else {
-        console.log("Container does not exist");
-        return { exists: false, port: 0 };  
-      }
-    } catch (error) {
-      console.error("Error checking container existence:", error);
-      return { exists: false, port: 0 };
-    }
-  };
-
-  const normalizeDockerName = (name: string) => {
-    return name
-      .toLowerCase() // Convert to lowercase
-      .replace(/[^a-z0-9_.-]+/g, "_") // Replace invalid characters with '_'
-      .replace(/^[_.-]+|[_.-]+$/g, ""); // Remove leading or trailing '_', '.', '-'
-  };
-
-  // get the assignment and check if the container is running on startup
-  useEffect(() => {
-    const { assignmentId } = params;  
-    if (assignmentId) {
-      const found = assignments.find(
-        (assignment) =>
-          assignment.assignment_id === params.assignmentId
-      );
-      setAssignment(found || null);
-
-      const name = normalizeDockerName(`${found?.title}_con`);
-      setContainerName(name);
-
-      // check if container exist
-      if (found && name) {
-        const check_exist_startup = async() =>{
-          if (!name) return;
-          let {exists, port}= await checkContainerExists(name);
-          if (exists) {
-            setIsContainerRunning(true);
-            setContainerPort(port);
-          }
-        };
-        check_exist_startup();
-      }
-    }
-  }, [assignments, params]);
 
   const { imageData } = useImageData(assignment?.docker_image_id ?? null);
 
   useEffect(() => {
-    if (!assignment) return;
+    const intervalId = setInterval(() => {
+      router.refresh();
+    }, 5000);
 
-    const name = normalizeDockerName(`${assignment.title}_con`);
-    setContainerName(name);
+    return () => clearInterval(intervalId);
+  }, [router]);
 
-    const checkContainer = async () => {
-      if (!name) return;
-      const { exists, port } = await checkContainerExists(name);
-      if (exists) {
-        setIsContainerRunning(true);
-        setContainerPort(port);
+  // Initialize container and check status
+  useEffect(() => {
+    const initializeAssignment = async () => {
+      const foundAssignment = assignments.find(
+        (a) => a.assignment_id === params.assignmentId
+      );
+
+      if (foundAssignment) {
+        setAssignment(foundAssignment);
+        const name = normalizeDockerName(`${foundAssignment.title}_con`);
+        setContainerName(name);
+
+        try {
+          const { exists, appPort, sshPort, status } = await checkContainerExists(name);
+          if (exists && appPort) {
+            // Extract the ports
+            setSocketPort(appPort);
+            setSshPort(sshPort);
+            setContainerStatus(status === "running" ? "running" : "stopped");
+          } else {
+            setContainerStatus("none");
+          } 
+        } catch (error) {
+          console.error("Error checking container:", error);
+          toast.error("Failed to check container status");
+        }
+      } 
+    };
+
+    initializeAssignment();
+  }, [assignments, params.assignmentId]);
+
+  // Set up periodic status checking
+  useEffect(() => {
+    if (!containerName) return;
+
+    const checkStatus = async () => {
+      try {
+        const { exists, appPort, sshPort, status } = await checkContainerExists(containerName);
+        if (exists) {
+          setContainerStatus(status === "running" ? "running" : "stopped");
+          setSocketPort(appPort);
+          setSshPort(sshPort);
+        } else {
+          setContainerStatus("none");
+          setSocketPort(null);
+          setSshPort(null);
+        }
+      } catch (error) {
+        console.error("Error checking container status:", error);
       }
     };
 
-    checkContainer();
-  }, [assignment]);
+    const intervalId = setInterval(checkStatus, 30000);
+    return () => clearInterval(intervalId);
+  }, [containerName, checkContainerExists]);
 
-  useEffect(()=>{
+  useEffect(() => {
     if (imageData?.tag?.[0]) {
       setImageName(imageData.tag[0]);
     }
-  },[imageData]);
+  }, [imageData]);
 
-  const runContainer = async (imageId: string|null) => {
-    if (!imageId) return;
-    
-    setIsRunningContainer(true);
+  const handleContainerAction = async () => {
+    if (isProcessing || !containerName) return;
+
+    setIsProcessing(true);
 
     try {
-      // If container not exist, create a new container
-      const response = await fetch("http://localhost:5000/containers", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          container_name: containerName,
-          docker_image_id: imageId,
-          user_id: profile?.user_id,
-        }),
-      });
+      switch (containerStatus) {
+        case "none":
+          // Create container
+          const result = await runContainer(
+            assignment?.docker_image_id ?? null,
+            containerName,
+            assignment?.description??null
+          );
+          if (result) {
+            setSocketPort(result.appPort);
+            setSshPort(result.sshPort);
+            setContainerStatus("running");
+            toast.success("Container created successfully");
+            router.refresh();
+          } else {
+            throw new Error("Failed to create the container");
+          }
+          break;
 
-      const data = await response.json();
+        case "stopped":
+          // Start container
+          await startContainer(containerName);
+          setContainerStatus("running");
+          const { exists, appPort, sshPort, status } = await checkContainerExists(containerName);
+          if (exists) {
+            setSocketPort(appPort);
+            setSshPort(sshPort);
+          }
+          toast.success("Container started successfully");
+          router.refresh();
+          break;
 
-      if (response.ok) {
-        setContainerPort(data.port);
-        setIsContainerRunning(true);
-        //alert(`Container started successfully on port ${data.port}`);
-      } else {
-        //alert(`Error starting container: ${data.error}`);
-        console.error("error starting container");
+        case "running":
+          // Stop container
+          await stopContainer(containerName);
+          setContainerStatus("stopped");
+          setSocketPort(null);
+          setSshPort(null);
+          toast.success("Container stopped successfully");
+          break;
       }
+      router.refresh();
     } catch (error) {
-      console.error("Error running container:", error);
-      //alert("An error occurred while starting the container.");
+      console.error("Container action failed:", error);
+      toast.error(`Failed to ${
+        containerStatus === "none" 
+          ? "create" 
+          : containerStatus === "running" 
+            ? "stop" 
+            : "start"
+      } container`);
     } finally {
-      setIsRunningContainer(false);
+      setIsProcessing(false);
     }
   };
 
-  const stopContainer = async (containerName: string |null)=> {
-    if (!containerName) return;
-    
-    // Set loading state before making the request
-    setIsStoppingContainer(true);
+  const renderDescription = () => {
+      if (!assignment?.description) return null;
+      return assignment.description.split("\n").map((line, index) => (
+        <span key={index}>
+          {line}
+          <br />
+        </span>
+      ));
+    };
 
-    try {
-      const response = await fetch(`http://localhost:5000/containers/${containerName}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
 
-      if (response.ok) {
-        setIsContainerRunning(false);
-        setContainerPort(null);
-        //alert("Container stopped successfully.");
-        router.refresh();
-      } else {
-        const data = await response.json();
-        //alert(`Error stopping container: ${data.error}`);
-      }
-    } catch (error) {
-      console.error("Error stopping container:", error);
-      //alert("An error occurred while stopping the container.");
-    } finally {
-      // Always reset loading state
-      setIsStoppingContainer(false);
+  const renderContainerButton = () => {
+    if (!assignment?.docker_image_id) return null;
+
+    let buttonConfig = {
+      text: "Create Container",
+      bgColor: "bg-blue-500",
+      loadingText: "Creating..."
+    };
+
+    switch (containerStatus) {
+      case "stopped":
+        buttonConfig = {
+          text: "Start Container",
+          bgColor: "bg-green-500",
+          loadingText: "Starting..."
+        };
+        break;
+      case "running":
+        buttonConfig = {
+          text: "Stop Container",
+          bgColor: "bg-red-500",
+          loadingText: "Stopping..."
+        };
+        break;
     }
+
+    return (
+      <Button
+        className={`${buttonConfig.bgColor} text-white px-4 py-2 mb-4 rounded`}
+        onClick={handleContainerAction}
+        disabled={isProcessing}
+      >
+        {isProcessing ? (
+          <div className="flex items-center">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {buttonConfig.loadingText}
+          </div>
+        ) : (
+          buttonConfig.text
+        )}
+      </Button>
+    );
   };
+
+  const handleSubmit = () => {
+    setSubmissionWindowIsOpen(false);
+    setSubmitIsEnabled(false);
+    console.log("Submitting file:", zipFile);
+  };
+
+  const renderSubmissionControls = () => {
+    if (!profile || profile.role_id !== ROLES.STUDENT) return null;
+
+    if (submissionWindowIsOpen) {
+      return (
+        <div className="flex">
+          <div className="px-2">
+            <Button
+              className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
+              onClick={() => setSubmissionWindowIsOpen(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+          <div className="px-2">
+            <Button
+              className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+              onClick={handleSubmit}
+              disabled={!submitIsEnabled || !zipFile}
+            >
+              Submit
+            </Button>
+          </div>
+        </div>
+      );
+    }
+  }
 
   return (
     <div className="container mx-auto p-4">
-      {/* Overlay when stopping container */}
-      {isStoppingContainer && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-gray-500 p-6 rounded-lg shadow-xl flex items-center">
-            <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-            <p>Stopping container...</p>
-          </div>
-        </div>
-      )}
-
-      <div
-        className={`mb-8 flex items-center ${
-          profile?.role_id === ROLES.STUDENT ? "justify-between" : ""
-        }`}
-      >
+      <div className="mb-8 flex items-center justify-between">
         <h1 className="font-bold text-4xl">{assignment?.title}</h1>
-        {profile?.role_id !== ROLES.STUDENT && (
+        {profile?.role_id !== ROLES.STUDENT ? (
           <Link
             href={`/assignments/edit/${assignment?.assignment_id}`}
             className="px-6"
           >
             <Edit2 size={24} />
           </Link>
+        ) : (
+          renderSubmissionControls()
         )}
-        {profile?.role_id === ROLES.STUDENT &&
-          (submissionWindowIsOpen ? (
-            <div className="flex">
-              <div className="px-2">
-                <Button
-                  className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
-                  onClick={() => setSubmissionWindowIsOpen(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-              <div className="px-2">
-                <Button
-                  className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-                  onClick={() => {
-                    setSubmissionWindowIsOpen(false);
-                    setSubmitIsEnabled(false);
-                    console.log(zipFile);
-                  }}
-                  disabled={!submitIsEnabled || !zipFile}
-                >
-                  Submit
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <Button
-              className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-              onClick={() => setSubmissionWindowIsOpen(true)}
-            >
-              <ArrowUpFromLine className="mr-2" /> Upload Files
-            </Button>
-          ))}
       </div>
 
       <div className="flex justify-between items-center">
-        <div className="flex-row">
+        <div>
           <h2 className="font-bold pb-4">
             Due Date:{" "}
             {assignment?.due_at
-              ? format_date(assignment.due_at.toISOString())
+              ? formatDate(assignment.due_at.toISOString())
               : "not found"}
           </h2>
           <h2 className="font-bold pb-4">
             Available:{" "}
             {assignment?.publish_at
-              ? format_date(assignment.publish_at.toISOString())
+              ? formatDate(assignment.publish_at.toISOString())
               : "not found"}
           </h2>
 
           {assignment?.description && (
-            <h2 className="font-bold pb-4">Description:{" "}
-              {assignment?.description.split("\n").map((line, index) => (
-                <span key={index}>
-                  {line}
-                  <br />
-                </span>
-              ))}
+            <h2 className="font-bold pb-4">
+              Description: {renderDescription()}
             </h2>
           )}
 
           <h2 className="font-bold pb-4">
             {assignment?.docker_image_id
               ? `Image name: ${imageName}`
-              : null
-            }
+              : null}
           </h2>
+          <p className="text-lg">Socket Port: {socketPort ?? "N/A"}</p>
+          <p className="text-lg">SSH Port: {sshPort ?? "N/A"}</p>
 
-          {assignment?.docker_image_id ? (
-            <Button
-              className={`${
-                isContainerRunning ? "bg-red-500" : "bg-blue-500"
-              } text-white px-4 py-2 mb-4 rounded`}
-              onClick={() =>
-                isContainerRunning
-                  ? stopContainer(containerName)
-                  : runContainer(assignment.docker_image_id ?? null)
-              }
-              // Disable the button while stopping or running the container
-              disabled={isStoppingContainer || isRunningContainer}
-            >
-              {isStoppingContainer ? (
-                <div className="flex items-center">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Stopping...
-                </div>
-              ) : isRunningContainer ? (
-                <div className="flex items-center">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Starting...
-                </div>
-              ) : (
-                isContainerRunning ? "Stop Container" : "Run Container"
-              )}
-            </Button>
-          ):null}
+
+          {renderContainerButton()}
         </div>
       </div>
 
       <div className="flex justify-between items-center">
-      {assignment ? (
-        <ContainerPageTerminal 
-          isRunning={isContainerRunning}
-          containerPort={containerPort}
-        />
-      ) : null}
+        {assignment && (
+          <ContainerPageTerminal
+            isRunning={containerStatus === "running"}
+            containerPort={socketPort}
+          />
+        )}
       </div>
 
       {profile?.role_id !== ROLES.STUDENT && (

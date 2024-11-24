@@ -4,7 +4,8 @@ import { useState } from "react";
 import { User } from "@/types";
 
 const loadUsersFromStorage = (): User[] => {
-  const data = localStorage.getItem("users");
+  //const data = localStorage.getItem("users");
+  const data = "";
   if (data) {
     return JSON.parse(data);
   } else {
@@ -13,7 +14,7 @@ const loadUsersFromStorage = (): User[] => {
 };
 
 const saveUsersToStorage = (users: User[]) => {
-  localStorage.setItem("users", JSON.stringify(users));
+  //localStorage.setItem("users", JSON.stringify(users));
 };
 
 export const useUsers = () => {
@@ -30,7 +31,7 @@ export const useUsers = () => {
     lastname: string,
     middlename: string | undefined,
     email: string,
-    role: string
+    role: number
   ) => {
     const newUser: User = {
       id: Date.now(),
@@ -58,7 +59,7 @@ export const useUsers = () => {
     lastname: string,
     middlename: string | undefined,
     email: string,
-    role: string
+    role: number
   ) => {
     const updatedUser = {
       id: id,

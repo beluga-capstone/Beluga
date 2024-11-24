@@ -12,7 +12,7 @@ const AssignmentSubmissionsPage = ({
   const { assignments } = useAssignments();
   const assignment = assignments.find(
     (assignment) =>
-      assignment.assignmentId === parseInt(params.assignmentId, 10)
+      assignment.assignment_id === params.assignmentId
   );
   const submissionId = 1;
 
@@ -22,7 +22,7 @@ const AssignmentSubmissionsPage = ({
         <h1 className="font-bold text-4xl mb-6">{assignment?.title}</h1>
         <h2>
           Due:{" "}
-          {assignment?.dueAt.toLocaleDateString("en-US", {
+          {assignment?.due_at?.toLocaleDateString("en-US", {
             dateStyle: "short",
             timeZone: "UTC",
           })}
@@ -50,14 +50,14 @@ const AssignmentSubmissionsPage = ({
             <tr key={student.id}>
               <td>
                 <Link
-                  href={`/assignments/${assignment?.assignmentId}/submissions/${submissionId}`}
+                  href={`/assignments/${assignment?.assignment_id}/submissions/${submissionId}`}
                 >
                   {student.lastName}
                 </Link>
               </td>
               <td>
                 <Link
-                  href={`/assignments/${assignment?.assignmentId}/submissions/${submissionId}`}
+                  href={`/assignments/${assignment?.assignment_id}/submissions/${submissionId}`}
                 >
                   {student.firstName}
                 </Link>

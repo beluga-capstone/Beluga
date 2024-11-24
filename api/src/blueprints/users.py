@@ -123,10 +123,16 @@ def delete_user(user_id):
 def get_current_user():
     user = db.session.get(User, current_user.user_id)
     if user is None:
-        return jsonify({'error': 'User not found'}), 404        
+        return jsonify({'error': 'User not found'}), 404
 
-    private_key_path = os.path.join(current_app.config["BASE_KEY_PATH"], str(current_user.user_id), 'id_rsa')
-    
+    private_key_path = os.path.join(current_app.config["BASE_KEY_PATH"], str(user.user_id), 'id_rsa')
+
+    try:
+        with open(private_key_path, 'r') as f:
+            private_key = f.read().strip()
+    except FileNotFoundError:
+        private_key = None 
+        
     with open(private_key_path, 'r') as f:
         private_key = f.read().strip()
 

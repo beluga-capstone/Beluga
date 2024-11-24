@@ -11,6 +11,12 @@ def create_ssh_key_pair(user_id):
     
     try:
         os.makedirs(key_dir, exist_ok=True)
+        if os.path.exists(private_key_path) and os.path.exists(public_key_path):
+            print(f"SSH keys already exist for user_id {user_id}. Skipping key generation.")
+            return {
+                "private_key_path": private_key_path,
+                "public_key_path": public_key_path
+            }
         
         subprocess.run(
             ["ssh-keygen", "-t", "ed25519", "-f", private_key_path, "-q", "-N", ""],

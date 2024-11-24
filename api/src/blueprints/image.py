@@ -13,41 +13,35 @@ docker_client = docker.from_env()
 
 image_bp = Blueprint('image', __name__)
 
-# Create a new image (POST)
+
 @image_bp.route('/images', methods=['POST'])
-@professor_required
-def create_image():
-    data = request.get_json()
-    
-    if not data or not data.get('docker_image_id') or not data.get('user_id'):
-        return jsonify({'error': 'Docker Image ID and User ID are required'}), 400
-    
-    new_image = Image(
-        docker_image_id=data['docker_image_id'],
-        user_id=data['user_id'],
-        description=data.get('description')
-    )
-
-    try:
-        db.session.add(new_image)
-        db.session.commit()
-        return jsonify({'message': 'Image created successfully', 'docker_image_id': new_image.docker_image_id}), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-
-@image_bp.route('/images/build', methods=['POST'])
 @professor_required
 def build_image():
     data = request.get_json()
-    dockerfile_content = data['dockerfile_content']
+    if not isinstance(data, dict):
+        return jsonify({'error': 'Invalid JSON data'}), 400
+    if not data.get('user_id'):
+        return jsonify({'error':'invalid user id'}),400
+
     user_id = data['user_id']
     description = data.get('description', '')
+    additional_packages = data.get('additional_packages', '')
+    dockerfile_content = data.get('dockerfile_content', '')
     image_tag = data.get('image_tag', f'image_{datetime.utcnow().isoformat()}')
 
-    try:
+    # Construct base Dockerfile content
+    base_dockerfile = (
+        "FROM beluga_base_ubuntu\n"
+        "RUN apt update && apt install -y git curl wget build-essential {}\n".format(additional_packages)
+    )
 
+    # Append custom Dockerfile content if provided
+    if dockerfile_content:
+        dockerfile_content = base_dockerfile + dockerfile_content
+    else:
+        dockerfile_content = base_dockerfile
+
+    try:
         # Use the low-level API client for more granular log handling
         api_client = docker.APIClient()
         
@@ -83,6 +77,7 @@ def build_image():
             docker_image_id=image.id,
             description=description,
             user_id=user_id,
+            packages=additional_packages
         )
         db.session.add(new_image)
         db.session.commit()
@@ -149,6 +144,7 @@ def get_image(docker_image_id):
         'docker_image_id': image.docker_image_id,
         'user_id': str(image.user_id),
         'description': image.description,
+        'packages': image.packages,
         'tag':result.tags
     }), 200
 
@@ -171,18 +167,29 @@ def update_image(docker_image_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+
 # Delete an image (DELETE)
 @image_bp.route('/images/<string:docker_image_id>', methods=['DELETE'])
 @professor_required
 def delete_image(docker_image_id):
+    # Check if the image exists in the database
     image = db.session.get(Image, docker_image_id)
     if image is None:
         return jsonify({'error': 'Image not found'}), 404
 
     try:
+        # Remove the image from Docker
+        docker_client.images.remove(image.docker_image_id, force=True)
+        
+        # Remove the image from the database
         db.session.delete(image)
         db.session.commit()
+
         return jsonify({'message': 'Image deleted successfully'}), 200
+    except docker.errors.ImageNotFound:
+        return jsonify({'error': 'Docker image not found'}), 404
+    except docker.errors.APIError as e:
+        return jsonify({'error': f'Docker API error: {e.explanation}'}), 500
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
