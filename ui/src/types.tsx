@@ -16,6 +16,7 @@ export interface Profile {
   user_id:string;
   created_at:string;
   updated_at:string;
+  private_key:string;
 }
 
 export interface Course {
