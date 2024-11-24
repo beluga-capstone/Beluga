@@ -30,7 +30,7 @@ export const useUsers = () => {
     lastname: string,
     middlename: string | undefined,
     email: string,
-    role: string
+    role: number
   ) => {
     const newUser: User = {
       id: Date.now(),
@@ -58,7 +58,7 @@ export const useUsers = () => {
     lastname: string,
     middlename: string | undefined,
     email: string,
-    role: string
+    role: number
   ) => {
     const updatedUser = {
       id: id,

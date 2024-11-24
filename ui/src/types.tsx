@@ -71,5 +71,5 @@ export interface User {
   lastName: string;
   middleName?: string;
   email: string;
-  role: string;
+  role: number;
 }

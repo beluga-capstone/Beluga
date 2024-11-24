@@ -32,17 +32,7 @@ export const useProfile = () => {
     getProfile();
   }, []);
 
-  const updateProfile = (
-    profile: Profile
-  ) => {
-    const updatedProfile = {
-      ...profile,
-    };
-    setProfile(updatedProfile);
-  };
-
   return {
     profile,
-    updateProfile,
   };
 };

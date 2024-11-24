@@ -4,21 +4,22 @@ import Button from "@/components/Button";
 import { ROLES } from "@/constants";
 import { useProfile } from "@/hooks/useProfile";
 import { useEffect, useState } from "react";
+import { Profile } from "@/types";
 
 const EditProfilePage = () => {
-  const { profile, updateProfile } = useProfile();
+  const { profile} = useProfile();
   const [newFirstName, setNewFirstName] = useState(profile?.firstName || "");
   const [newMiddleName, setNewMiddleName] = useState(profile?.middleName || "");
   const [newLastName, setNewLastName] = useState(profile?.lastName || "");
   const [newEmail, setNewEmail] = useState(profile?.email || "");
-  const [newRole, setNewRole] = useState(profile?.role || ROLES.STUDENT);
+  const [newRole, setNewRole] = useState<number>(profile?.role_id || ROLES.STUDENT);
 
   useEffect(() => {
     setNewFirstName(profile?.firstName || "");
     setNewMiddleName(profile?.middleName || "");
     setNewLastName(profile?.lastName || "");
     setNewEmail(profile?.email || "");
-    setNewRole(profile?.role || ROLES.STUDENT);
+    setNewRole(profile?.role_id || ROLES.STUDENT);
   }, [profile]);
 
   return (
@@ -85,7 +86,6 @@ const EditProfilePage = () => {
         <select
           title="Role"
           value={newRole}
-          onChange={(e) => setNewRole(e.target.value)}
           className="border rounded p-1 bg-surface"
         >
           <option value={ROLES.STUDENT}>{ROLES.STUDENT}</option>
@@ -104,27 +104,10 @@ const EditProfilePage = () => {
             Cancel
           </Button>
         </div>
-        <div className="p-2">
-          <Button
-            className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={() =>
-              updateProfile(
-                newFirstName,
-                newMiddleName === "" ? undefined : newMiddleName,
-                newLastName,
-                newEmail,
-                newRole
-              )
-            }
-            href="/profile"
-            disabled={!newFirstName || !newLastName || !newEmail}
-          >
-            Save
-          </Button>
-        </div>
       </div>
     </div>
   );
 };
 
 export default EditProfilePage;
+

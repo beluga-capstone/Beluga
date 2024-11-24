@@ -2,12 +2,11 @@
 import React, { useState } from 'react';
 import { User } from '@/types';
 import { Pencil, Trash2, CheckSquare, Square, Check, X } from 'lucide-react';
-import Dropdown from './Dropdown';
 import { useRouter } from 'next/navigation';
 
 interface ListUsersProps {
   users: User[];
-  onUpdateUser: (userId: number, newRole: string) => void;
+  onUpdateUser: (userId: number, newRole: number) => void;
   onDeleteUsers: (userId?: number) => void;
   selectedUserIds: number[];
   setSelectedUserIds: React.Dispatch<React.SetStateAction<number[]>>;
@@ -17,7 +16,7 @@ const ListUsers: React.FC<ListUsersProps> = ({ users, onUpdateUser, onDeleteUser
   const router = useRouter();
 
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
-  const [editedRole, setEditedRole] = useState<string>('');
+  const [editedRole, setEditedRole] = useState<number>(8);
 
   const handleEditClick = (user: User) => {
     setEditingUserId(user.id);
@@ -26,7 +25,7 @@ const ListUsers: React.FC<ListUsersProps> = ({ users, onUpdateUser, onDeleteUser
 
   const handleCancelEdit = () => {
     setEditingUserId(null);
-    setEditedRole('');
+    setEditedRole(8);
   };
 
   const handleSaveEdit = (userId: number) => {
@@ -87,15 +86,6 @@ const ListUsers: React.FC<ListUsersProps> = ({ users, onUpdateUser, onDeleteUser
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.lastName}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.middleName}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {editingUserId === user.id ? (
-                  <Dropdown
-                    value={editedRole}
-                    values={["Admin", "Professor", "TA", "Student"]}
-                    onChange={(newRole) => setEditedRole(newRole)}
-                  />
-                ) : (
-                  user.role
-                )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 {editingUserId === user.id ? (

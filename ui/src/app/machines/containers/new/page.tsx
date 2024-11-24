@@ -51,7 +51,7 @@ const NewContainer: React.FC = () => {
 
     const result = await runContainer(imageId ?? null, title, description);
     if (result) {
-      const { container_port: port, container_id: id } = result;
+      const { appPort: port, container_id: id } = result;
       console.log(`Container running on port: ${port}, ID: ${id}`);
       router.push(`/machines/containers/${id}`);
     } else {
