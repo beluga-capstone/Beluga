@@ -1,11 +1,10 @@
 import FormInput from "./FormInput";
 import FormTextArea from "./FormTextArea";
-import FormDateInput from "./FormDateInput";
 import React from "react";
 import LabeledToggleSwitch from "./LabeledToggleSwitch";
 import { useImages } from "@/hooks/useImages";
-import { useImageData } from "@/hooks/useImageData";
 import ImageOption from "./ImageOption";
+import FormDateTimeInput from "./FormDateTimeInput";
 
 interface AssignmentFormProps {
   title: string;
@@ -49,10 +48,6 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
     React.useState(false);
   const [isPublishedLater, setIsPublishedLater] = React.useState(false);
 
-  //useEffect(()=>{
-  //  console.log("due changed to ",dueAt);
-  //},[dueAt]);
-
   return (
     <>
       <FormInput title="Assignment Name" value={title} onChange={setTitle} />
@@ -63,7 +58,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         onChange={setDescription}
       />
 
-      <FormDateInput title="Due at" value={dueAt} onChange={setDueAt} />
+      <FormDateTimeInput title="Due at" value={dueAt} onChange={setDueAt} />
 
       <LabeledToggleSwitch
         title="Publish later"
@@ -77,7 +72,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
       />
 
       {isPublishedLater && (
-        <FormDateInput
+        <FormDateTimeInput
           title="Publish at"
           value={publishAt}
           onChange={setPublishAt}
@@ -96,7 +91,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
       />
 
       {isVisibleBeforeRelease && (
-        <FormDateInput
+        <FormDateTimeInput
           title="Unlock at"
           value={unlockAt}
           onChange={setUnlockAt}
@@ -115,20 +110,24 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
       />
 
       {allowsLateSubmissions && (
-        <FormDateInput title="Lock at" value={lockAt} onChange={setLockAt} />
+        <FormDateTimeInput
+          title="Lock at"
+          value={lockAt}
+          onChange={setLockAt}
+        />
       )}
 
       <h2>Image</h2>
       <div className="pt-2 pb-8">
         <select
           title="Image"
-          value={imageId??""}
-          onChange={(e) => setImageId(e.target.value)} 
+          value={imageId ?? ""}
+          onChange={(e) => setImageId(e.target.value)}
           className="border rounded p-1 bg-surface"
         >
           <option value={-1}>Select an image</option>
           {images.map((image) => (
-            <ImageOption key={image.docker_image_id} image={image}/>
+            <ImageOption key={image.docker_image_id} image={image} />
           ))}
         </select>
       </div>
