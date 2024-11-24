@@ -29,4 +29,4 @@ RUN python3 -m venv /app/venv && \
 EXPOSE 22 5000
 
 # Start SSH server and run the application
-CMD ["/bin/bash", "-c", "/usr/sbin/sshd && /app/venv/bin/python websocket-pty.py"]
+CMD ["/bin/bash", "-c", "/usr/sbin/sshd && /app/venv/bin/python /app/websocket-pty.py"]
