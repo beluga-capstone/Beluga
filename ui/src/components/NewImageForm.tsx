@@ -13,6 +13,7 @@ const normalizeDockerImageName = (name: string) => {
 
 function NewImageForm() {
   const [imageName, setImageName] = useState("");
+  const [description, setDescription] = useState("");
   const [additionalPackages, setAdditionalPackages] = useState("");
   const [extraDockerFileContent, setExtraDockerFileContent] = useState("");
   const [buildStatus, setBuildStatus] = useState("");
@@ -30,6 +31,7 @@ function NewImageForm() {
     socket.on("build_complete", () => {
       setBuildStatus((prevStatus) => `${prevStatus}\nBuild complete!`);
       setIsBuilding(false);
+      router.back();
     });
 
     socket.on("build_error", (error) => {
@@ -65,6 +67,10 @@ function NewImageForm() {
     `;
 
     try {
+      let altDesc = "No description";
+      if (description !== "") {
+        altDesc = description
+      }
       const response = await fetch("http://localhost:5000/images", {
         method: "POST",
         headers: {
@@ -72,7 +78,7 @@ function NewImageForm() {
         },
         body: JSON.stringify({
           user_id: profile?.user_id,
-          description: `Image for ${normalizedImageName}`,
+          description: altDesc,
           additional_packages: additionalPackages, 
           dockerfile_content: dockerfileContent,
           image_tag: normalizedImageName,
@@ -86,14 +92,12 @@ function NewImageForm() {
 
       const result = await response.json();
       if (result.message === "Image already exists") {
-        alert(`This image already exists!`);
+        alert(`An image with this hash already exists.`);
       }
       setBuildStatus((prevStatus) => `${prevStatus}\n${result.message}`);
       router.back();
     } catch (error) {
       setBuildStatus((prevStatus) => `${prevStatus}\nError: ${error}`);
-    } finally {
-      setIsBuilding(false);
     }
   };
 
@@ -104,7 +108,7 @@ function NewImageForm() {
       {/* Image Name Section */}
       <div className="mb-6 rounded-lg shadow-md bg-surface">
         <h2 className="block font-bold text-2xl mb-4">
-          Image Name { }
+          Image Name
         </h2>
         <input
           id="imageName"
@@ -113,6 +117,20 @@ function NewImageForm() {
           onChange={(e) => setImageName(normalizeDockerImageName(e.target.value))}
           className="border rounder p-1 bg-surface w-full mb-4"
           placeholder="Enter image name"
+        />
+      </div>
+
+      {/* Description Section */}
+      <div className="mb-6 rounded-lg shadow-md bg-surface">
+        <h2 className="block font-bold text-2xl mb-4">
+          Description
+        </h2>
+        <textarea
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="border rounded p-1 bg-surface w-full h-24 mb-4"
+          placeholder="Enter image description"
         />
       </div>
 
@@ -150,21 +168,27 @@ function NewImageForm() {
         >
           Cancel
         </button>
+
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className={`px-4 py-2 rounded ${
+            isBuilding || !imageName.trim()
+              ? "bg-gray-500 text-gray-700 cursor-not-allowed"
+              : "bg-blue-500 text-white hover:bg-blue-600"
+          }`}
           onClick={handleBuildImage}
-          disabled={isBuilding}
+          disabled={isBuilding || !imageName.trim()}
         >
-          {isBuilding ? "Building..." : "Create"}
+          {isBuilding ? "Building..." : "Build"}
         </button>
+
       </div>
 
       {/* Build Status Section */}
       <div className="mt-8 rounded-lg shadow-md bg-surface">
-        <h2 className="text-2xl font-bold mb-4" >Build Status</h2>
+        <h2 className="text-2xl font-bold mb-4">Build Status</h2>
         <pre
           ref={statusRef}
-          className="border rounded p-4 bg-surface h-40 overflow-auto text-on-surface"
+          className="border rounded p-4 bg-surface min-h-[600px] h-40 overflow-auto text-on-surface"
         >
           {buildStatus}
         </pre>
@@ -174,4 +198,3 @@ function NewImageForm() {
 }
 
 export default NewImageForm;
-

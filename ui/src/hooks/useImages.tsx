@@ -1,12 +1,30 @@
 import { useState, useEffect } from 'react';
 import { Image } from '@/types'
-import NewImagePage from '@/app/machines/images/new/page';
 
 export const useImages = () => {
   const [images, setImages] = useState<Image[]>([]);
   const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // get image data
+  const getAssignmentsForImage =async(docker_image_id:string) =>{
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`http://localhost:5000/assignments/search?docker_image_id=${docker_image_id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch docker image id');
+      }
+      const data = await response.json();
+      return data;
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Fetch images from the database
   const fetchImages = async () => {
@@ -121,5 +139,6 @@ export const useImages = () => {
     deleteSelectedImages,
     selectAllImages,
     refreshImages: fetchImages,
+    getAssignmentsForImage,
   };
 };

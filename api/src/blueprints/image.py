@@ -14,31 +14,7 @@ docker_client = docker.from_env()
 image_bp = Blueprint('image', __name__)
 
 
-# Create a new image (POST)
 @image_bp.route('/images', methods=['POST'])
-@professor_required
-def create_image():
-    data = request.get_json()
-    
-    if not data or not data.get('docker_image_id') or not data.get('user_id'):
-        return jsonify({'error': 'Docker Image ID and User ID are required'}), 400
-    
-    new_image = Image(
-        docker_image_id=data['docker_image_id'],
-        user_id=data['user_id'],
-        description=data.get('description')
-    )
-
-    try:
-        db.session.add(new_image)
-        db.session.commit()
-        return jsonify({'message': 'Image created successfully', 'docker_image_id': new_image.docker_image_id}), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-
-@image_bp.route('/images/build', methods=['POST'])
 @professor_required
 def build_image():
     data = request.get_json()
@@ -191,18 +167,29 @@ def update_image(docker_image_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+
 # Delete an image (DELETE)
 @image_bp.route('/images/<string:docker_image_id>', methods=['DELETE'])
 @professor_required
 def delete_image(docker_image_id):
+    # Check if the image exists in the database
     image = db.session.get(Image, docker_image_id)
     if image is None:
         return jsonify({'error': 'Image not found'}), 404
 
     try:
+        # Remove the image from Docker
+        docker_client.images.remove(image.docker_image_id, force=True)
+        
+        # Remove the image from the database
         db.session.delete(image)
         db.session.commit()
+
         return jsonify({'message': 'Image deleted successfully'}), 200
+    except docker.errors.ImageNotFound:
+        return jsonify({'error': 'Docker image not found'}), 404
+    except docker.errors.APIError as e:
+        return jsonify({'error': f'Docker API error: {e.explanation}'}), 500
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
