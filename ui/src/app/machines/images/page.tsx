@@ -2,7 +2,6 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
-import { Trash2, Pause, Play, Square, CheckSquare } from "lucide-react";
 import ImageItem from "@/components/ImageItem";
 import CheckBox from "@/components/CheckBox";
 import Link from "next/link";
@@ -57,7 +56,7 @@ export default function Images() {
           key={image.docker_image_id}
           className="cursor-pointer"
           onClick={() => {
-            router.push(`/machines/images/details?id=${image.docker_image_id}`);
+            router.push(`/machines/images/${image.docker_image_id}`);
           }}
         >
           <ImageItem

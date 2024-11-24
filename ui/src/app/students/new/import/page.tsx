@@ -34,7 +34,7 @@ const ImportStudentsPage: React.FC = () => {
                 lastName: student["Last Name"],
                 middleName: student["Middle Name"],
                 email: student["Email"],
-                role: "Student",
+                role: 8,
               },
             ];
           });

@@ -14,7 +14,7 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
   const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState(ROLES[3]);
+  const [role, setRole] = useState(ROLES.STUDENT);
 
   useEffect(() => {
     if (user) {
@@ -22,7 +22,7 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
       setMiddleName(user.middleName || "");
       setLastName(user.lastName);
       setEmail(user.email);
-      setRole(user.role);
+      setRole(ROLES.STUDENT);
     }
   }, [user]);
 
