@@ -2,6 +2,7 @@ import textwrap
 from typing import Iterable
 
 from beluga.common import run
+from beluga.common.utils import get_project_root
 from beluga.core.schema.workspace import (
     WorkspaceSchema,
     ContainerMachine,
@@ -37,8 +38,20 @@ class Docker:
             context=self._registry.name,
         )
 
-    def setup_base_image(self, vm_name: str, containers: Iterable[str] = [], verbose: bool = False):
-        pass
+    def setup_base_images(self, containers: Iterable[str] = []):
+        for c in containers:
+            run.context.run_cmd(
+                textwrap.dedent(
+                    f"""
+                        bash -c 'cd {get_project_root().joinpath("deployment/containers/").joinpath(c)} && docker build -t {c} .'
+                    """
+                )
+            )
+
+        self._push_image(
+            registry=f"{self._registry.ip}:5000/",
+            image=c,
+        )
 
     def _pull_image(
         self,
@@ -60,12 +73,10 @@ class Docker:
 
     def _push_image(
         self,
-        context: str,
         registry: str,
         image: str,
     ):
         tag = f"{registry}{image}"
         run.context.run_cmd(f"docker image tag {image} {tag}")
         run.context.run_cmd(f"docker push {tag}")
-        run.context.run_cmd(f"docker --context {context} pull {tag}")
 

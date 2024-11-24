@@ -1,6 +1,7 @@
 from enum import StrEnum
 
 from beluga.core.cli import CliGroup, Beluga, beluga_cli
+from beluga.common.utils import get_project_root
 from beluga.plugins.docker import docker
 
 cli_group = CliGroup(beluga_cli.subparsers, "docker")
@@ -37,7 +38,9 @@ class Docker(Beluga):
             case DeployType.registry:
                 self._docker.setup_registry()
             case DeployType.baseimg:
-                self._docker.setup_base_image()
+                containers = get_project_root().joinpath("deployment/containers/").glob("*")
+                containers = [i.name for i in containers]
+                self._docker.setup_base_images(containers)
 
 
 cli_group.parser.description = Docker.__doc__
