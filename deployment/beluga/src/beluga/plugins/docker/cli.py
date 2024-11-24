@@ -26,7 +26,7 @@ class Docker(Beluga):
         "--deploy-type", "-d", help="type of service to deploy", choices=DeployType
     )
     @cli_group.command()
-    def deploy(self, deploy_type: DeployType):
+    def deploy(self, deploy_type: DeployType, **_):
         """
         Deploy images/containers
         """
@@ -38,3 +38,6 @@ class Docker(Beluga):
                 self._docker.setup_registry()
             case DeployType.baseimg:
                 self._docker.setup_base_image()
+
+
+cli_group.parser.description = Docker.__doc__
