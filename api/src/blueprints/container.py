@@ -355,7 +355,7 @@ def attach_container(container_name):
         return jsonify({'error': str(e)}), 500
 
 def get_keys_path(user_id):
-    key_dir = os.path.join(BASE_KEY_PATH, str(user_id))
+    key_dir = os.path.join(current_app.config["BASE_KEY_PATH"], str(user_id))
     private_key_path = os.path.join(key_dir, "id_rsa")
     public_key_path = os.path.join(key_dir, "id_rsa.pub")
     return {
