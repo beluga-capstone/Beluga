@@ -21,7 +21,6 @@ export const useProfile = () => {
       }
 
       const data = await response.json();
-      console.log(data);
 
       const profile = {
         firstName: data['first_name'],

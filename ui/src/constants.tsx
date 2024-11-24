@@ -12,7 +12,7 @@ export const ROLES = {
   ADMIN: 1,
   PROFESSOR: 2,
   TA: 4,
-  STUDENT: 2,
+  STUDENT: 8,
 };
 
 export const SIDENAV_ITEMS: SideNavItem[] = [

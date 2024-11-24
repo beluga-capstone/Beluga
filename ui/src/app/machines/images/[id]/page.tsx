@@ -31,9 +31,6 @@ export default function ImageDetailsPage({ params }: { params: { id: string } })
     <div className="container mx-auto p-4">
       <div className="mb-4 flex justify-between items-center">
         <h1 className="font-bold text-4xl mb-6">{imageData?.tag[0]}</h1>
-        <Link href={`/machines/images/edit/${dockerImageId}`} className="text-blue-500 underline">
-          Edit Image
-        </Link>
       </div>
       <div className="flex justify-between items-center">
         <div className="flex-row">
