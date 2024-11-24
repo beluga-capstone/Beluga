@@ -12,20 +12,23 @@ def create_course():
 
     if not data or not data.get('name'):
         return jsonify({'error': 'Course name is required'}), 400
-    
+
     new_course = Course(
         name=data['name'],
-        user_id=data.get('user_id'),
+        user_id=data.get('user_id'),  # Accept user_id
         description=data.get('description'),
         publish=data.get('publish', False),
-        start_at=data.get('start_at'),
-        term_id=data.get('term_id')
+        start_at=data.get('start_at') or datetime.now(),  # Default to now
+        term_id=data.get('term_id')  # Accept term_id
     )
 
     try:
         db.session.add(new_course)
         db.session.commit()
-        return jsonify({'message': 'Course created successfully', 'course_id': str(new_course.course_id)}), 201
+        return jsonify({
+            'message': 'Course created successfully',
+            'course_id': str(new_course.course_id)
+        }), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
