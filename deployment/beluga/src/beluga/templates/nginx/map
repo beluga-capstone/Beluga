@@ -1,4 +1,4 @@
-map $ssl_preread_server_name $upstream_target
+map $ssl_preread_server_name $upstream_target {
   #{services}}
 
 server {
