@@ -16,7 +16,7 @@ class Docker:
 
     def __init__(self, workspace: WorkspaceSchema):
         self._workspace = workspace
-        self._registry = self._workspace.virtual_machines._registry
+        self._registry = self._workspace.virtual_machines.registry
 
     def setup_context(self):
         for vm in self._workspace.virtual_machines.all():
