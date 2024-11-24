@@ -62,6 +62,7 @@ export interface Image {
   docker_image_id: string;
   user_id: string;
   description: string;
+  packages:string;
 }
 
 export interface User {

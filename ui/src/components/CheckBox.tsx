@@ -15,7 +15,7 @@ const CheckBox: React.FC<CheckBoxProps> = ({ checked, onChange, label }) => {
                 onChange={onChange}
                 className="hidden"
             />
-            <span className={`w-4 h-4 border rounded-md flex items-center justify-center mr-2 ${checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300'}`}>
+            <span className={`w-4 h-4 border flex items-center justify-center mr-2 ${checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300'}`}>
                 {checked && <span className="text-white">✓</span>}
             </span>
             {label}
