@@ -161,7 +161,7 @@ function NewImageForm() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center mt-4 bg-surface rounded-lg shadow-md">
+      <div className="flex items-center mt-4 bg-none ">
         <button
           className="mr-3 bg-gray-500 text-white px-4 py-2 rounded"
           onClick={() => router.back()}
