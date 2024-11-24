@@ -69,4 +69,4 @@ class Services(Beluga):
                 case ServiceType.api:
                     self._api.stop()
                 case ServiceType.ui:
-                    self._db.stop()
+                    self._ui.stop()
