@@ -180,6 +180,7 @@ def init_default_images():
             'dockerfile': 'Dockerfile',
             'image_tag': 'beluga_base_ubuntu',
             'description': 'Base image for ubuntu machines',
+            'packages':"",
             'user_id': ADMIN_ID
         },
     ]
@@ -208,7 +209,8 @@ def init_default_images():
             new_image = Image(
                 docker_image_id=image.id,
                 description=image_info['description'],
-                user_id=image_info['user_id']
+                user_id=image_info['user_id'],
+                packages=image_info['packages'],
             )
             if db.session.query(Image).filter_by(docker_image_id=image.id).first() is None:
                 db.session.add(new_image)

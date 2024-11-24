@@ -16,6 +16,7 @@ export interface Profile {
   user_id:string;
   created_at:string;
   updated_at:string;
+  private_key:string;
 }
 
 export interface Course {
@@ -62,6 +63,7 @@ export interface Image {
   docker_image_id: string;
   user_id: string;
   description: string;
+  packages:string;
 }
 
 export interface User {
@@ -70,5 +72,5 @@ export interface User {
   lastName: string;
   middleName?: string;
   email: string;
-  role: string;
+  role: number;
 }

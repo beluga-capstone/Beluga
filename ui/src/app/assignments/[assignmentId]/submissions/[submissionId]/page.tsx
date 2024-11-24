@@ -12,7 +12,7 @@ const SubmissionPage = ({
   const { assignments } = useAssignments();
   const assignment = assignments.find(
     (assignment) =>
-      assignment.assignmentId === parseInt(params.assignmentId, 10)
+      assignment.assignment_id === params.assignmentId
   );
   const studentFirstName = "Bode";
   const studentLastName = "Raymond";
@@ -22,7 +22,7 @@ const SubmissionPage = ({
         <h1 className="font-bold text-4xl mb-6">{assignment?.title}</h1>
         <h2>
           Due:{" "}
-          {assignment?.dueAt.toLocaleDateString("en-US", {
+          {assignment?.due_at?.toLocaleDateString("en-US", {
             dateStyle: "short",
             timeZone: "UTC",
           })}

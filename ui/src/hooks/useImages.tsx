@@ -7,6 +7,25 @@ export const useImages = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // get image data
+  const getAssignmentsForImage =async(docker_image_id:string) =>{
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`http://localhost:5000/assignments/search?docker_image_id=${docker_image_id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch docker image id');
+      }
+      const data = await response.json();
+      return data;
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Fetch images from the database
   const fetchImages = async () => {
     setIsLoading(true);
@@ -29,28 +48,6 @@ export const useImages = () => {
   useEffect(() => {
     fetchImages();
   }, []);
-
-  const addImage = async (newImage: Image) => {
-    try {
-      const response = await fetch('http://localhost:5000/images', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newImage),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to add image');
-      }
-
-      const data = await response.json();
-      setImages(prevImages => [...prevImages, { ...newImage, docker_image_id: data.docker_image_id }]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add image');
-      throw err;
-    }
-  };
 
   const editImage = async (updatedImage: Image) => {
     try {
@@ -136,12 +133,12 @@ export const useImages = () => {
     selectedImageIds,
     isLoading,
     error,
-    addImage,
     editImage,
     deleteImage,
     toggleSelectImage,
     deleteSelectedImages,
     selectAllImages,
     refreshImages: fetchImages,
+    getAssignmentsForImage,
   };
 };

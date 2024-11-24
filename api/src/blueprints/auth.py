@@ -24,8 +24,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash('You have been logged out.')
-    return redirect('/auth/login')
+    return {"success": True, "message": "Logged out successfully"}, 200
 
 
 @auth_bp.route('/authorize/<provider>')

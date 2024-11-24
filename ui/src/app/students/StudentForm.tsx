@@ -9,8 +9,8 @@ interface StudentFormProps {
   setLastName: (value: string) => void;
   email: string;
   setEmail: (value: string) => void;
-  role: string;
-  setRole: (value: string) => void;
+  role: number;
+  setRole: (value: number) => void;
 }
 
 const StudentForm: React.FC<StudentFormProps> = ({
@@ -88,7 +88,6 @@ const StudentForm: React.FC<StudentFormProps> = ({
         <select
           title="Role"
           value={role}
-          onChange={(e) => setRole(e.target.value)}
           className="border rounded p-1 bg-surface"
         >
           <option value={ROLES.STUDENT}>{ROLES.STUDENT}</option>

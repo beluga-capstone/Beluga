@@ -3,6 +3,7 @@ interface ImageData {
   docker_image_id: string;
   user_id: string;
   tag: string[];
+  packages:string;
 }
 
 interface ImageDataState {
