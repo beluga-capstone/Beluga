@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from src.util.db import db, Term
 from datetime import datetime
 import uuid
+from src.util.auth import *
 
 term_bp = Blueprint('term', __name__)
 

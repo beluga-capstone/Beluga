@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 import uuid
 from src.util.db import db, Assignment
+from src.util.auth import *
 
 assignment_bp = Blueprint('assignment', __name__)
 

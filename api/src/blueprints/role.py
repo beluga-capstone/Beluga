@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from src.util.db import db, Role
 from datetime import datetime
+from src.util.auth import *
 
 role_bp = Blueprint('role', __name__)
 

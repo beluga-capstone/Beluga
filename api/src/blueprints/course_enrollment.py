@@ -4,6 +4,7 @@ from datetime import datetime
 import uuid
 from src.util.db import db, CourseEnrollment, User, Course
 from src.util.auth import student_required
+from src.util.auth import *
 
 enrollment_bp = Blueprint('enrollment', __name__)
 

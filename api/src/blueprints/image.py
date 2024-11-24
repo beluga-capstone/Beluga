@@ -5,6 +5,7 @@ from flask_socketio import emit
 from datetime import datetime
 import docker
 import io
+from src.util.auth import *
 
 docker_client = docker.from_env()
 

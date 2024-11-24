@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from src.util.db import db, Course
 from datetime import datetime
 import uuid
+from src.util.auth import *
 
 course_bp = Blueprint('course', __name__)
 
