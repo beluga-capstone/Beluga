@@ -78,15 +78,15 @@ const NewContainer: React.FC = () => {
         <div className="text-red-500 text-sm mt-2">Container with this title already exists.</div>
       )}
 
-      <div className="flex flex-column justify-end">
-        <div className="p-2">
+      <div className="flex flex-column">
+        <div className="mr-2">
           <Link href="/machines/containers">
             <Button className="bg-gray-500 text-white px-4 py-2 rounded flex items-center">
               Cancel
             </Button>
           </Link>
         </div>
-        <div className="p-2">
+        <div className="">
           <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
             onClick={handleAddContainer}
