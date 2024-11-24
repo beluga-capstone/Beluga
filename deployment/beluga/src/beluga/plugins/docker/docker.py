@@ -79,4 +79,3 @@ class Docker:
         tag = f"{registry}{image}"
         run.context.run_cmd(f"docker image tag {image} {tag}")
         run.context.run_cmd(f"docker push {tag}")
-
