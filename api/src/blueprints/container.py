@@ -128,6 +128,17 @@ def create_container():
         if image_tag != "":
             alt_desc = f"Container running with image {image_tag}"
 
+        container_id = container.id
+        ssh_keys = get_keys_path(data['user_id'])
+        public_key_path = ssh_keys["public_key_path"]
+
+        #Create ssh dir inside container
+        container_ssh_dir = "/root/.ssh" # path inside docker container
+        subprocess.run(["docker", "exec", container_id, "mkdir", "-p", container_ssh_dir], check=True)
+
+        # Copy the key into Docker's authorized key file
+        subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
+
         # Save container information to the database
         new_container = Container(
             docker_container_id=container.id,
@@ -276,6 +287,7 @@ def find_available_port(start_port: int, end_port: int) -> int:
             if sock.connect_ex(('127.0.0.1', port)) != 0:
                 return port
     raise RuntimeError(f"No available ports found in the range {start_port}-{end_port}")
+
 
 
 @container_bp.route('/containers/<string:container_name>/start', methods=['PUT'])
