@@ -1,8 +1,9 @@
-import { User } from "@/types";
+// StudentsTable.tsx
+import { Student } from "@/types";
 import Link from "next/link";
 
 interface StudentsTableProps {
-  students: User[];
+  students: Student[]; 
   hasClickableNames?: boolean;
 }
 

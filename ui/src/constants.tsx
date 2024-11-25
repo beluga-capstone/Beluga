@@ -23,13 +23,15 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
   },
   {
     title: "Students",
-    path: "/students",
+    path: "/students/courses/[courseId]",
     icon: <Users size={24} />,
+    dynamic: true,
   },
   {
     title: "Assignments",
-    path: "/assignments",
+    path: "assignments/courses/[courseId]",
     icon: <Folder size={24} />,
+    dynamic: true,
   },
   {
     title: "Machines",
@@ -42,72 +44,72 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
   },
 ];
 
-export const DEFAULT_COURSES: Course[] = [
-  {
-    id: 1,
-    name: "CSCE 120",
-    term: "Fall 2024",
-    studentsEnrolled: 50,
-    isPublished: true,
-    professor: "Johnny Johnny",
-  },
-  {
-    id: 2,
-    name: "CSCE 313",
-    term: "Fall 2024",
-    studentsEnrolled: 67,
-    isPublished: true,
-    professor: "Yes Papa",
-  },
-  {
-    id: 3,
-    name: "CSCE 410",
-    term: "Spring 2024",
-    studentsEnrolled: 0,
-    isPublished: false,
-    professor: "Eating Sugar?"
-  },
-];
+// export const DEFAULT_COURSES: Course[] = [
+//   {
+//     id: 1,
+//     name: "CSCE 120",
+//     term: "Fall 2024",
+//     studentsEnrolled: 50,
+//     isPublished: true,
+//     professor: "Johnny Johnny",
+//   },
+//   {
+//     id: 2,
+//     name: "CSCE 313",
+//     term: "Fall 2024",
+//     studentsEnrolled: 67,
+//     isPublished: true,
+//     professor: "Yes Papa",
+//   },
+//   {
+//     id: 3,
+//     name: "CSCE 410",
+//     term: "Spring 2024",
+//     studentsEnrolled: 0,
+//     isPublished: false,
+//     professor: "Eating Sugar?"
+//   },
+// ];
 
-export const DEFAULT_STUDENTS: Student[] = [
-  {
-    id: 1,
-    firstName: "Bode",
-    lastName: "Raymond",
-    email: "boderaymond@tamu.edu",
-  },
-  {
-    id: 2,
-    firstName: "Deric",
-    lastName: "Le",
-    email: "rake@tamu.edu",
-  },
-  {
-    id: 3,
-    firstName: "Drew",
-    lastName: "Pusey",
-    email: "drewpusey@tamu.edu",
-  },
-  {
-    id: 4,
-    firstName: "Jeffrey",
-    lastName: "Li",
-    email: "cherrytree1324@tamu.edu",
-  },
-  {
-    id: 5,
-    firstName: "Minh",
-    lastName: "Nguyen",
-    middleName: "Dao",
-    email: "minhdao@tamu.edu",
-  },
-  {
-    id: 6,
-    firstName: "Nitesh",
-    lastName: "Duraivel",
-    email: "niteshduraivel@tamu.edu",
-  },
-];
+// export const DEFAULT_STUDENTS: Student[] = [
+//   {
+//     id: 1,
+//     firstName: "Bode",
+//     lastName: "Raymond",
+//     email: "boderaymond@tamu.edu",
+//   },
+//   {
+//     id: 2,
+//     firstName: "Deric",
+//     lastName: "Le",
+//     email: "rake@tamu.edu",
+//   },
+//   {
+//     id: 3,
+//     firstName: "Drew",
+//     lastName: "Pusey",
+//     email: "drewpusey@tamu.edu",
+//   },
+//   {
+//     id: 4,
+//     firstName: "Jeffrey",
+//     lastName: "Li",
+//     email: "cherrytree1324@tamu.edu",
+//   },
+//   {
+//     id: 5,
+//     firstName: "Minh",
+//     lastName: "Nguyen",
+//     middleName: "Dao",
+//     email: "minhdao@tamu.edu",
+//   },
+//   {
+//     id: 6,
+//     firstName: "Nitesh",
+//     lastName: "Duraivel",
+//     email: "niteshduraivel@tamu.edu",
+//   },
+// ];
 
 export const DEFAULT_CONTAINERS: Container[] = [];
 

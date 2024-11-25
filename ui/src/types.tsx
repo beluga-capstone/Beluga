@@ -4,6 +4,7 @@ export type SideNavItem = {
   icon?: JSX.Element;
   submenu?: boolean;
   subMenuItems?: SideNavItem[];
+  dynamic?: boolean;
 };
 
 export interface Profile {
@@ -35,6 +36,8 @@ export interface Student {
   lastName: string;
   middleName?: string;
   email: string;
+  role?: string; 
+  courseId?: number;
 }
 
 export interface Assignment {
