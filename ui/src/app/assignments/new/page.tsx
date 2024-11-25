@@ -21,7 +21,6 @@ const NewAssignment: React.FC = () => {
     React.useState(false);
   const [imageId, setImageId] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const [duplicateName, setDuplicateName] = useState("");
   const router = useRouter();
 
   // if select image, then unselect,imageid will be -1, fix it

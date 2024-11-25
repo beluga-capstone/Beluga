@@ -82,7 +82,7 @@ export interface Image {
 }
 
 export interface User {
-  id: number;
+  id?: string;
   firstName: string;
   lastName: string;
   middleName?: string;

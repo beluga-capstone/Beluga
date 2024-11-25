@@ -11,23 +11,6 @@ const AdminCoursesTable: React.FC = () => {
   const [usernames, setUsernames] = useState<{ [key: string]: string }>({});
   const [studentCounts, setStudentCounts] = useState<{ [key: string]: number }>({});
 
-  // Fetch student counts for courses
-  useEffect(() => {
-    const loadStudentCounts = async () => {
-      const counts: { [key: string]: number } = {};
-      for (const course of courses) {
-        const response = await fetch(`/courses/${course.id}/students/count`);
-        const data = await response.json();
-        counts[course.id] = data.students_count || 0;
-      }
-      setStudentCounts(counts);
-    };
-
-    if (courses.length > 0) {
-      loadStudentCounts();
-    }
-  }, [courses]);
-
   // Fetch instructor names for courses
   useEffect(() => {
     const loadUsernames = async () => {

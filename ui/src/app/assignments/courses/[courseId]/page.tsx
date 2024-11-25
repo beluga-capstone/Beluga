@@ -13,11 +13,7 @@ const CourseAssignments: React.FC = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const { courseId } = useParams(); 
   const router = useRouter();
-  const {
-    fetchAssignmentsByCourseId,
-    setPublished,
-    setLateSubmissions,
-  } = useAssignments();
+  const {fetchAssignmentsByCourseId} = useAssignments();
 
   const resolvedCourseId = Array.isArray(courseId) ? courseId[0] : courseId;
 
@@ -47,7 +43,7 @@ const CourseAssignments: React.FC = () => {
     };
 
     loadAssignments();
-  }, [resolvedCourseId, fetchAssignmentsByCourseId, router]);
+  }, [resolvedCourseId, router]);
 
   return (
     <div className="container mx-auto p-4">
@@ -59,11 +55,7 @@ const CourseAssignments: React.FC = () => {
           </Button>
         </Link>
       </div>
-      <ProfessorAssignmentsTable
-        assignments={assignments} // Pass only filtered assignments
-        setPublished={setPublished}
-        setLateSubmissions={setLateSubmissions}
-      />
+      <ProfessorAssignmentsTable/>
     </div>
   );
 };

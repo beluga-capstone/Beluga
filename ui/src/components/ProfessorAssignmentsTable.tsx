@@ -1,5 +1,5 @@
-import { Assignment } from "@/types";
 import { ToggleLeft, ToggleRight } from "lucide-react";
+import { useAssignments } from "@/hooks/useAssignments";
 import Link from "next/link";
 
 const format_date = (date: string) =>
@@ -9,17 +9,8 @@ const format_date = (date: string) =>
     day: "numeric",
   });
 
-interface ProfessorAssignmentsTableProps {
-  assignments: Assignment[]; // Ensure this is always passed as an array
-  setPublished: (assignmentId: string, status: boolean) => void;
-  setLateSubmissions: (assignmentId: string, status: boolean) => void;
-}
-
-const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({
-  assignments = [], // Default to an empty array
-  setPublished,
-  setLateSubmissions,
-}) => {
+const ProfessorAssignmentsTable=() => {
+  const { assignments, setPublished, setLateSubmissions } = useAssignments();
   console.log("Assignments passed to ProfessorAssignmentsTable:", assignments);
   return (
     <table className="table w-full">

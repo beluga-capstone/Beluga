@@ -1,16 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { ROLES } from "@/constants";
+import { useState } from "react";
 import { User } from "@/types";
 
-const loadUsersFromStorage = (): User[] => {
-  const data = localStorage.getItem("users");
-  return data ? JSON.parse(data) : [];
-};
-
-const saveUsersToStorage = (users: User[]) => {
-  localStorage.setItem("users", JSON.stringify(users));
-};
+const fetchUsers = async() => {
+}
 
 const fetchUserById = async (userId: string): Promise<{ firstName: string; lastName: string } | null> => {
   try {
@@ -40,40 +35,49 @@ const fetchUserById = async (userId: string): Promise<{ firstName: string; lastN
 export const useUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
 
-  useEffect(() => {
-    const loadedUsers = loadUsersFromStorage();
-    setUsers(loadedUsers);
-  }, []);
-
   const insertUser = (user: User) => {
     if (users.some((u) => u.id === user.id)) {
       return;
     }
     const updatedUsers = [...users, user];
     setUsers(updatedUsers);
-    saveUsersToStorage(updatedUsers);
   };
-  const addUser = (
+
+  const addUser = async(
+    email: string,
     firstName: string,
     lastName: string,
     middleName: string | undefined,
-    email: string,
     role: string,
     courseId?: number
   ) => {
     const newUser: User = {
-      id: Date.now(),
+      email,
       firstName,
       lastName,
       middleName,
-      email,
       role,
       courseId,
     };
 
-    const updatedUsers = [...users, newUser];
-    setUsers(updatedUsers);
-    saveUsersToStorage(updatedUsers);
+    // Add the user to the backend
+    const response = await fetch("http://localhost:5000/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email:email,
+        firstName:firstName,
+        lastName:lastName,
+        middleName: middleName === "" ? undefined : middleName,
+        role: role,
+      }),
+    });
+
+    if (response.ok) {
+      const updatedUsers = [...users, newUser];
+      setUsers(updatedUsers);
+      return response.json();
+    }
   };
 
   const addUsers = async (users: User[]): Promise<{ user_id: string; email: string }[]> => { // Fix: Return user_id and email
@@ -100,7 +104,7 @@ export const useUsers = () => {
   
   
   const updateUser = (
-    id: number,
+    id: string,
     firstName: string,
     lastName: string,
     middleName: string | undefined,
@@ -123,16 +127,14 @@ export const useUsers = () => {
     );
 
     setUsers(updatedUsers);
-    saveUsersToStorage(updatedUsers);
   };
 
-  const getUser = (id: number) => {
+  const getUser = (id: string) => {
     return users.find((user) => user.id === id);
   };
-  const deleteUser = (id: number) => {
+  const deleteUser = (id: string) => {
     const updatedUsers = users.filter((user) => user.id !== id);
     setUsers(updatedUsers);
-    saveUsersToStorage(updatedUsers);
   };
 
   return {

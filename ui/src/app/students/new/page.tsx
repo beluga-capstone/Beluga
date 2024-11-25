@@ -2,6 +2,7 @@
 
 import Button from "@/components/Button";
 import { ROLES } from "@/constants";
+import { useRouter } from "next/navigation";
 import { useUsers } from "@/hooks/useUsers";
 import React, { useState } from "react";
 import StudentForm from "../StudentForm";
@@ -20,34 +21,17 @@ const NewUser: React.FC = () => {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState(ROLES.STUDENT);
+  const router = useRouter();
 
   const handleAddUser = async () => {
     try {
-      const roleString = Object.keys(ROLES).find(
-        (key) => ROLES[key as keyof typeof ROLES] === role
-      )?.toLowerCase() || "student";
-  
-      const username = email.split("@")[0];
-  
-      // Add the user to the backend
-      const response = await fetch("http://localhost:5000/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username,
-          firstName,
-          lastName,
-          middleName: middleName === "" ? undefined : middleName,
-          email,
-          role: roleString,
-        }),
-      });
-  
-      if (!response.ok) {
-        throw new Error("Failed to add the student to the backend.");
-      }
-  
-      const newUser = await response.json();
+      const newUser = await addUser(
+        email,
+        firstName,
+        lastName,
+        middleName,
+        "student",
+      );
       console.log("User added successfully:", newUser);
   
       // Log courseId and newUser.user_id
@@ -79,7 +63,7 @@ const NewUser: React.FC = () => {
       console.log("Student enrolled successfully:", await enrollmentResponse.json());
   
       // Redirect back to the course-specific students page
-      window.location.href = `/students/courses/${courseId}`;
+      router.push(`/students/courses/${courseId}`);
     } catch (error) {
       console.error("Error adding student:", error);
     }

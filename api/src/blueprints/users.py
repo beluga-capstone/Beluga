@@ -60,9 +60,6 @@ def create_user_or_users():
     
                 return jsonify(result), status_code
                 
-            # Commit all new users in one transaction
-            db.session.commit()
-
             # Return created users' details
             response_data = [{"user_id": str(user.user_id), "email": user.email} for user in new_users]
             return jsonify(response_data), 201

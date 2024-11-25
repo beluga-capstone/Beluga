@@ -32,7 +32,6 @@ const NewCourse: React.FC = () => {
               student["First Name"] && student["Last Name"] && student["Email"]
           )
           .map((student: any, index: number) => ({
-            id: Date.now() + index,
             firstName: student["First Name"],
             lastName: student["Last Name"] || "",
             middleName: student["Middle Name"] || "",
