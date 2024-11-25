@@ -109,7 +109,8 @@ def search_images():
         images_list = [{
             'docker_image_id': image.docker_image_id,
             'user_id': str(image.user_id),
-            'description': image.description
+            'description': image.description,
+            'packages':image.packages
         } for image in images]
 
         return jsonify(images_list), 200
