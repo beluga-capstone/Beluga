@@ -90,8 +90,7 @@ export const useAssignments = () => {
     };
 
     fetchAssignments();
-    const saved = await saveAssignment(newAssignment);
-    return saved;
+    await saveAssignment(newAssignment);
   };
 
   const updateAssignment = async (
