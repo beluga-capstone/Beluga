@@ -64,7 +64,13 @@ const ContainerPageTerminal: React.FC<ContainerPageTerminalProps> = ({
     term.loadAddon(webLinksAddon);
 
     term.open(terminalRef.current);
-    fitAddon.fit();
+    setTimeout(() => {
+      try {
+        fitAddon.fit();
+      } catch (error) {
+        console.error("Failed to fit terminal:", error);
+      }
+    }, 0);
 
     const socket = io(`${process.env.wsbackend}:${containerPort}/pty`);
     socketRef.current = socket;
@@ -106,7 +112,7 @@ const ContainerPageTerminal: React.FC<ContainerPageTerminalProps> = ({
     setIsConnected(false);
   };
 
-  return <div ref={terminalRef} role="terminal textbox" />;
+  return <div ref={terminalRef} className="w-full border-2" role="terminal textbox" />;
 };
 
 export default ContainerPageTerminal;
