@@ -66,7 +66,8 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         onChange={() => {
           setIsPublishedLater(!isPublishedLater);
           if (!isPublishedLater) {
-            setPublishAt(new Date().toISOString());
+            const timezoneOffset = new Date().getTimezoneOffset() * 60000;
+            setPublishAt(new Date(Date.now() - timezoneOffset).toISOString());
           }
         }}
       />
@@ -76,6 +77,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
           title="Publish at"
           value={publishAt}
           onChange={setPublishAt}
+          defaultTime={"00:00"}
         />
       )}
 
@@ -85,7 +87,8 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         onChange={() => {
           setIsVisibleBeforeRelease(!isVisibleBeforeRelease);
           if (!isVisibleBeforeRelease) {
-            setUnlockAt(new Date().toISOString());
+            const timezoneOffset = new Date().getTimezoneOffset() * 60000;
+            setUnlockAt(new Date(Date.now() - timezoneOffset).toISOString());
           }
         }}
       />
@@ -95,6 +98,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
           title="Unlock at"
           value={unlockAt}
           onChange={setUnlockAt}
+          defaultTime="00:00"
         />
       )}
 
@@ -104,7 +108,8 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         onChange={() => {
           setAllowsLateSubmissions(!allowsLateSubmissions);
           if (!allowsLateSubmissions) {
-            setLockAt(new Date().toISOString());
+            const timezoneOffset = new Date().getTimezoneOffset() * 60000;
+            setLockAt(new Date(Date.now() - timezoneOffset).toISOString());
           }
         }}
       />
@@ -114,6 +119,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
           title="Lock at"
           value={lockAt}
           onChange={setLockAt}
+          defaultTime="23:59"
         />
       )}
 

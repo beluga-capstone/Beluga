@@ -4,14 +4,18 @@ interface FormDateTimeInputProps {
   title: string;
   value: string;
   onChange: (value: string) => void;
+  defaultTime?: string;
 }
 
 const FormDateTimeInput: React.FC<FormDateTimeInputProps> = ({
   title,
   value,
   onChange,
+  defaultTime,
 }) => {
-  const [time, setTime] = useState<string>(value.split("T")[1]);
+  const [time, setTime] = useState<string>(
+    defaultTime ? defaultTime : value.split("T")[1]
+  );
   const [date, setDate] = useState<string>(value.split("T")[0]);
   const [dateHasBeenSet, setDateHasBeenSet] = useState(false);
 
