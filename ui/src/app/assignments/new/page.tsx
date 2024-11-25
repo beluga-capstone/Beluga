@@ -35,7 +35,7 @@ const NewAssignment: React.FC = () => {
     }
   }, [title, duplicateName]);
 
-  const handleAddAssignment = () => {
+  const handleAddAssignment = async() => {
     const isDuplicate = assignments.some(
       (assignment) =>
         assignment.title &&
@@ -49,7 +49,7 @@ const NewAssignment: React.FC = () => {
     }
     setError("");
 
-    addAssignment(
+    const data = await addAssignment(
       courseId,
       title,
       description,
