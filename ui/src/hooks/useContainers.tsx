@@ -71,10 +71,6 @@ export const useContainers = (): ContainerHook => {
   const fetchContainers = async () => {
     updateState({ isLoading: true, error: null });
     try {
-      const queryParams = new URLSearchParams();
-      if (profile?.user_id) {
-        queryParams.append('user_id', profile.user_id);
-      }
       const url = `${API_BASE_URL}/containers/search`;
       const data = await handleFetch(url, { method: "GET" });
       setContainers(data);

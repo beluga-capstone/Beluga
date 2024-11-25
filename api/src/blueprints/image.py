@@ -121,7 +121,7 @@ def search_images():
 
 # Get all images (GET)
 @image_bp.route('/images', methods=['GET'])
-# @admin_required
+@admin_required
 def get_images():
     images = db.session.scalars(db.select(Image)).all()
     images_list = [{
