@@ -128,7 +128,8 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         setImageId={setImageId}
       />
       <div className="flex flex-column justify-between">
-        <div className="p-2">
+        <div className="flex">
+        <div className="mr-3">
           <Button
             className="bg-red-500 text-white px-4 py-2 rounded flex items-center"
             onClick={handleDelete}
@@ -137,8 +138,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
             Delete
           </Button>
         </div>
-        <div className="flex">
-          <div className="p-2">
+          <div className="mr-3">
             <Button
               className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
               onClick={() => window.history.back()}
@@ -146,7 +146,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
               Cancel
             </Button>
           </div>
-          <div className="p-2">
+          <div className="">
             <Button
               className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
               onClick={handleUpdate}
