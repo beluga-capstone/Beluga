@@ -22,7 +22,7 @@ const ImportStudentsPage: React.FC = () => {
         results.data.forEach((student: any) => {
           setStudents((prev) => {
             const newId =
-              prev.length > 0 ? prev[prev.length - 1].id + 1 : Date.now();
+              prev.length > 0 ? (prev[prev.length - 1].id + 1).toString() : Date.now().toLocaleString();
             if (!student["First Name"] || !student["Last Name"]) {
               return prev;
             }
@@ -34,7 +34,7 @@ const ImportStudentsPage: React.FC = () => {
                 lastName: student["Last Name"],
                 middleName: student["Middle Name"],
                 email: student["Email"],
-                role: 8,
+                role_id: 8,
               },
             ];
           });
