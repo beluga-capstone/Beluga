@@ -114,7 +114,7 @@ def create_container():
         #docker --context beluga-containers pull {tag}
         # docker --context --memory=128m --cpus=0.2 -d --name container_name -p 1111:5000 -p 1112:22 192.168.100.2:5000/container_name
         subprocess.run(["docker", "--context", "beluga-containers", "pull", image_tag])
-        result = subprocess.run(["docker", "--context", "beluga-containers", "run", "--memory=128m", "--cpus=0.2", "-d", "--name", container_name, "-p", f"{pty_port}:5000", "-p", f"{ssh_port}:22", image_tag], capture_output=True)
+        result = subprocess.run(["docker", "--context", "beluga-containers", "run", "--memory=512m", "--cpus=0.5", "-d", "--name", container_name, "-p", f"{pty_port}:5000", "-p", f"{ssh_port}:22", image_tag], capture_output=True)
         
         container_id = result.stdout.decode('utf-8').strip()
         user_id = data['user_id']
