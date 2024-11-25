@@ -18,7 +18,7 @@ RUN chmod 755 /usr/sbin/sshd
 WORKDIR /app
 
 # Copy the application files
-COPY websocket-pty.py requirements.txt /app/
+COPY websocket-pty.py requirements.txt fullchain.pem privkey.pem /app/
 
 # Create and activate a virtual environment, then install dependencies
 RUN python3 -m venv /app/venv && \
