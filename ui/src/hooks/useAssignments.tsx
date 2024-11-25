@@ -2,20 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { Assignment } from "@/types";
+import { useRouter } from "next/navigation"; // Use useRouter directly here
 
 export const useAssignments = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const router = useRouter(); // Directly use useRouter here
 
   const fetchAssignments = async () => {
     try {
-      const response = await fetch('http://localhost:5000/assignments');
+      const response = await fetch("http://localhost:5000/assignments");
       if (!response.ok) {
-        throw new Error('Failed to fetch assignments');
+        throw new Error("Failed to fetch assignments");
       }
       const data = await response.json();
 
       const transformedData = data.map((assignment: Assignment) => ({
-
         assignment_id: assignment.assignment_id,
         course_id: assignment.course_id,
         title: assignment.title,
@@ -63,6 +64,32 @@ export const useAssignments = () => {
       return [];
     }
   };
+
+  const fetchAssignmentsById = async (assignmentId: string): Promise<Assignment> => {
+    try {
+      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch assignment details");
+      }
+      const data = await response.json();
+      return {
+        assignment_id: data.assignment_id,
+        course_id: data.course_id,
+        title: data.title,
+        description: data.description,
+        due_at: data.due_at ? new Date(data.due_at) : null,
+        lock_at: data.lock_at ? new Date(data.lock_at) : null,
+        unlock_at: data.unlock_at ? new Date(data.unlock_at) : null,
+        publish_at: data.publish_at ? new Date(data.publish_at) : null,
+        is_published: data.is_published || false,
+        allows_late_submissions: data.allows_late_submissions || false,
+        docker_image_id: data.docker_image_id || null,
+      };
+    } catch (err) {
+      console.error("Error fetching assignment by ID:", err);
+      throw err;
+    }
+  };  
   
   const saveAssignment = async (newAssignment: Assignment) => {
     try {
@@ -164,21 +191,22 @@ export const useAssignments = () => {
     }
   };
 
-  const deleteAssignment = async (assignmentId: string) => {
+  const deleteAssignment = async (assignmentId: string, courseId: string): Promise<void> => {
     try {
       const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete assignment');
+        throw new Error("Failed to delete assignment");
       }
-
       setAssignments((prev) =>
         prev.filter((assignment) => assignment.assignment_id !== assignmentId)
       );
+      window.location.href = `/assignments/courses/${courseId}`;
     } catch (err) {
-      console.log(err);
+      console.error("Error deleting assignment:", err);
+      throw err;
     }
   };
 
@@ -240,7 +268,8 @@ export const useAssignments = () => {
   return {
     assignments,
     fetchAssignments,
-    fetchAssignmentsByCourseId, // Add this
+    fetchAssignmentsByCourseId,
+    fetchAssignmentsById,
     addAssignment,
     updateAssignment,
     deleteAssignment,

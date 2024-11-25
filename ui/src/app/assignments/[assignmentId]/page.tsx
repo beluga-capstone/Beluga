@@ -37,7 +37,7 @@ interface AssignmentPageProps {
 const AssignmentPage = ({ params }: AssignmentPageProps) => {
   const router = useRouter();
   const { profile } = useProfile();
-  const { assignments } = useAssignments();
+  const { assignments, fetchAssignmentsById } = useAssignments();
   const {
     runContainer,
     startContainer,
@@ -47,7 +47,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [containerName, setContainerName] = useState<string | null>(null);
-  const [containerStatus, setContainerStatus] = useState<string>("none"); // "none" | "created" | "running" | "stopped"
+  const [containerStatus, setContainerStatus] = useState<string>("none");
   const [isProcessing, setIsProcessing] = useState(false);
   const [imageName, setImageName] = useState<string | null>(null);
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
@@ -55,7 +55,6 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
   const [zipFile, setZipFile] = useState<File | null>(null);
   const [socketPort, setSocketPort] = useState<number | null>(null);
   const [sshPort, setSshPort] = useState<number | null>(null);
-
 
   const { imageData } = useImageData(assignment?.docker_image_id ?? null);
 
@@ -66,6 +65,23 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
     return () => clearInterval(intervalId);
   }, [router]);
+  
+  useEffect(() => {
+    const loadAssignment = async () => {
+      try {
+        const fetchedAssignment = await fetchAssignmentsById(params.assignmentId);
+        setAssignment(fetchedAssignment);
+        const name = normalizeDockerName(`${fetchedAssignment.title}_con`);
+        setContainerName(name);
+      } catch (error) {
+        console.error("Failed to fetch assignment by ID:", error);
+        toast.error("Could not load assignment.");
+        router.push("/assignments");
+      }
+    };
+
+    loadAssignment();
+  }, [params.assignmentId, fetchAssignmentsById, router]);
 
   // Initialize container and check status
   useEffect(() => {
