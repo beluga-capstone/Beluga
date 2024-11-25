@@ -22,25 +22,28 @@ const base64ToFile = (base64: string, filename: string): File => {
   return new File([u8arr], filename, { type: mime });
 };
 
-const makeSubmissionList = async (res: Response): Promise<Submission[] | null> => {
+const makeSubmissionList = async (
+  res: Response
+): Promise<Submission[] | null> => {
   try {
     const submissions = await res.json();
-    const itemList: Submission[] = submissions.map((submission: Submission) => ({
-      submission_id: submission.submission_id,
-      user_id: submission.user_id,
-      assignment_id: submission.assignment_id,
-      submitted_at: new Date(submission.submitted_at),
-      grade: submission.grade,
-      status: submission.status,
-      data: submission.data,
-    }));
-    return itemList
+    const itemList: Submission[] = submissions.map(
+      (submission: Submission) => ({
+        submission_id: submission.submission_id,
+        user_id: submission.user_id,
+        assignment_id: submission.assignment_id,
+        submitted_at: new Date(submission.submitted_at),
+        grade: submission.grade,
+        status: submission.status,
+        data: submission.data,
+      })
+    );
+    return itemList;
   } catch (error) {
-    console.log('error make submission list:', error)
-    return null
+    console.log("error make submission list:", error);
+    return null;
   }
-
-}
+};
 
 const loadSubmissionsFromStorage = async (): Promise<Submission[]> => {
   const data = localStorage.getItem("submissions");
@@ -74,23 +77,22 @@ export const useSubmissions = () => {
 
   useEffect(() => {
     const loadSubmissions = async () => {
-      //const loadedSubmissions = await loadSubmissionsFromStorage();
-      // setSubmissions(loadedSubmissions);
       const response = await fetch("http://localhost:5000/submissions", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       if (!response.ok) {
-      throw new Error(`Error: ${response.status} - ${response.statusText}`);
-    }
-    const submissions = await makeSubmissionList(response)
-    setSubmissions(submissions)
+        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+      }
+      const submissions = await makeSubmissionList(response);
+      if (submissions) {
+        setSubmissions(submissions);
+      }
     };
     loadSubmissions();
   }, []);
-
 
   const submit = (userId: string, assignmentId: string, data: File) => {
     const submission: Submission = {
@@ -104,29 +106,29 @@ export const useSubmissions = () => {
     };
 
     const pushSubmissionDB = async (submission) => {
-    try {
-        const fileBase64_data = await fileToBase64(submission.data)
-        submission.data = fileBase64_data
+      try {
+        const fileBase64_data = await fileToBase64(submission.data);
+        submission.data = fileBase64_data;
 
         const res = await fetch("http://localhost:5000/submissions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(submission),
-          });
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(submission),
+        });
 
         if (!res.ok) {
-          throw new Error('reponse error');
+          throw new Error("reponse error");
         }
         const responseData = await res.json();
-        console.log('Submission successful:', responseData);
+        console.log("Submission successful:", responseData);
       } catch (error) {
-        console.log("error in pushSubmissionDB:", error)
+        console.log("error in pushSubmissionDB:", error);
       }
-    }
+    };
 
-    pushSubmissionDB(submission)
+    pushSubmissionDB(submission);
 
     const newSubmissions = [...submissions, submission];
     setSubmissions(newSubmissions);
@@ -143,32 +145,33 @@ export const useSubmissions = () => {
     //     submission.user_id === userId
     // );
 
-   const fetchSubmissions = (): Promise<Submission | null> => {
-    return fetch(
-      `http://localhost:5000/submissions/user/${userId}/assignment/${assignmentId}/latest`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    )
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`Failed to fetch submissions: ${res.status}`);
+    const fetchSubmissions = (): Promise<Submission | null> => {
+      return fetch(
+        `http://localhost:5000/submissions/user/${userId}/assignment/${assignmentId}/latest`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-        console.log("getLatestSubmission")
-        if (res.json().submission_id === undefined) { return null}
-        return res.json();
-      })
-      .catch((error) => {
-        console.error("Error in fetching submissions:", error);
-        return [];
-      });
-  };
+      )
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`Failed to fetch submissions: ${res.status}`);
+          }
+          console.log("getLatestSubmission");
+          if (res.json().submission_id === undefined) {
+            return null;
+          }
+          return res.json();
+        })
+        .catch((error) => {
+          console.error("Error in fetching submissions:", error);
+          return [];
+        });
+    };
 
-  return fetchSubmissions();
-
+    return fetchSubmissions();
   };
 
   const getSubmission = (submissionId: string): Submission | null => {
@@ -185,26 +188,28 @@ export const useSubmissions = () => {
     // );
 
     const userSubmissionsFunc = (): Promise<Submission | null> => {
-    return fetch(`http://localhost:5000/submissions/user/${userId}/latest`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`Failed to fetch submissions: ${res.status}`);
-        }
-        if (res.json().submission_id === undefined) { return null}
-        return res.json(); // Assuming `makeSubmissionList` expects parsed JSON
+      return fetch(`http://localhost:5000/submissions/user/${userId}/latest`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
-      .catch((error) => {
-        console.error("Error fetching latest submission:", error);
-        return null;
-      });
-  };
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`Failed to fetch submissions: ${res.status}`);
+          }
+          if (res.json().submission_id === undefined) {
+            return null;
+          }
+          return res.json(); // Assuming `makeSubmissionList` expects parsed JSON
+        })
+        .catch((error) => {
+          console.error("Error fetching latest submission:", error);
+          return null;
+        });
+    };
 
-  return userSubmissionsFunc();
+    return userSubmissionsFunc();
   };
 
   const getAllSubmissionsForAssignmentAndUser = (
@@ -212,97 +217,110 @@ export const useSubmissions = () => {
     userId: string
   ): Promise<Submission[]> => {
     const fetchSubmissions = (): Promise<Submission[]> => {
-    return fetch(
-      `http://localhost:5000/submissions/search?assignment_id=${assignmentId}&user_id=${userId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    )
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`Failed to fetch submissions: ${res.status}`);
+      return fetch(
+        `http://localhost:5000/submissions/search?assignment_id=${assignmentId}&user_id=${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-        return res;
-      })
-      .then((data) => {
-        return makeSubmissionList(data);
-      })
-      .catch((error) => {
-        console.error("Error in getAllSubmissionsForAssignmentAndUser:", error);
-        return [];
-      });
-  };
+      )
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`Failed to fetch submissions: ${res.status}`);
+          }
+          return res;
+        })
+        .then((data) => {
+          return makeSubmissionList(data);
+        })
+        .catch((error) => {
+          console.error(
+            "Error in getAllSubmissionsForAssignmentAndUser:",
+            error
+          );
+          return [];
+        });
+    };
 
-  return fetchSubmissions().then((submissions) => {
-    return submissions.sort(
-      (a, b) =>
-        new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime()
-    );
-  });
+    return fetchSubmissions().then((submissions) => {
+      return submissions.sort(
+        (a, b) =>
+          new Date(b.submitted_at).getTime() -
+          new Date(a.submitted_at).getTime()
+      );
+    });
   };
 
   const setGrade = (submissionId: string, grade: number) => {
     const updateGradeInAPI = async () => {
-    try {
-      const res = await fetch(`http://localhost:5000/submissions/${submissionId}/update/var`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          'grade': grade,
-        }),
-      });
+      try {
+        const res = await fetch(
+          `http://localhost:5000/submissions/${submissionId}/update/var`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              grade: grade,
+            }),
+          }
+        );
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error('Failed to update submission:', errorData.error);
-        return;
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error("Failed to update submission:", errorData.error);
+          return;
+        }
+      } catch (error) {
+        console.error("Error updating submission:", error);
       }
-    } catch (error) {
-      console.error('Error updating submission:', error);
-    }
-  };
-  updateGradeInAPI();
+    };
+    updateGradeInAPI();
   };
 
   const setStatus = (submissionId: string, status: string) => {
     const updateStatusInAPI = async () => {
-    try {
-      const res = await fetch(`http://localhost:5000/submissions/${submissionId}/update/var`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          'status': status,
-        }),
-      });
+      try {
+        const res = await fetch(
+          `http://localhost:5000/submissions/${submissionId}/update/var`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              status: status,
+            }),
+          }
+        );
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error('Failed to update submission:', errorData.error);
-        return;
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error("Failed to update submission:", errorData.error);
+          return;
+        }
+      } catch (error) {
+        console.error("Error updating submission:", error);
       }
-    } catch (error) {
-      console.error('Error updating submission:', error);
-    }
-  };
-  updateStatusInAPI();
+    };
+    updateStatusInAPI();
   };
 
   const getSubmissionCountForAssignment = useCallback(
     async (assignmentId: string): Promise<number> => {
       try {
-        const res = await fetch(`http://localhost:5000/submissions/assignment/${assignmentId}/count`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const res = await fetch(
+          `http://localhost:5000/submissions/assignment/${assignmentId}/count`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!res.ok) {
           throw new Error(`Failed to fetch submission count: ${res.status}`);
