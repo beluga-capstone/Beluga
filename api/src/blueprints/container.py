@@ -251,7 +251,7 @@ def get_container(container_name):
                         assigned_ports[container_port] = None
 
                 status = docker_container.attrs['State']['Status']
-                docker_image_id = docker_container.attrs['Config']['Image']
+                docker_image_id = docker_container.attrs['Image']
 
                 port_mapping = docker_container.attrs['NetworkSettings']['Ports']
                 
