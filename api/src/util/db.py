@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
 from sqlalchemy.dialects.postgresql import UUID
-
+from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
 
@@ -17,6 +17,8 @@ class Role(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now)
 
+    users = relationship('User', backref='role')
+
 class User(db.Model, UserMixin):
     __tablename__ = 'user'
     user_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -29,6 +31,12 @@ class User(db.Model, UserMixin):
     created_at = db.Column(db.DateTime, default=datetime.now)
     update_at = db.Column(db.DateTime, default=datetime.now)
 
+    courses = relationship('Course', backref='creator', cascade='all, delete-orphan')
+    enrollments = relationship('CourseEnrollment', backref='user', cascade='all, delete-orphan')
+    submissions = relationship('Submission', backref='user', cascade='all, delete-orphan')
+    containers = relationship('Container', backref='user', cascade='all, delete-orphan')
+    images = relationship('Image', backref='user', cascade='all, delete-orphan')
+    
     def get_id(self):
         return (self.user_id)
 
@@ -69,6 +77,8 @@ class Term(db.Model):
     term_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = db.Column(db.String(100), nullable=False)
 
+    courses = relationship('Course', backref='term', cascade='all, delete-orphan')
+
 class Course(db.Model):
     __tablename__ = 'course'
     course_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -80,6 +90,9 @@ class Course(db.Model):
     update_at = db.Column(db.DateTime, default=datetime.now)
     start_at = db.Column(db.DateTime)
     term_id = db.Column(UUID(as_uuid=True), db.ForeignKey('term.term_id'))
+
+    assignments = relationship('Assignment', backref='course', cascade='all, delete-orphan')
+    enrollments = relationship('CourseEnrollment', backref='course', cascade='all, delete-orphan')
 
 class CourseEnrollment(db.Model):
     __tablename__ = 'course_enrollment'
@@ -99,6 +112,9 @@ class Assignment(db.Model):
     unlock_at = db.Column(db.DateTime)
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
     docker_image_id = db.Column(db.String(80), db.ForeignKey('image.docker_image_id'), nullable=True)
+
+    submissions = relationship('Submission', backref='assignment', cascade='all, delete-orphan')
+    image = relationship('Image', back_populates='assignments')
 
 class Submission(db.Model):
     __tablename__ = 'submission'
@@ -123,3 +139,5 @@ class Image(db.Model):
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
     description = db.Column(db.String(255))
     packages = db.Column(db.Text)
+
+    assignments = relationship('Assignment', back_populates='image')
