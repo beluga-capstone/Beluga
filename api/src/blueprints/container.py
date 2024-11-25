@@ -111,16 +111,8 @@ def create_container():
         subprocess.run(["docker", "exec", container_id, "mkdir", "-p", container_ssh_dir], check=True)
 
         # Copy the public key into the container's authorized_keys
-        import sys
-
-        print('lmao-1', file=sys.stderr)
-        subprocess.run(['cp', public_key_path, ak_path])
-        print('lmao', file=sys.stderr)
-        subprocess.Popen(f"tar -cf - {ak_path} --mode u=rw,g=,o= --owner 0 --group 0 | docker cp - {container_id}:/root/.ssh/", shell=True)
-        print('lmao2', file=sys.stderr)
-        subprocess.run(['rm', ak_path])
-        print('lmao3', file=sys.stderr)
-        #subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
+        subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
+        subprocess.run(["docker", "exec", container_id, "chown", "root:root", f"{container_ssh_dir}/authorized_keys"])
 
         # # Set the permissions of .ssh directory and authorized_keys file
         # subprocess.run(["docker", "exec", container_id, "chmod", "700", container_ssh_dir], check=True)
@@ -138,17 +130,6 @@ def create_container():
         alt_desc = f"Container running with image {data['docker_image_id']}"
         if image_tag != "":
             alt_desc = f"Container running with image {image_tag}"
-
-        container_id = container.id
-        ssh_keys = get_keys_path(data['user_id'])
-        public_key_path = ssh_keys["public_key_path"]
-
-        #Create ssh dir inside container
-        container_ssh_dir = "/root/.ssh" # path inside docker container
-        subprocess.run(["docker", "exec", container_id, "mkdir", "-p", container_ssh_dir], check=True)
-
-        # Copy the key into Docker's authorized key file
-        subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
 
         # Save container information to the database
         new_container = Container(
