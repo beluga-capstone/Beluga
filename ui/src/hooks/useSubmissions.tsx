@@ -105,17 +105,19 @@ export const useSubmissions = () => {
       data,
     };
 
-    const pushSubmissionDB = async (submission) => {
+    const pushSubmissionDB = async (submission: Submission) => {
       try {
         const fileBase64_data = await fileToBase64(submission.data);
-        submission.data = fileBase64_data;
 
         const res = await fetch("http://localhost:5000/submissions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(submission),
+          body: JSON.stringify({
+            ...submission,
+            data: fileBase64_data,
+          }),
         });
 
         if (!res.ok) {
@@ -135,43 +137,38 @@ export const useSubmissions = () => {
     saveSubmissionsToStorage(newSubmissions);
   };
 
-  const getLatestSubmission = (
+  const getLatestSubmission = async (
     assignmentId: string,
     userId: string
-  ): Submission | null => {
-    // const userSubmissions = submissions.filter(
-    //   (submission) =>
-    //     submission.assignment_id === assignmentId &&
-    //     submission.user_id === userId
-    // );
-
-    const fetchSubmissions = (): Promise<Submission | null> => {
-      return fetch(
-        `http://localhost:5000/submissions/user/${userId}/assignment/${assignmentId}/latest`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+  ): Promise<Submission | null> => {
+    const fetchSubmissions = async (): Promise<Submission | null> => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/submissions/user/${userId}/assignment/${assignmentId}/latest`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!res.ok) {
+          throw new Error(`Failed to fetch submissions: ${res.status}`);
         }
-      )
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error(`Failed to fetch submissions: ${res.status}`);
-          }
-          console.log("getLatestSubmission");
-          if (res.json().submission_id === undefined) {
-            return null;
-          }
-          return res.json();
-        })
-        .catch((error) => {
-          console.error("Error in fetching submissions:", error);
-          return [];
-        });
+        console.log("getLatestSubmission");
+        const jsonResponse = await res.json();
+        if (jsonResponse.submission_id === undefined) {
+          return null;
+        }
+        return jsonResponse;
+      } catch (error) {
+        console.error("Error in fetching submissions:", error);
+        return null;
+      }
     };
 
-    return fetchSubmissions();
+    const result = await fetchSubmissions();
+    return result;
   };
 
   const getSubmission = (submissionId: string): Submission | null => {
