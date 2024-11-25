@@ -67,7 +67,7 @@ def create_user_or_users():
         # Single user creation if input is not a list
         elif isinstance(data, dict):
             # Validate required fields
-            if not data.get('username') or not data.get('email'):
+            if not data.get('email'):
                 return jsonify({'error': 'Username and email are required'}), 400
 
             # Handle role_id correctly
@@ -85,11 +85,11 @@ def create_user_or_users():
 
             # Create a single user object
             new_user = User(
-                username=user_data.get('email').split("@")[0],  # Generate username
-                email=user_data.get('email'),
-                first_name=user_data.get('firstName'),
-                middle_name=user_data.get('middleName', ""),
-                last_name=user_data.get('lastName', ""),
+                username=data.get('email').split("@")[0],  # Generate username
+                email=data.get('email'),
+                first_name=data.get('firstName'),
+                middle_name=data.get('middleName', ""),
+                last_name=data.get('lastName', ""),
                 role_id=role_id  # Use mapped integer role_id
             )
 
