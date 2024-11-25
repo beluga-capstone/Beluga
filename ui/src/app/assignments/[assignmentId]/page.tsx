@@ -36,7 +36,12 @@ const AssignmentPage = ({ params }: { params: { assignmentId: string } }) => {
       assignment.assignment_id,
       profile.user_id
     );
-    setLatestSubmission(submission);
+    if ((submission.length === 0) || (submission.length === undefined)){
+      setLatestSubmission(null);
+    }
+    else {
+      setLatestSubmission(submission);
+    }
   }, [assignment, profile]);
 
   // New state for container stop loading
