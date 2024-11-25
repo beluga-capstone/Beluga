@@ -235,7 +235,7 @@ const Containers: React.FC = () => {
                     status === "running"
                       ? "focus:ring-red-500"
                       : "focus:ring-green-500"
-                  } text-white focus:outline-none focus:ring-2`}
+                  } focus:outline-none focus:ring-2`}
                   onClick={() => handleStartStop(
                     container.docker_container_id,
                     status === "running" ? "stop" : "start"
