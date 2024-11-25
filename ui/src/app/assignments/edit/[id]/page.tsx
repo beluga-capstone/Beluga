@@ -45,7 +45,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
       setIsPublished(!!assignment.is_published);
       setPublishAt(formatDate(assignment.publish_at));
       setAllowsLateSubmissions(!!assignment.allows_late_submissions);
-      setImageId(assignment.docker_image_id || "");
+      setImageId(assignment.docker_image_id || null);
     }
   }, [assignment]);
 
