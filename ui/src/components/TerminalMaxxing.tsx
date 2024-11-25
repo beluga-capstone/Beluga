@@ -157,19 +157,19 @@ const ContainerControls = ({
       case "stopped":
         return {
           text: "Start Container",
-          bgColor: "bg-green-500",
+          bgColor: "bg-green-500 rounded",
           loadingText: "Starting...",
         };
       case "running":
         return {
           text: "Stop Container",
-          bgColor: "bg-red-500",
+          bgColor: "bg-red-500 rounded",
           loadingText: "Stopping...",
         };
       default:
         return {
           text: "Create Container",
-          bgColor: "bg-blue-500",
+          bgColor: "bg-blue-500 rounded",
           loadingText: "Creating...",
         };
     }
@@ -182,6 +182,9 @@ const ContainerControls = ({
   const buttonConfig = getButtonConfig();
 
   return (
+    <>
+    <div>
+    </div>
     <div className="mt-3">
       <h2 className="font-bold pb-4">
         {dockerImageId
@@ -220,6 +223,7 @@ const ContainerControls = ({
         )}
       </div>
     </div>
+    </>
   );
 };
 
