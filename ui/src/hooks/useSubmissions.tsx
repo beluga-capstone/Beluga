@@ -24,15 +24,12 @@ const base64ToFile = (base64: string, filename: string): File => {
 
 const makeSubmissionList = async (res: Response): Promise<Submission[] | null> => {
   try {
-    let submissions = res
-    if (!res.bodyUsed) {
-      submissions = await res.json();
-    }
-    const itemList = submissions.map(submission => ({
-      submissionId: submission.submission_id,
-      userId: submission.user_id,
-      assignmentId: submission.assignment_id,
-      submissionDate: submission.submissionDate,
+    const submissions = await res.json();
+    const itemList: Submission[] = submissions.map((submission: Submission) => ({
+      submission_id: submission.submission_id,
+      user_id: submission.user_id,
+      assignment_id: submission.assignment_id,
+      submitted_at: new Date(submission.submitted_at),
       grade: submission.grade,
       status: submission.status,
       data: submission.data,
