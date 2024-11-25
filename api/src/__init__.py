@@ -203,12 +203,9 @@ def init_default_images():
         docker_image_id = get_docker_image_id_from_registry(image_tag)
 
         if docker_image_id:
-            # If the docker_image_id exists in the registry, check if it's already in the database
             if check_image_in_database(docker_image_id):
-                print(f"Image with ID {docker_image_id} exists in the registry. Add to DB.")
                 continue
             else:
-                # If the image ID is not in the database, add it using the registry's docker_image_id
                 new_image = Image(
                     docker_image_id=docker_image_id,
                     description=image_info['description'],
