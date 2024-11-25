@@ -2,20 +2,11 @@
 
 import React from "react";
 import { useProfile } from "@/hooks/useProfile";
-import { Edit2 } from "lucide-react";
-import Link from "next/link";
-import { ROLES } from "@/constants";
 import Button from "@/components/Button"; // Ensure you have the Button component imported
+import { getRoleName } from "@/lib/utils";
 
 const ProfilePage: React.FC = () => {
   const { profile } = useProfile();
-
-  // Helper function to get the role name from role_id
-  const getRoleName = (roleId: number | undefined) => {
-    if (!roleId) return "Unknown Role";
-    const roleEntry = Object.entries(ROLES).find(([_, id]) => id === roleId);
-    return roleEntry ? roleEntry[0] : "Unknown Role";
-  };
 
   // Function to handle downloading the private key
   const handleDownloadPrivateKey = () => {
