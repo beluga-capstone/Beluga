@@ -40,7 +40,10 @@ const loadSubmissionsFromStorage = async (): Promise<Submission[]> => {
 };
 
 const makeSubmissionList = async (res: Response): Promise<Submission[]> => {
-  const submissions = await res.json();
+  let submissions = res
+  if (!res.bodyUsed) {
+    submissions = await res.json();
+  }
   const itemList = submissions.map(submission => ({
     submissionId: submission.submission_id,
     userId: submission.user_id,
@@ -205,7 +208,7 @@ export const useSubmissions = () => {
         return res.json(); // Assuming `makeSubmissionList` expects parsed JSON
       })
       .then((data) => {
-        const submissions = makeSubmissionList(data); // Ensure makeSubmissionList is defined
+        const submissions = makeSubmissionList(data);
         return submissions.length > 0 ? submissions[0] : null;
       })
       .catch((error) => {
@@ -236,7 +239,7 @@ const getAllSubmissionsForAssignmentAndUser = (
         if (!res.ok) {
           throw new Error(`Failed to fetch submissions: ${res.status}`);
         }
-        return res.json();
+        return res;
       })
       .then((data) => {
         return makeSubmissionList(data);
@@ -256,23 +259,53 @@ const getAllSubmissionsForAssignmentAndUser = (
 };
 
   const setGrade = (submissionId: string, grade: number) => {
-    const updatedSubmissions = submissions.map((submission) =>
-      submission.submission_id === submissionId
-        ? { ...submission, grade, status: "graded" }
-        : submission
-    );
-    setSubmissions(updatedSubmissions);
-    saveSubmissionsToStorage(updatedSubmissions);
+    const updateGradeInAPI = async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/submissions/${submissionId}/update/var`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          'grade': grade,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error('Failed to update submission:', errorData.error);
+        return;
+      }
+    } catch (error) {
+      console.error('Error updating submission:', error);
+    }
+  };
+  updateGradeInAPI();
   };
 
   const setStatus = (submissionId: string, status: string) => {
-    const updatedSubmissions = submissions.map((submission) =>
-      submission.submission_id === submissionId
-        ? { ...submission, status }
-        : submission
-    );
-    setSubmissions(updatedSubmissions);
-    saveSubmissionsToStorage(updatedSubmissions);
+    const updateStatusInAPI = async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/submissions/${submissionId}/update/var`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          'status': status,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error('Failed to update submission:', errorData.error);
+        return;
+      }
+    } catch (error) {
+      console.error('Error updating submission:', error);
+    }
+  };
+  updateStatusInAPI();
   };
 
   const getSubmissionCountForAssignment = useCallback(

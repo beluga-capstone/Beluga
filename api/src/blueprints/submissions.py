@@ -214,3 +214,28 @@ def get_submission_count_by_assignment(assignment_id):
         return jsonify({'assignment_id': assignment_id, 'submission_count': submission_count}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@submission_bp.route('/submissions/<uuid:submission_id>/update/var', methods=['PUT'])
+@student_required
+def update_submission_field(submission_id):
+    submission = db.session.get(Submission, submission_id)
+    if submission is None:
+        return jsonify({'error': 'Submission not found'}), 404
+
+    data = request.get_json()
+
+    if 'grade' in data:
+        new_grade = data.get('grade')
+        submission.grade = new_grade
+
+    if 'status' in data:
+        new_status = data.get('status')
+        submission.status = new_status
+
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Submission updated successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
