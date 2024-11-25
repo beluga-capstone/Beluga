@@ -1,7 +1,7 @@
 'use client';
 
 import { SideNavItem } from '@/types';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useParams } from 'next/navigation';
 import { Icon } from '@iconify/react';
@@ -9,6 +9,17 @@ import { Icon } from '@iconify/react';
 const SideNavbar = () => {
   const params = useParams();
   const pathname = usePathname();
+
+  const [courseId, setCourseId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Ensure we handle both string and string[] cases for courseId
+    if (Array.isArray(params.courseId)) {
+      setCourseId(params.courseId[0] || null); // Take the first element if it's an array
+    } else {
+      setCourseId(params.courseId || null); // Directly use the string if it's not an array
+    }
+  }, [params.courseId]);
 
   const getSideNavItems = (): SideNavItem[] => {
     const defaultItems: SideNavItem[] = [
@@ -19,17 +30,17 @@ const SideNavbar = () => {
       },
     ];
 
-    const courseItems: SideNavItem[] = params.courseId
+    const courseItems: SideNavItem[] = courseId
       ? [
           {
             title: 'Students',
-            path: `/students/courses/${params.courseId}`,
+            path: `/students/courses/${courseId}`,
             icon: <Icon icon="lucide:users" width="24" height="24" />,
             dynamic: true,
           },
           {
             title: 'Assignments',
-            path: `/assignments/courses/${params.courseId}`,
+            path: `/assignments/courses/${courseId}`,
             icon: <Icon icon="lucide:folder" width="24" height="24" />,
             dynamic: true,
           },
@@ -76,13 +87,7 @@ const SideNavbar = () => {
 
 export default SideNavbar;
 
-const MenuItem = ({
-  item,
-  pathname,
-}: {
-  item: SideNavItem;
-  pathname: string;
-}) => {
+const MenuItem = ({ item, pathname }: { item: SideNavItem; pathname: string }) => {
   const [subMenuOpen, setSubMenuOpen] = useState(false);
 
   const toggleSubMenu = () => {
