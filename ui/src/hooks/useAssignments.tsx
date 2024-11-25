@@ -121,7 +121,7 @@ export const useAssignments = () => {
       allows_late_submissions:allows_late_submissions,
       docker_image_id:docker_image_id,  
     };
-    console.log("updating with",assignment_id,course_id,title,description,due_at,lock_at,unlock_at,docker_image_id)
+    //console.log("updating with",assignment_id,course_id,title,description,due_at,lock_at,unlock_at,docker_image_id)
 
     try {
       const response = await fetch(`http://localhost:5000/assignments/${assignment_id}`, {
@@ -213,7 +213,7 @@ export const useAssignments = () => {
       if (!response.ok) {
         throw new Error('Failed to update late submissions setting');
       }
-
+      fetchAssignments();
       setAssignments((prev) =>
         prev.map((assignment) =>
           assignment.assignment_id === assignmentId ? { ...assignment, allowsLateSubmissions } : assignment
