@@ -6,7 +6,7 @@ import Link from "next/link";
 
 const StudentPage = ({ params }: { params: { id: string } }) => {
   const { users } = useUsers();
-  const user = users.find((user) => user.id === parseInt(params.id, 10));
+  const user = users.find((user) => user.id === params.id);
 
   return (
     <div className="container mx-auto p-4">
@@ -21,7 +21,7 @@ const StudentPage = ({ params }: { params: { id: string } }) => {
       <div className="flex justify-between items-center">
         <div className="flex-row">
           <h2 className="font-bold pb-4">Email: {user?.email}</h2>
-          <h2 className="font-bold pb-4">Role: {user?.role}</h2>
+          <h2 className="font-bold pb-4">Role: {user?.role_id}</h2>
         </div>
       </div>
     </div>
