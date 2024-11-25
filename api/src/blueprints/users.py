@@ -97,12 +97,14 @@ def create_user_or_users():
 
             # Handle role_id correctly
             role = data.get('role', "student")  # Default to "student"
-            if role == "student":
+            if role == "admin":
                 role_id = 1  # Adjust this mapping based on your database schema
             elif role == "professor":
                 role_id = 2
-            elif role == "admin":
-                role_id = 3
+            elif role == "ta":
+                role_id = 4
+            elif role == "student":
+                role_id = 8
             else:
                 raise ValueError(f"Invalid role: {role}")
 
@@ -110,9 +112,9 @@ def create_user_or_users():
             new_user = User(
                 username=data['username'],
                 email=data['email'],
-                first_name=data.get('first_name'),
-                middle_name=data.get('middle_name'),
-                last_name=data.get('last_name'),
+                first_name=data.get('firstName'),
+                middle_name=data.get('middleName'),
+                last_name=data.get('lastName'),
                 role_id=role_id  # Use mapped integer role_id
             )
 
