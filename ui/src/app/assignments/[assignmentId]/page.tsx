@@ -151,9 +151,14 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
           </h2>
 
           {assignment?.description && (
-            <h2 className="font-bold pb-4">
-              Description: {renderDescription()}
-            </h2>
+            <div className="font-bold pb-4">
+              <h2>Description:</h2>
+              {assignment.description.split("\n").map((line, index) => (
+                <p key={index} className="mt-2">
+                  {line}
+                </p>
+              ))}
+            </div>
           )}
 
         </div>
