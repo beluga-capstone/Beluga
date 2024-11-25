@@ -1,6 +1,6 @@
 import FormInput from "./FormInput";
 import FormTextArea from "./FormTextArea";
-import React from "react";
+import React, {useEffect} from "react";
 import LabeledToggleSwitch from "./LabeledToggleSwitch";
 import { useImages } from "@/hooks/useImages";
 import ImageOption from "./ImageOption";
@@ -47,6 +47,10 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   const [isVisibleBeforeRelease, setIsVisibleBeforeRelease] =
     React.useState(false);
   const [isPublishedLater, setIsPublishedLater] = React.useState(false);
+
+  useEffect(()=>{
+    console.log("iaosdbais", dueAt);
+  },[])
 
   return (
     <>
