@@ -16,14 +16,14 @@ class UI:
         ui = self._workspace.services.ui
         cmd = textwrap.dedent(
             f"""
-            PORT={api.port} make -C api/ run -e
+            PORT={api.port} make -C ui/ run -e
             """
         )
 
     def stop(self):
         cmd = textwrap.dedent(
             f"""
-            make -C api/ stop
+            make -C ui/ stop
             """
         )
         run.context.run_cmd(cmd, shell=True)
