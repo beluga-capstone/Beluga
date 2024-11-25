@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowUpFromLine, Edit2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import CopyTextBox from "@/components/CopyTextBox";
 
 import Button from "@/components/Button";
 import SubmissionZone from "@/components/SubmissionZone";
@@ -323,9 +324,22 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
               ? `Image name: ${imageName}`
               : null}
           </h2>
-          <p className="text-lg">Socket Port: {socketPort ?? "N/A"}</p>
-          <p className="text-lg">SSH Port: {sshPort ?? "N/A"}</p>
 
+          <h2 className="font-bold pb-4">
+            {socketPort ? (
+              <>
+                Socket port: <CopyTextBox text={socketPort.toString()} />
+              </>
+            ) : null}
+          </h2>
+
+          <h2 className="font-bold pb-4">
+            {sshPort ? (
+              <>
+                Socket port: <CopyTextBox text={sshPort.toString()} />
+              </>
+            ) : null}
+          </h2>
 
           {renderContainerButton()}
         </div>
