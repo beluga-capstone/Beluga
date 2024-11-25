@@ -14,7 +14,9 @@ import { useAssignments } from "@/hooks/useAssignments";
 import { useProfile } from "@/hooks/useProfile";
 import { useContainers } from "@/hooks/useContainers";
 import { useImageData } from "@/hooks/useImageData";
-import { Assignment } from "@/types";
+import { Assignment, Submission } from "@/types";
+import { useSubmissions } from "@/hooks/useSubmissions";
+import { shortDate, shortTime } from "@/lib/utils";
 
 const formatDate = (date: string) =>
   new Date(date).toLocaleDateString("en-US", {
@@ -38,14 +40,11 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
   const router = useRouter();
   const { profile } = useProfile();
   const { assignments } = useAssignments();
-  const {
-    runContainer,
-    startContainer,
-    stopContainer,
-    checkContainerExists,
-  } = useContainers();
+  const { runContainer, startContainer, stopContainer, checkContainerExists } =
+    useContainers();
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const { getLatestSubmission, submit } = useSubmissions();
   const [containerName, setContainerName] = useState<string | null>(null);
   const [containerStatus, setContainerStatus] = useState<string>("none"); // "none" | "created" | "running" | "stopped"
   const [isProcessing, setIsProcessing] = useState(false);
@@ -55,7 +54,17 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
   const [zipFile, setZipFile] = useState<File | null>(null);
   const [socketPort, setSocketPort] = useState<number | null>(null);
   const [sshPort, setSshPort] = useState<number | null>(null);
-
+  const [latestSubmission, setLatestSubmission] = useState<Submission | null>(
+    null
+  );
+  useEffect(() => {
+    if (!assignment || !profile) return;
+    const submission = getLatestSubmission(
+      assignment.assignment_id,
+      profile.user_id
+    );
+    setLatestSubmission(submission);
+  }, [assignment, profile]);
 
   const { imageData } = useImageData(assignment?.docker_image_id ?? null);
 
@@ -80,7 +89,8 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
         setContainerName(name);
 
         try {
-          const { exists, appPort, sshPort, status } = await checkContainerExists(name);
+          const { exists, appPort, sshPort, status } =
+            await checkContainerExists(name);
           if (exists && appPort) {
             // Extract the ports
             setSocketPort(appPort);
@@ -88,12 +98,12 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
             setContainerStatus(status === "running" ? "running" : "stopped");
           } else {
             setContainerStatus("none");
-          } 
+          }
         } catch (error) {
           console.error("Error checking container:", error);
           toast.error("Failed to check container status");
         }
-      } 
+      }
     };
 
     initializeAssignment();
@@ -105,7 +115,9 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
     const checkStatus = async () => {
       try {
-        const { exists, appPort, sshPort, status } = await checkContainerExists(containerName);
+        const { exists, appPort, sshPort, status } = await checkContainerExists(
+          containerName
+        );
         if (exists) {
           setContainerStatus(status === "running" ? "running" : "stopped");
           setSocketPort(appPort);
@@ -142,7 +154,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
           const result = await runContainer(
             assignment?.docker_image_id ?? null,
             containerName,
-            assignment?.description??null
+            assignment?.description ?? null
           );
           if (result) {
             setSocketPort(result.appPort);
@@ -159,7 +171,8 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
           // Start container
           await startContainer(containerName);
           setContainerStatus("running");
-          const { exists, appPort, sshPort, status } = await checkContainerExists(containerName);
+          const { exists, appPort, sshPort, status } =
+            await checkContainerExists(containerName);
           if (exists) {
             setSocketPort(appPort);
             setSshPort(sshPort);
@@ -180,28 +193,19 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
       router.refresh();
     } catch (error) {
       console.error("Container action failed:", error);
-      toast.error(`Failed to ${
-        containerStatus === "none" 
-          ? "create" 
-          : containerStatus === "running" 
-            ? "stop" 
+      toast.error(
+        `Failed to ${
+          containerStatus === "none"
+            ? "create"
+            : containerStatus === "running"
+            ? "stop"
             : "start"
-      } container`);
+        } container`
+      );
     } finally {
       setIsProcessing(false);
     }
   };
-
-  const renderDescription = () => {
-      if (!assignment?.description) return null;
-      return assignment.description.split("\n").map((line, index) => (
-        <span key={index}>
-          {line}
-          <br />
-        </span>
-      ));
-    };
-
 
   const renderContainerButton = () => {
     if (!assignment?.docker_image_id) return null;
@@ -209,7 +213,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
     let buttonConfig = {
       text: "Create Container",
       bgColor: "bg-blue-500",
-      loadingText: "Creating..."
+      loadingText: "Creating...",
     };
 
     switch (containerStatus) {
@@ -217,14 +221,14 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
         buttonConfig = {
           text: "Start Container",
           bgColor: "bg-green-500",
-          loadingText: "Starting..."
+          loadingText: "Starting...",
         };
         break;
       case "running":
         buttonConfig = {
           text: "Stop Container",
           bgColor: "bg-red-500",
-          loadingText: "Stopping..."
+          loadingText: "Stopping...",
         };
         break;
     }
@@ -247,40 +251,6 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
     );
   };
 
-  const handleSubmit = () => {
-    setSubmissionWindowIsOpen(false);
-    setSubmitIsEnabled(false);
-    console.log("Submitting file:", zipFile);
-  };
-
-  const renderSubmissionControls = () => {
-    if (!profile || profile.role_id !== ROLES.STUDENT) return null;
-
-    if (submissionWindowIsOpen) {
-      return (
-        <div className="flex">
-          <div className="px-2">
-            <Button
-              className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
-              onClick={() => setSubmissionWindowIsOpen(false)}
-            >
-              Cancel
-            </Button>
-          </div>
-          <div className="px-2">
-            <Button
-              className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-              onClick={handleSubmit}
-              disabled={!submitIsEnabled || !zipFile}
-            >
-              Submit
-            </Button>
-          </div>
-        </div>
-      );
-    }
-  }
-
   return (
     <div className="container mx-auto p-4">
       <div className="mb-8 flex items-center justify-between">
@@ -292,40 +262,113 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
           >
             <Edit2 size={24} />
           </Link>
-        ) : (
-          renderSubmissionControls()
-        )}
+        ) : null}
+        {profile?.role_id === ROLES.STUDENT &&
+          (submissionWindowIsOpen ? (
+            <div className="flex">
+              <div className="px-2">
+                <Button
+                  className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
+                  onClick={() => setSubmissionWindowIsOpen(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+              <div className="px-2">
+                <Button
+                  className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+                  onClick={() => {
+                    setSubmissionWindowIsOpen(false);
+                    setSubmitIsEnabled(false);
+                    console.log(zipFile);
+                    submit(
+                      profile.user_id,
+                      assignment?.assignment_id ?? "",
+                      zipFile!
+                    );
+                  }}
+                  disabled={!submitIsEnabled || !zipFile}
+                >
+                  Submit
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+              onClick={() => setSubmissionWindowIsOpen(true)}
+            >
+              <ArrowUpFromLine className="mr-2" />
+              {latestSubmission ? "Reupload files" : "Upload files"}
+            </Button>
+          ))}
       </div>
 
-      <div className="flex justify-between items-center">
-        <div>
+      <div className="flex-row">
+        <div className="flex justify-between">
           <h2 className="font-bold pb-4">
-            Due Date:{" "}
             {assignment?.due_at
-              ? formatDate(assignment.due_at.toISOString())
-              : "not found"}
+              ? `Due: ${shortDate(assignment?.due_at)} at ${shortTime(
+                  assignment?.due_at
+                )}`
+              : "No due date"}
           </h2>
-          <h2 className="font-bold pb-4">
-            Available:{" "}
-            {assignment?.publish_at
-              ? formatDate(assignment.publish_at.toISOString())
-              : "not found"}
-          </h2>
+
+          {profile?.role_id === ROLES.STUDENT && latestSubmission && (
+            <div className="flex flex-col">
+              <h2 className="font-bold">
+                {latestSubmission?.submitted_at
+                  ? `Submitted: ${shortDate(
+                      latestSubmission?.submitted_at
+                    )} at ${shortTime(latestSubmission?.submitted_at)}`
+                  : "Not yet submitted"}
+              </h2>
+              <h2 className="font-bold">
+                {latestSubmission?.status === "graded"
+                  ? `Grade: ${latestSubmission?.grade}`
+                  : "Not yet graded"}
+              </h2>
+            </div>
+          )}
+        </div>
+
+        <div>
+          {assignment?.publish_at && assignment?.lock_at && (
+            <h2 className="font-bold pb-4">
+              Available {shortDate(assignment.publish_at)} at{" "}
+              {shortTime(assignment.publish_at)} to{" "}
+              {shortDate(assignment.lock_at)} at {shortTime(assignment.lock_at)}
+            </h2>
+          )}
 
           {assignment?.description && (
             <h2 className="font-bold pb-4">
-              Description: {renderDescription()}
+              Description:{" "}
+              {assignment?.description.split("\n").map((line, index) => (
+                <span key={index}>
+                  {line}
+                  <br />
+                </span>
+              ))}
             </h2>
           )}
 
           <h2 className="font-bold pb-4">
-            {assignment?.docker_image_id
-              ? `Image name: ${imageName}`
-              : null}
+            {assignment?.docker_image_id ? `Image name: ${imageName}` : null}
           </h2>
+
+          {profile?.role_id === ROLES.STUDENT && latestSubmission && (
+            <p className="text-blue-500 pb-8">
+              <Link
+                href={`/assignments/${assignment?.assignment_id}/submissions/0`}
+              >
+                View Submission
+              </Link>
+            </p>
+          )}
+
           <p className="text-lg">Socket Port: {socketPort ?? "N/A"}</p>
           <p className="text-lg">SSH Port: {sshPort ?? "N/A"}</p>
-
 
           {renderContainerButton()}
         </div>
