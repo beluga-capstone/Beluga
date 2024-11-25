@@ -214,7 +214,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
         <TerminalMaxxing
           containerName={containerName}
           dockerImageId={assignment?.docker_image_id ?? null}
-          description={assignment?.description ?? null}
+          description={`Container for Assignment ${assignment?.title}`}
         />
       )}
 

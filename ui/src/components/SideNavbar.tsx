@@ -18,7 +18,7 @@ const SideNavbar = () => {
           className="flex flex-row space-x-3 items-center justify-center md:justify-start md:px-6 border-b border-foreground h-12 w-full"
         >
           <span className="h-7 w-7 rounded-lg">
-            <img src="../images/beluga.png" alt="The BELUGA logo" className="h-8 w-8" />
+            <img src="/images/beluga.png" alt="The BELUGA logo" className="h-8 w-8" />
           </span>
           <span className="font-bold text-xl hidden md:flex">B E L U G A</span>
         </Link>
