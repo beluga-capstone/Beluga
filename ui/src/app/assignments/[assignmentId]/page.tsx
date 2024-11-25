@@ -173,15 +173,14 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
           )}
 
           {assignment?.description && (
-            <h2 className="font-bold pb-4">
-              Description:{" "}
-              {assignment?.description.split("\n").map((line, index) => (
-                <span key={index}>
+            <div className="font-bold pb-4">
+              <h2>Description:</h2>
+              {assignment.description.split("\n").map((line, index) => (
+                <p key={index} className="mt-2">
                   {line}
-                  <br />
-                </span>
+                </p>
               ))}
-            </h2>
+            </div>
           )}
 
           {profile?.role_id === ROLES.STUDENT && latestSubmission && (

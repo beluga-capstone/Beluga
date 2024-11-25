@@ -27,12 +27,14 @@ const ProfessorAssignmentsTable = () => {
           </td>
         </tr>
         {assignments.map((assignment) => (
-          <tr key={assignment.assignment_id}>
-            <td className="text-center py-2">
-              <Link href={`/assignments/${assignment.assignment_id}`}>
-                {assignment.title}
-              </Link>
-            </td>
+          <tr
+            key={assignment.assignment_id}
+            onClick={() =>
+              (window.location.href = `/assignments/${assignment.assignment_id}`)
+            }
+            className="cursor-pointer"
+          >
+            <td className="text-center py-2">{assignment.title}</td>
             <td className="text-center py-2">
               {assignment.publish_at
                 ? `${shortDate(assignment.publish_at)} at ${shortTime(
