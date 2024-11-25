@@ -13,6 +13,8 @@ from src.util.auth import *
 import os
 import subprocess
 
+from src.util.permissions import apply_user_filters
+
 docker_client = docker.from_env()
 
 container_bp = Blueprint('container', __name__)
@@ -128,6 +130,17 @@ def create_container():
         if image_tag != "":
             alt_desc = f"Container running with image {image_tag}"
 
+        container_id = container.id
+        ssh_keys = get_keys_path(data['user_id'])
+        public_key_path = ssh_keys["public_key_path"]
+
+        #Create ssh dir inside container
+        container_ssh_dir = "/root/.ssh" # path inside docker container
+        subprocess.run(["docker", "exec", container_id, "mkdir", "-p", container_ssh_dir], check=True)
+
+        # Copy the key into Docker's authorized key file
+        subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
+
         # Save container information to the database
         new_container = Container(
             docker_container_id=container.id,
@@ -153,28 +166,28 @@ def create_container():
         return jsonify({'error': str(e)}), 500
 
 
-# Dynamic search for containers (GET)
 @container_bp.route('/containers/search', methods=['GET'])
 @login_required
 def search_containers():
-    filters = request.args.to_dict()  # Get all query parameters as filters
-
+    user = db.session.get(User, current_user.user_id)
+    filters = request.args.to_dict()
     try:
-        # Dynamically apply filters using the helper function `apply_filters`
-        query = apply_filters(Container, filters)
-        containers = query.all()
+        query = apply_filters(Container, filters)  # Apply dynamic filters from the frontend
+        filtered_query = apply_user_filters(user, 'containers', query)  # Apply ABAC filters
+        containers = filtered_query.all()
 
         # Format the response
         containers_list = [{
             'docker_container_id': container.docker_container_id,
             'user_id': str(container.user_id),
+            'docker_container_name': container.docker_container_name,
             'description': container.description
         } for container in containers]
 
         return jsonify(containers_list), 200
-
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 
 # Update a container (PUT)
@@ -278,6 +291,7 @@ def find_available_port(start_port: int, end_port: int) -> int:
     raise RuntimeError(f"No available ports found in the range {start_port}-{end_port}")
 
 
+
 @container_bp.route('/containers/<string:container_name>/start', methods=['PUT'])
 @student_required
 def start_container(container_name):
@@ -342,3 +356,11 @@ def attach_container(container_name):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+def get_keys_path(user_id):
+    key_dir = os.path.join(current_app.config["BASE_KEY_PATH"], str(user_id))
+    private_key_path = os.path.join(key_dir, "id_rsa")
+    public_key_path = os.path.join(key_dir, "id_rsa.pub")
+    return {
+        "private_key_path": private_key_path,
+        "public_key_path": public_key_path
+    }

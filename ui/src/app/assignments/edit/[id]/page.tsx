@@ -1,9 +1,10 @@
 "use client";
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
-import React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import AssignmentForm from "../../../../components/AssignmentsForm";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 const EditAssignment = ({ params }: { params: { id: string } }) => {
   const { assignments } = useAssignments();
@@ -35,7 +36,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const loadAssignment = async () => {
       setLoading(true);
       try {
@@ -74,7 +75,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
   const prettyDateToIso = (formattedDate: string): Date => {
     return new Date(formattedDate);
     //const date = new Date(formattedDate);
-    //return date.toISOString().split('T')[0]; 
+    //return date.toISOString().split('T')[0];
   };
 
   const handleUpdate = () => {
@@ -96,11 +97,13 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         title.trim(),
         description.trim(),
         prettyDateToIso(dueAt),
-        allowsLateSubmissions ? prettyDateToIso(lockAt) : prettyDateToIso(dueAt),
+        allowsLateSubmissions
+          ? prettyDateToIso(lockAt)
+          : prettyDateToIso(dueAt),
         prettyDateToIso(unlockAt),
         prettyDateToIso(publishAt),
         allowsLateSubmissions,
-        imageId,
+        imageId
       );
       router.push(`/assignments/courses/${assignment.course_id}`);
     } catch (error) {

@@ -12,7 +12,32 @@ export const useImages = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:5000/assignments/search?docker_image_id=${docker_image_id}`);
+      const response = await fetch(`http://localhost:5000/assignments/search?docker_image_id=${docker_image_id}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch docker image id');
+      }
+      const data = await response.json();
+      return data;
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // get image data
+  const getImage =async(docker_image_id:string|null) =>{
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`http://localhost:5000/images/search?docker_image_id=${docker_image_id}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch docker image id');
       }
@@ -31,7 +56,10 @@ export const useImages = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:5000/images');
+      const response = await fetch('http://localhost:5000/images/search', {
+        method: 'GET',
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch images');
       }
@@ -53,6 +81,7 @@ export const useImages = () => {
     try {
       const response = await fetch(`http://localhost:5000/images/${updatedImage.docker_image_id}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -78,6 +107,7 @@ export const useImages = () => {
     try {
       const response = await fetch(`http://localhost:5000/images/${docker_image_id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -135,6 +165,7 @@ export const useImages = () => {
     error,
     editImage,
     deleteImage,
+    getImage,
     toggleSelectImage,
     deleteSelectedImages,
     selectAllImages,

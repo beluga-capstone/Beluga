@@ -1,42 +1,17 @@
 import os
-import subprocess
 import shutil
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_login import login_required, current_user
 from datetime import datetime
 import uuid
 
-from src.util.auth import admin_required
+from src.util.util import create_user_helper
 from src.util.db import db, User
 from src.util.auth import *
 
 
 users_bp = Blueprint('users', __name__)
-
-BASE_KEY_PATH = os.path.join(os.path.expanduser("~"), "beluga_data", "keys")
-
-def create_ssh_key_pair(user_id):
-    key_dir = os.path.join(BASE_KEY_PATH, str(user_id))
-    private_key_path = os.path.join(key_dir, "id_rsa")
-    public_key_path = os.path.join(key_dir, "id_rsa.pub")
-    
-    try:
-        os.makedirs(key_dir, exist_ok=True)
-        
-        subprocess.run(
-            ["ssh-keygen", "-t", "ed25519", "-f", private_key_path, "-q", "-N", ""],
-            check=True
-        )
-        
-        return {
-            "private_key_path": private_key_path,
-            "public_key_path": public_key_path
-        }
-    except Exception as e:
-        print(f"Error generating SSH keys: {e}")
-        return None
-
 
 # Create User (POST)
 @users_bp.route('/users', methods=['POST'])
@@ -70,7 +45,6 @@ def create_user_or_users():
                 else:
                     raise ValueError(f"Invalid role: {role}")
 
-                # Create a new user object
                 new_user = User(
                     username=user_data.get('email').split("@")[0],  # Generate username
                     email=user_data.get('email'),
@@ -79,9 +53,13 @@ def create_user_or_users():
                     last_name=user_data.get('lastName', ""),
                     role_id=role_id  # Use mapped integer role_id
                 )
-                db.session.add(new_user)
-                new_users.append(new_user)
 
+                result, status_code = create_user_helper(new_user)
+                # TODO: double check this works
+                new_users.append(new_user)
+    
+                return jsonify(result), status_code
+                
             # Commit all new users in one transaction
             db.session.commit()
 
@@ -110,30 +88,17 @@ def create_user_or_users():
 
             # Create a single user object
             new_user = User(
-                username=data['username'],
-                email=data['email'],
-                first_name=data.get('firstName'),
-                middle_name=data.get('middleName'),
-                last_name=data.get('lastName'),
+                username=user_data.get('email').split("@")[0],  # Generate username
+                email=user_data.get('email'),
+                first_name=user_data.get('firstName'),
+                middle_name=user_data.get('middleName', ""),
+                last_name=user_data.get('lastName', ""),
                 role_id=role_id  # Use mapped integer role_id
             )
 
-            db.session.add(new_user)
-            db.session.commit()
+            result, status_code = create_user_helper(new_user)
 
-            # Generate SSH key pair for the new user
-            key_paths = create_ssh_key_pair(new_user.user_id)
-            private_key = None
-            if key_paths:
-                with open(key_paths['private_key_path'], 'r') as f:
-                    private_key = f.read().strip()
-                os.remove(key_paths['private_key_path'])
-
-            return jsonify({
-                'message': 'User created successfully',
-                'user_id': str(new_user.user_id),
-                'private_key': private_key
-            }), 201
+            return jsonify(result), status_code
 
         else:
             return jsonify({'error': 'Invalid input format. Expected an object or an array of objects.'}), 400
@@ -250,14 +215,14 @@ def get_current_user():
     if user is None:
         return jsonify({'error': 'User not found'}), 404
 
-    private_key_path = os.path.join(BASE_KEY_PATH, str(user.user_id), 'id_rsa')
+    private_key_path = os.path.join(current_app.config["BASE_KEY_PATH"], str(user.user_id), 'id_rsa')
 
     try:
         with open(private_key_path, 'r') as f:
-            private_key = f.read().strip()
+            private_key = f.read() + '\n'
     except FileNotFoundError:
         private_key = None 
-    
+
     user_data = {
         'user_id': user.user_id,
         'username': user.username,

@@ -15,6 +15,13 @@ export const ROLES = {
   STUDENT: 8,
 };
 
+export const ROLE_NAMES = {
+  [ROLES.ADMIN]: "Admin",
+  [ROLES.PROFESSOR]: "Professor",
+  [ROLES.TA]: "TA",
+  [ROLES.STUDENT]: "Student",
+};
+
 export const SIDENAV_ITEMS: SideNavItem[] = [
   {
     title: "Dashboard",

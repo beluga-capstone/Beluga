@@ -49,7 +49,11 @@ const NewContainer: React.FC = () => {
       return; // Exit early if the form is invalid
     }
 
-    const result = await runContainer(imageId ?? null, title, description);
+    let alt_desc = description;
+    if (description == ""){
+      alt_desc = "No description"
+    }
+    const result = await runContainer(imageId ?? null, title, alt_desc);
     if (result) {
       const { appPort: port, container_id: id } = result;
       console.log(`Container running on port: ${port}, ID: ${id}`);
@@ -78,15 +82,15 @@ const NewContainer: React.FC = () => {
         <div className="text-red-500 text-sm mt-2">Container with this title already exists.</div>
       )}
 
-      <div className="flex flex-column justify-end">
-        <div className="p-2">
+      <div className="flex flex-column">
+        <div className="mr-2">
           <Link href="/machines/containers">
             <Button className="bg-gray-500 text-white px-4 py-2 rounded flex items-center">
               Cancel
             </Button>
           </Link>
         </div>
-        <div className="p-2">
+        <div className="">
           <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
             onClick={handleAddContainer}

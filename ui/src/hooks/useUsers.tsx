@@ -45,6 +45,14 @@ export const useUsers = () => {
     setUsers(loadedUsers);
   }, []);
 
+  const insertUser = (user: User) => {
+    if (users.some((u) => u.id === user.id)) {
+      return;
+    }
+    const updatedUsers = [...users, user];
+    setUsers(updatedUsers);
+    saveUsersToStorage(updatedUsers);
+  };
   const addUser = (
     firstName: string,
     lastName: string,
@@ -118,6 +126,9 @@ export const useUsers = () => {
     saveUsersToStorage(updatedUsers);
   };
 
+  const getUser = (id: number) => {
+    return users.find((user) => user.id === id);
+  };
   const deleteUser = (id: number) => {
     const updatedUsers = users.filter((user) => user.id !== id);
     setUsers(updatedUsers);
@@ -130,6 +141,7 @@ export const useUsers = () => {
     addUser,
     addUsers,
     updateUser,
+    getUser,
     deleteUser,
   };
 };

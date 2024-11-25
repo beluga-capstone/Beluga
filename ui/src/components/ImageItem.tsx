@@ -49,7 +49,7 @@ const ImageItem: React.FC<ImageItemProps> = ({ image, isSelected, onToggleSelect
               {[
                 imageData.description || "No description available",
                 ", Additional packages: ",
-                imageData.packages || "No packages available",
+                imageData.packages || "No additional packages",
               ].join("")}
             </p>
           )}

@@ -1,14 +1,30 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useProfile } from "@/hooks/useProfile";
-import { Edit2 } from "lucide-react";
-import Link from "next/link";
 import { ROLES } from "@/constants";
 import Button from "@/components/Button"; // Ensure you have the Button component imported
+import { useUsers } from "@/hooks/useUsers";
 
 const ProfilePage: React.FC = () => {
   const { profile } = useProfile();
+  const { users, insertUser } = useUsers();
+  
+  // TODO: Remove:
+  // Adding profile to users for testing purposes
+  useEffect(() => {
+    if (profile) {
+      insertUser({
+        id: profile.user_id,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        middleName: profile.middleName,
+        email: profile.email,
+        role_id: profile.role_id,
+      });
+      console.log(users);
+    }
+  }, [profile]);
 
   // Helper function to get the role name from role_id
   const getRoleName = (roleId: number | undefined) => {
@@ -38,9 +54,9 @@ const ProfilePage: React.FC = () => {
         <h1 className="font-bold text-4xl">Profile</h1>
       </div>
       <h2 className="font-bold py-4">
-        {profile?.firstName} {profile?.middleName} {profile?.lastName}
+        Name: {profile?.firstName} {profile?.middleName} {profile?.lastName}
       </h2>
-      <h2 className="font-bold pb-4">{profile?.email}</h2>
+      <h2 className="font-bold pb-4">Email: {profile?.email}</h2>
       <h2 className="font-bold pb-4">Role: {getRoleName(profile?.role_id)}</h2>
 
       {/* Download Private Key Button */}

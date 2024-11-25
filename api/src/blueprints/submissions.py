@@ -4,7 +4,7 @@ from src.util.query_utils import apply_filters
 from datetime import datetime
 import uuid
 from src.util.auth import *
-
+from src.util.policies import filter_submissions
 
 submission_bp = Blueprint('submission', __name__)
 
@@ -34,14 +34,18 @@ def create_submission():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-# Dynamic submission search (GET)
 @submission_bp.route('/submissions/search', methods=['GET'])
 @login_required
 def search_submissions():
-    filters = request.args.to_dict()
+    user = db.session.get(User, current_user.user_id)
+    filters = request.args.to_dict()  # Parse query parameters for additional filters
+
     try:
-        query = apply_filters(Submission, filters)
-        submissions = query.all()
+        query = apply_filters(Submission, filters)  # Apply dynamic filters
+        filtered_query = filter_submissions(user, query)  # Apply ABAC filters
+        submissions = filtered_query.all()
+
+        # Format the response
         submissions_list = [{
             'submission_id': str(submission.submission_id),
             'user_id': str(submission.user_id),
@@ -53,6 +57,7 @@ def search_submissions():
         } for submission in submissions]
 
         return jsonify(submissions_list), 200
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

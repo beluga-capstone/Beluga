@@ -3,7 +3,6 @@ from flask_login import current_user
 from datetime import datetime
 import uuid
 from src.util.db import db, CourseEnrollment, User, Course
-from src.util.auth import student_required
 from src.util.auth import *
 
 

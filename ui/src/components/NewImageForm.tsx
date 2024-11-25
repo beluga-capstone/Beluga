@@ -31,7 +31,7 @@ function NewImageForm() {
     socket.on("build_complete", () => {
       setBuildStatus((prevStatus) => `${prevStatus}\nBuild complete!`);
       setIsBuilding(false);
-      router.back();
+      router.push('/images');
     });
 
     socket.on("build_error", (error) => {
@@ -72,6 +72,7 @@ function NewImageForm() {
         altDesc = description
       }
       const response = await fetch("http://localhost:5000/images", {
+        credentials: 'include',
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -161,7 +162,7 @@ function NewImageForm() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center mt-4 bg-surface rounded-lg shadow-md">
+      <div className="flex items-center mt-4 bg-none ">
         <button
           className="mr-3 bg-gray-500 text-white px-4 py-2 rounded"
           onClick={() => router.back()}

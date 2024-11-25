@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
 import { useImageData } from "@/hooks/useImageData";
 import { useImages } from "@/hooks/useImages";
+import ImageAssignmentList from "@/components/ImageAssignmentList";
 
 export default function ImageDetailsPage({ params }: { params: { id: string } }) {
   const { getAssignmentsForImage } = useImages();
@@ -31,26 +30,10 @@ export default function ImageDetailsPage({ params }: { params: { id: string } })
     <div className="container mx-auto p-4">
       <div className="mb-4 flex justify-between items-center">
         <h1 className="font-bold text-4xl mb-6">{imageData?.tag[0]}</h1>
-        <Link href={`/machines/images/edit/${dockerImageId}`} className="text-blue-500 underline">
-          Edit Image
-        </Link>
       </div>
       <div className="flex justify-between items-center">
         <div className="flex-row">
-          <h2 className="font-bold pb-4">Assignments assigned to this image:</h2>
-          {assignments ? (
-            <ul className="pb-4">
-              {assignments.map((assignment) => (
-                <li key={assignment.assignment_id}>
-                  <Link href={`/assignment/${assignment.assignment_id}`} className="text-blue-500 underline">
-                    {assignment.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No assignments available.</p>
-          )}
+          <ImageAssignmentList assignments={assignments} /> {/* Using the new AssignmentsList component */}
           <h2 className="font-bold pb-4">
             Packages Chosen: {imageData?.packages || "None"}
           </h2>

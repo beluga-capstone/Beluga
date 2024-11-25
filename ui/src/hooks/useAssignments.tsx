@@ -10,7 +10,10 @@ export const useAssignments = () => {
 
   const fetchAssignments = async () => {
     try {
-      const response = await fetch("http://localhost:5000/assignments");
+      const response = await fetch('http://localhost:5000/assignments/search', {
+        method: 'GET',
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch assignments");
       }
@@ -95,6 +98,7 @@ export const useAssignments = () => {
     try {
       const response = await fetch('http://localhost:5000/assignments', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -106,7 +110,9 @@ export const useAssignments = () => {
       }
 
       const data = await response.json();
+      return data;
       setAssignments((prev) => [...prev, data]);
+      fetchAssignments();
     } catch (err) {
       console.log(err);
     }
@@ -138,7 +144,9 @@ export const useAssignments = () => {
       docker_image_id,
     };
 
-    await saveAssignment(newAssignment);
+    fetchAssignments();
+    const data = await saveAssignment(newAssignment);
+    return data;
   };
 
   const updateAssignment = async (
@@ -171,6 +179,7 @@ export const useAssignments = () => {
     try {
       const response = await fetch(`http://localhost:5000/assignments/${assignment_id}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -194,7 +203,8 @@ export const useAssignments = () => {
   const deleteAssignment = async (assignmentId: string, courseId: string): Promise<void> => {
     try {
       const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`, {
-        method: "DELETE",
+        method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -216,6 +226,7 @@ export const useAssignments = () => {
 
       const response = await fetch(`http://localhost:5000/assignments/${assignmentId}/publish`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -245,6 +256,7 @@ export const useAssignments = () => {
 
       const response = await fetch(`http://localhost:5000/assignments/${assignmentId}/late-submissions`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -254,7 +266,7 @@ export const useAssignments = () => {
       if (!response.ok) {
         throw new Error('Failed to update late submissions setting');
       }
-
+      fetchAssignments();
       setAssignments((prev) =>
         prev.map((assignment) =>
           assignment.assignment_id === assignmentId ? { ...assignment, allowsLateSubmissions } : assignment
