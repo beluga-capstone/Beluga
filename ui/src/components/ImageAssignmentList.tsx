@@ -18,7 +18,7 @@ const ImageAssignmentList: React.FC<AssignmentsListProps> = ({ assignments }) =>
 
   return (
     <div>
-      <h2 className="font-bold pb-4">Assignments assigned to this image:</h2>
+      <h2 className="font-bold pb-4">Relevant Assignments:</h2>
       <ul className="pb-4 flex space-x-1">
         {assignments.map((assignment) => (
           <li key={assignment.assignment_id}>
