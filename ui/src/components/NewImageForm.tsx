@@ -31,7 +31,7 @@ function NewImageForm() {
     socket.on("build_complete", () => {
       setBuildStatus((prevStatus) => `${prevStatus}\nBuild complete!`);
       setIsBuilding(false);
-      router.back();
+      router.push('/images');
     });
 
     socket.on("build_error", (error) => {
