@@ -220,6 +220,7 @@ const TerminalMaxxing = ({
       )}
       
       <div className="mt-4 flex space-x-6">
+        <span>{description}</span>
         <div className="flex items-center">
           <Button
             className={`${buttonConfig.bgColor} px-4 py-2 mb-4`}

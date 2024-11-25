@@ -58,12 +58,6 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
             console.log("Container exists,", appPort, docker_image_id, status);
             setImageId(docker_image_id);
 
-            if (imageId) {
-              console.log("sending",imageId);
-              const msg = getImage(imageId);
-              console.log("its",msg);
-
-            }
           } else {
             retryCount++;
             console.log(`Retrying... Attempt ${retryCount}`);
@@ -133,7 +127,7 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
         <TerminalMaxxing 
           containerName={container?.docker_container_name}
           dockerImageId={imageId}
-          description={"ex"}
+          description={container?.description}
         />
       </div>
     );
