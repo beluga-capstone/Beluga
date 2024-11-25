@@ -106,7 +106,7 @@ const ContainerPageTerminal: React.FC<ContainerPageTerminalProps> = ({
     setIsConnected(false);
   };
 
-  return <div ref={terminalRef} role="terminal textbox" />;
+  return <div ref={terminalRef} className="w-full border-2 p-1" role="terminal textbox" />;
 };
 
 export default ContainerPageTerminal;

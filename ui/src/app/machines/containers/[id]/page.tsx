@@ -7,7 +7,7 @@ import { Play, StopCircle, Loader2 } from "lucide-react";
 import Button from "@/components/Button";
 import ContainerPageTerminal from "@/components/ContainerPageTerminal";
 import { toast } from "sonner";
-import { setHeapSnapshotNearHeapLimit } from "v8";
+import { useRouter } from "next/navigation";
 
 const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { containers, checkContainerExists, startContainer, stopContainer, isStoppingContainer, isDeletingContainer} = useContainers();
@@ -20,6 +20,7 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const [socketPort, setSocketPort] = useState<number | null>(null);
   const [sshPort, setSshPort] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const router = useRouter();
 
   // type handling for containerId
   useEffect(() => {
@@ -31,18 +32,6 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
     fetchParams();
   }, [params]);
 
-  useEffect(()=>{
-    const startup = async() => {
-      const {exists, appPort, sshPort} = await checkContainerExists(container?.docker_container_name ?? "");
-      if (exists) {
-        setSocketPort(appPort);
-        setSshPort(sshPort);
-      }
-    };
-    startup();
-
-  },[]);
-
   useEffect(() => {
     if (containerId !== null) {
       const foundContainer = containers.find((c) => c.docker_container_id === containerId);
@@ -50,29 +39,47 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
       if (foundContainer) {
         setContainer(foundContainer);
         setLoading(false);
+        let retryCount = 0;
+
         const getContainer = async () => {
+          // If no container is found initially, exit early
+          if (!container) {
+            console.log("No container found in state, containers: ", containers);
+            const found = containers.find((c) => c.docker_container_id === containerId);
+            if (found) {
+              setContainer(found); // Update state if found
+              setLoading(false);
+            }
+            return; // Exit function if no container is found
+          }
+
+          if (retryCount >= 10) {
+            setLoading(false);
+            setNotFound(true); // Mark as not found after 10 retries
+            return;
+          }
+
           // Check if container exists
-          const { docker_image_id, exists, appPort, sshPort, status } = await checkContainerExists(container?.docker_container_name ?? "");
+          const { docker_image_id, exists, appPort, sshPort, status } = await checkContainerExists(container.docker_container_name ?? "");
+
           if (exists) {
-            //console.log("it exists,", port, docker_image_id, status);
+            console.log("Container exists,", appPort, docker_image_id, status);
             setSocketPort(appPort);
             setSshPort(sshPort);
             setImageId(docker_image_id);
             setStatus(status);
+          } else {
+            retryCount++;
+            console.log(`Retrying... Attempt ${retryCount}`);
+            setTimeout(getContainer, 1000); // Retry after 1 second
           }
         };
 
         getContainer();
-      } else {
-        const timeout = setTimeout(() => {
-          setLoading(false);
-          setNotFound(true);
-        }, 5000);
-
-        return () => clearTimeout(timeout);
       }
     }
-  }, [containerId, containers]);
+  }, [containerId, containers, container]);
+
 
   const handleStartStop = async (action: "start" | "stop") => {
     if (isProcessing || !containerId) return;
