@@ -77,7 +77,7 @@ def connect():
         # this is the child process fork.
         # anything printed here will show up in the pty, including the output
         # of this subprocess
-        subprocess.run(app.config["cmd"])
+        subprocess.run(app.config["cmd"], user="student", group="student", extra_groups=[], cwd="/home/student")
     else:
         # this is the parent process fork.
         # store child fd and pid

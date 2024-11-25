@@ -28,9 +28,11 @@ RUN python3 -m venv /app/venv && \
 # Expose the port for SSH (22) and the application (5000)
 EXPOSE 22 5000
 
-RUN adduser --disabled-password --gecos '' student && \
+RUN useradd -ms /bin/bash student && \
     adduser student sudo && \
-    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
+    chmod 777 /root/ && chmod +r /root/.bashrc
 
 # Start SSH server and run the application
-CMD ["/bin/bash", "-c", "/usr/sbin/sshd && /app/venv/bin/python /app/websocket-pty.py"]
+RUN printf "/usr/sbin/sshd\n/app/venv/bin/python /app/websocket-pty.py\n" >> /docker_entrypoint.sh
+CMD ["/bin/bash", "/docker_entrypoint.sh"]
