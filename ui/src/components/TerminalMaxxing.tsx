@@ -9,6 +9,7 @@ import ContainerPageTerminal from "./ContainerPageTerminal";
 import { useImageData } from "@/hooks/useImageData";
 import Link from 'next/link';
 import NoCopyTextBox from "./NoCopyTextBox";
+import { useProfile } from "@/hooks/useProfile";
 
 interface ContainerControlsProps {
   containerName: string | null;
@@ -35,6 +36,7 @@ const TerminalMaxxing = ({
   const [sshPort, setSshPort] = useState<number | null>(null);
   const { checkContainerExists, runContainer, startContainer, stopContainer} = useContainers();
   const [imageName, setImageName] = useState<string |  null>(null);
+  const {profile} = useProfile();
 
   const { imageData } = useImageData(dockerImageId ?? null);
   useEffect(() => {
@@ -81,6 +83,20 @@ const TerminalMaxxing = ({
       clearInterval(intervalId);
     };
   }, [containerName]);
+
+  const handleDownloadPrivateKey = () => {
+    if (profile?.private_key) {
+      const element = document.createElement("a");
+      const file = new Blob([profile.private_key], { type: "text/plain" });
+      element.href = URL.createObjectURL(file);
+      element.download = "id_rsa"; // You can customize the file name
+      document.body.appendChild(element); // Required for this to work in FireFox
+      element.click();
+      document.body.removeChild(element);
+    } else {
+      alert("No private key available to download.");
+    }
+  };
 
   const handleContainerAction = async () => {
     if (isProcessing || !containerName || !dockerImageId) return;
@@ -226,6 +242,10 @@ const TerminalMaxxing = ({
             <CopyTextBox overlayText={`SSH Port`} copyText={sshPort.toString()} />
           </h2>
         )}
+
+        <h2 onClick={() => handleDownloadPrivateKey()} className="font-bold pb-4 flex items-center">
+          <NoCopyTextBox overlayText={`Download Private Key`} />
+        </h2>
       </div>
     </div>
     </>

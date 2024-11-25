@@ -25,10 +25,10 @@ const CopyTextBox: React.FC<CopyTextBoxProps> = ({ overlayText, copyText }) => {
         onClick={copyToClipboard}
         className="inline-flex items-center gap-2 px-4 py-2 border rounded-lg shadow-sm 
                  transition-all duration-200 ease-in-out
-                 cursor-pointer group"
+                 cursor-pointer group min-w-[120px] h-10"
         aria-label={isCopied ? "Copied" : "Copy to clipboard"}
       >
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden flex-1">
           {/* Default text with slide-out animation */}
           <span 
             className={`text-sm font-medium block transform transition-transform duration-200
@@ -48,9 +48,8 @@ const CopyTextBox: React.FC<CopyTextBoxProps> = ({ overlayText, copyText }) => {
             {copyText}
           </span>
         </div>
-
         {/* Icon with fade transition */}
-        <div className="relative w-4 h-4">
+        <div className="relative w-4 h-4 flex-shrink-0">
           <Copy 
             className={`absolute w-4 h-4 transform transition-all duration-200
                        ${isCopied ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}
@@ -61,14 +60,6 @@ const CopyTextBox: React.FC<CopyTextBoxProps> = ({ overlayText, copyText }) => {
                        ${isCopied ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}
                        text-green-500`}
           />
-        </div>
-
-        {/* Copied tooltip with fade and slide animation */}
-        <div 
-          className={`absolute -top-8 left-1/2 transform -translate-x-1/2
-                     transition-all duration-200 ease-in-out
-                     ${isCopied ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}
-        >
         </div>
       </button>
     </div>

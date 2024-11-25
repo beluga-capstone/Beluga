@@ -1,27 +1,22 @@
-import React, { useState } from "react";
+import React from "react";
 
-interface CopyTextBoxProps {
+interface NoCopyTextBoxProps {
   overlayText: string;  // Text displayed by default
 }
 
-const NoCopyTextBox: React.FC<CopyTextBoxProps> = ({ overlayText}) => {
-
+const NoCopyTextBox: React.FC<NoCopyTextBoxProps> = ({ overlayText }) => {
   return (
-      <button
-        className="inline-flex items-center gap-2 px-4 py-2 mr-2 border rounded-lg shadow-sm" 
-      >
-        <div className="relative overflow-hidden">
-          {/* Default text with slide-out animation */}
-          <span 
-            className={`text-sm font-medium`}
-          >
-            {overlayText}
-          </span>
-          
-        </div>
-      </button>
+    <button
+      className="inline-flex items-center gap-2 px-4 py-2 border rounded-lg shadow-sm 
+                min-w-[120px] h-10" 
+    >
+      <div className="relative overflow-hidden flex-1">
+        <span className="text-sm font-medium">
+          {overlayText}
+        </span>
+      </div>
+    </button>
   );
 };
 
 export default NoCopyTextBox;
-

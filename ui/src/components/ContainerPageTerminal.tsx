@@ -64,7 +64,13 @@ const ContainerPageTerminal: React.FC<ContainerPageTerminalProps> = ({
     term.loadAddon(webLinksAddon);
 
     term.open(terminalRef.current);
-    fitAddon.fit();
+    setTimeout(() => {
+      try {
+        fitAddon.fit();
+      } catch (error) {
+        console.error("Failed to fit terminal:", error);
+      }
+    }, 0);
 
     const socket = io(`ws://localhost:${containerPort}/pty`);
     socketRef.current = socket;
