@@ -6,21 +6,21 @@ import { useRouter } from 'next/navigation';
 
 interface ListUsersProps {
   users: User[];
-  onUpdateUser: (userId: number, newRole: number) => void;
-  onDeleteUsers: (userId?: number) => void;
-  selectedUserIds: number[];
-  setSelectedUserIds: React.Dispatch<React.SetStateAction<number[]>>;
+  onUpdateUser: (userId: string, newRole: number) => void;
+  onDeleteUsers: (userId?: string) => void;
+  selectedUserIds: string[];
+  setSelectedUserIds: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 const ListUsers: React.FC<ListUsersProps> = ({ users, onUpdateUser, onDeleteUsers, selectedUserIds, setSelectedUserIds }) => {
   const router = useRouter();
 
-  const [editingUserId, setEditingUserId] = useState<number | null>(null);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editedRole, setEditedRole] = useState<number>(8);
 
   const handleEditClick = (user: User) => {
     setEditingUserId(user.id);
-    setEditedRole(user.role);
+    setEditedRole(user.role_id);
   };
 
   const handleCancelEdit = () => {
@@ -28,18 +28,18 @@ const ListUsers: React.FC<ListUsersProps> = ({ users, onUpdateUser, onDeleteUser
     setEditedRole(8);
   };
 
-  const handleSaveEdit = (userId: number) => {
+  const handleSaveEdit = (userId: string) => {
     onUpdateUser(userId, editedRole);
     setEditingUserId(null);
   };
 
-  const toggleSelectUser = (userId: number) => {
+  const toggleSelectUser = (userId: string) => {
     setSelectedUserIds((prevSelected) => 
       prevSelected.includes(userId) ? prevSelected.filter(id => id !== userId) : [...prevSelected, userId]
     );
   };
 
-  const handleDelete = (userId: number) => {
+  const handleDelete = (userId: string) => {
     if (selectedUserIds.length > 0) {
       onDeleteUsers();
     } else {
