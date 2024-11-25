@@ -202,18 +202,20 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
         </div>
       </div>
 
-      <TerminalMaxxing
-        containerName={containerName}
-        dockerImageId={assignment?.docker_image_id ?? null}
-        description={assignment?.description ?? null}
-      />
-
       {profile?.role_id !== ROLES.STUDENT && (
         <p className="text-blue-500 py-8">
           <Link href={`/assignments/${assignment?.assignment_id}/submissions`}>
             View Submissions
           </Link>
         </p>
+      )}
+
+      {!submissionWindowIsOpen && (
+        <TerminalMaxxing
+          containerName={containerName}
+          dockerImageId={assignment?.docker_image_id ?? null}
+          description={assignment?.description ?? null}
+        />
       )}
 
       {profile?.role_id === ROLES.STUDENT && submissionWindowIsOpen && (
