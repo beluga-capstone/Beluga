@@ -10,7 +10,7 @@ import ProfessorAssignmentsTable from "@/components/ProfessorAssignmentsTable";
 import { Assignment } from "@/types";
 
 const CourseAssignments: React.FC = () => {
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]|null>(null);
   const { courseId } = useParams(); 
   const router = useRouter();
   const {fetchAssignmentsByCourseId} = useAssignments();
@@ -26,15 +26,12 @@ const CourseAssignments: React.FC = () => {
 
     const loadAssignments = async () => {
       try {
-        console.log(`Loading assignments for courseId: ${resolvedCourseId}`);
         const fetchedAssignments = await fetchAssignmentsByCourseId(resolvedCourseId);
-        console.log("Fetched assignments:", fetchedAssignments);
 
         // Filter assignments by courseId
         const filteredAssignments = fetchedAssignments.filter(
           (assignment) => assignment.course_id === resolvedCourseId
         );
-        console.log("Filtered assignments:", filteredAssignments);
 
         setAssignments(filteredAssignments);
       } catch (err) {
@@ -44,7 +41,7 @@ const CourseAssignments: React.FC = () => {
 
     loadAssignments();
   }, [resolvedCourseId, router]);
-
+  
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -55,7 +52,8 @@ const CourseAssignments: React.FC = () => {
           </Button>
         </Link>
       </div>
-      <ProfessorAssignmentsTable/>
+
+      <ProfessorAssignmentsTable courseId={courseId[0]}/>
     </div>
   );
 };

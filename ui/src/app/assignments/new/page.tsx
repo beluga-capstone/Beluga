@@ -30,7 +30,7 @@ const NewAssignment: React.FC = () => {
 
   const handleAddAssignment = async () => {
     if (!courseId) {
-      alert("Course ID is missing!");
+      console.log("Course ID is missing!");
       return;
     }
     await addAssignment(

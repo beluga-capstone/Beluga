@@ -1,6 +1,8 @@
 import { ToggleLeft, ToggleRight } from "lucide-react";
 import { useAssignments } from "@/hooks/useAssignments";
 import Link from "next/link";
+import { useState,useEffect } from "react";
+import { Assignment } from "@/types";
 
 const format_date = (date: string) =>
   new Date(date).toLocaleDateString("en-US", {
@@ -9,9 +11,21 @@ const format_date = (date: string) =>
     day: "numeric",
   });
 
-const ProfessorAssignmentsTable=() => {
-  const { assignments, setPublished, setLateSubmissions } = useAssignments();
-  console.log("Assignments passed to ProfessorAssignmentsTable:", assignments);
+const ProfessorAssignmentsTable=({courseId}:{courseId:string}) => {
+  const { fetchAssignmentsByCourseId, setPublished, setLateSubmissions } = useAssignments();
+  const [assignments,setAssignments] = useState<Assignment[]>([]);
+
+  useEffect(()=>{
+    const getAssignments=async()=>{
+
+      const response = await fetchAssignmentsByCourseId(courseId);
+      if (response){
+        setAssignments(response);
+      }
+
+    };
+    getAssignments();
+  },[])
   return (
     <table className="table w-full">
       <thead>

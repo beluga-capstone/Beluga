@@ -9,7 +9,6 @@ const AdminCoursesTable: React.FC = () => {
   const { courses, fetchCourses, setPublished, deleteCourse } = useDashboard();
   const { fetchUserById } = useUsers();
   const [usernames, setUsernames] = useState<{ [key: string]: string }>({});
-  const [studentCounts, setStudentCounts] = useState<{ [key: string]: number }>({});
 
   // Fetch instructor names for courses
   useEffect(() => {

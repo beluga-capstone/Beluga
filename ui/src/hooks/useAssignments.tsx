@@ -6,7 +6,10 @@ import { useRouter } from "next/navigation"; // Use useRouter directly here
 
 export const useAssignments = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const router = useRouter(); // Directly use useRouter here
+
+  useEffect(()=>{
+    console.log("updated is ",assignments);
+  },[assignments]);
 
   const fetchAssignments = async () => {
     try {
@@ -110,9 +113,9 @@ export const useAssignments = () => {
       }
 
       const data = await response.json();
-      return data;
       setAssignments((prev) => [...prev, data]);
       fetchAssignments();
+      return data;
     } catch (err) {
       console.log(err);
     }
