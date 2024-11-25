@@ -129,12 +129,9 @@ def get_current_user():
 
     try:
         with open(private_key_path, 'r') as f:
-            private_key = f.read().strip()
+            private_key = f.read()
     except FileNotFoundError:
         private_key = None 
-        
-    with open(private_key_path, 'r') as f:
-        private_key = f.read().strip()
 
     user_data = {
         'user_id': user.user_id,
