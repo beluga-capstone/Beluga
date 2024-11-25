@@ -6,6 +6,7 @@ import Button from "@/components/Button";
 import CopyTextBox from "@/components/CopyTextBox";
 import { useContainers } from "@/hooks/useContainers";
 import ContainerPageTerminal from "./ContainerPageTerminal";
+import { useImageData } from "@/hooks/useImageData";
 
 interface ContainerControlsProps {
   containerName: string | null;
@@ -31,6 +32,14 @@ const ContainerControls = ({
   const [socketPort, setSocketPort] = useState<number | null>(null);
   const [sshPort, setSshPort] = useState<number | null>(null);
   const { checkContainerExists, runContainer, startContainer, stopContainer} = useContainers();
+  const [imageName, setImageName] = useState<string |  null>(null);
+
+  const { imageData } = useImageData(dockerImageId ?? null);
+  useEffect(() => {
+    if (imageData?.tag?.[0]) {
+      setImageName(imageData.tag[0]);
+    }
+  }, [imageData]);
 
   useEffect(() => {
     let isMounted = true;
@@ -174,6 +183,11 @@ const ContainerControls = ({
 
   return (
     <div className="mt-3">
+      <h2 className="font-bold pb-4">
+        {dockerImageId
+          ? `Image name: ${imageName}`
+          : null}
+      </h2>
       {dockerImageId && description && containerStatus === "running" && socketPort && (
         <ContainerPageTerminal 
           isRunning={containerStatus === "running"} 
@@ -201,7 +215,7 @@ const ContainerControls = ({
         
         {sshPort && (
           <h2 className="font-bold pb-4 flex items-center">
-            SSH port <CopyTextBox text={sshPort.toString()} />
+            <CopyTextBox overlayText={`SSH Port`} copyText={sshPort.toString()} />
           </h2>
         )}
       </div>

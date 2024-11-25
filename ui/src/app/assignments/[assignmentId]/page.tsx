@@ -10,7 +10,6 @@ import TerminalMaxxing from "@/components/TerminalMaxxing";
 import { ROLES } from "@/constants";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useProfile } from "@/hooks/useProfile";
-import { useImageData } from "@/hooks/useImageData";
 import { Assignment } from "@/types";
 
 const formatDate = (date: string) =>
@@ -38,12 +37,9 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [containerName, setContainerName] = useState<string | null>(null);
-  const [imageName, setImageName] = useState<string | null>(null);
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
   const [zipFile, setZipFile] = useState<File | null>(null);
-
-  const { imageData } = useImageData(assignment?.docker_image_id ?? null);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -69,12 +65,6 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
     initializeAssignment();
   }, [assignments, params.assignmentId]);
-
-  useEffect(() => {
-    if (imageData?.tag?.[0]) {
-      setImageName(imageData.tag[0]);
-    }
-  }, [imageData]);
 
   const renderDescription = () => {
     if (!assignment?.description) return null;
@@ -166,11 +156,6 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
             </h2>
           )}
 
-          <h2 className="font-bold pb-4">
-            {assignment?.docker_image_id
-              ? `Image name: ${imageName}`
-              : null}
-          </h2>
         </div>
       </div>
 

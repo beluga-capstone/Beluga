@@ -5,18 +5,14 @@ import { useContainers } from "@/hooks/useContainers";
 import { Container } from "@/types";
 import { Play, StopCircle, Loader2 } from "lucide-react";
 import TerminalMaxxing from "@/components/TerminalMaxxing";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { containers, checkContainerExists, startContainer, stopContainer, isStoppingContainer, isDeletingContainer} = useContainers();
   const [container, setContainer] = useState<Container | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
   const [imageId, setImageId] = useState<string | null>(null);
   const [containerId, setContainerId] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
 
   // type handling for containerId
   useEffect(() => {
@@ -59,7 +55,6 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
           if (exists) {
             console.log("Container exists,", appPort, docker_image_id, status);
             setImageId(docker_image_id);
-            setStatus(status);
           } else {
             retryCount++;
             console.log(`Retrying... Attempt ${retryCount}`);
