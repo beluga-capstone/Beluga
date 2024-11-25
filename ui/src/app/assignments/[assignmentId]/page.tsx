@@ -121,7 +121,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex items-center">
         <h1 className="font-bold text-4xl">{assignment?.title}</h1>
         {profile?.role_id !== ROLES.STUDENT ? (
           <Link
