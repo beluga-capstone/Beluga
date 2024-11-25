@@ -11,7 +11,7 @@ export default function UserSettingsPopup({
     try {
       const response = await fetch(`${process.env.backend}/auth/logout`, {
         method: 'GET',
-        credentials: 'include', // Include cookies
+        credentials: 'include',
       });
 
       if (response.ok) {

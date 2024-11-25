@@ -24,6 +24,9 @@ export const useImageData = (imageId: string | null): ImageDataState => {
       try {
         setLoading(true);
         const response = await fetch(`${process.env.backend}/images/${imageId}`);
+          method: 'GET',
+          credentials: 'include',
+        });
         if (!response.ok) {
           throw new Error('Network error');
         }
@@ -54,8 +57,11 @@ export const useAllImagesData = (imageIds: string[]) => {
       try {
         setLoading(true);
         const promises = imageIds.map(id => 
-          fetch(`${process.env.backend}./images/${id}`).then(res => res.json())
-        );
+          fetch(`${process.env.backend}./images/${id}`, {
+              credentials: 'include'
+          }).then(res => res.json())
+      );
+      
         const results = await Promise.all(promises);
         const newImagesData = results.reduce((acc, data) => {
           acc[data.docker_image_id] = data;

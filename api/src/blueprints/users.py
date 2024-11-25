@@ -7,7 +7,6 @@ from datetime import datetime
 import uuid
 
 from src.util.util import create_user_helper
-from src.util.auth import admin_required
 from src.util.db import db, User
 from src.util.auth import *
 
@@ -130,6 +129,7 @@ def get_current_user():
     try:
         with open(private_key_path, 'r') as f:
             private_key = f.read()
+
     except FileNotFoundError:
         private_key = None 
 

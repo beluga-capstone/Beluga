@@ -72,6 +72,7 @@ function NewImageForm() {
         altDesc = description
       }
       const response = await fetch(`${process.env.backend}/images`, {
+        credentials: 'include',
         method: "POST",
         headers: {
           "Content-Type": "application/json",
