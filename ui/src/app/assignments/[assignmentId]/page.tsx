@@ -1,16 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import confetti from "canvas-confetti";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Edit2 } from "lucide-react";
+import { ArrowUpFromLine, Edit2 } from "lucide-react";
 import Button from "@/components/Button";
 import SubmissionZone from "@/components/SubmissionZone";
 import TerminalMaxxing from "@/components/TerminalMaxxing";
 import { ROLES } from "@/constants";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useProfile } from "@/hooks/useProfile";
-import { Assignment } from "@/types";
+import { Assignment, Submission } from "@/types";
+import { useSubmissions } from "@/hooks/useSubmissions";
+import { shortDate, shortTime } from "@/lib/utils";
 
 const formatDate = (date: string) =>
   new Date(date).toLocaleDateString("en-US", {
@@ -36,10 +39,39 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
   const { assignments } = useAssignments();
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const { getLatestSubmission, submit } = useSubmissions();
   const [containerName, setContainerName] = useState<string | null>(null);
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
   const [zipFile, setZipFile] = useState<File | null>(null);
+  const [latestSubmission, setLatestSubmission] = useState<Submission | null>(
+    null
+  );
+
+  const handleSubmit = () => {
+    if (profile && assignment && zipFile) {
+      setSubmissionWindowIsOpen(false);
+      setSubmitIsEnabled(false);
+      console.log(zipFile);
+      submit(profile.user_id, assignment?.assignment_id ?? "", zipFile!);
+      setZipFile(null);
+
+      confetti({
+        particleCount: 100,
+        spread: 100,
+        origin: { y: 0.6 },
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!assignment || !profile) return;
+    const submission = getLatestSubmission(
+      assignment.assignment_id,
+      profile.user_id
+    );
+    setLatestSubmission(submission);
+  }, [assignment, profile, zipFile]);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -66,59 +98,6 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
     initializeAssignment();
   }, [assignments, params.assignmentId]);
 
-  const renderDescription = () => {
-    if (!assignment?.description) return null;
-    return assignment.description.split("\n").map((line, index) => (
-      <span key={index}>
-        {line}
-        <br />
-      </span>
-    ));
-  };
-
-  const handleSubmit = () => {
-    setSubmissionWindowIsOpen(false);
-    setSubmitIsEnabled(false);
-    console.log("Submitting file:", zipFile);
-  };
-
-  const renderSubmissionControls = () => {
-    if (!profile || profile.role_id !== ROLES.STUDENT) return null;
-
-    if (submissionWindowIsOpen) {
-      return (
-        <div className="flex">
-          <div className="px-2">
-            <Button
-              className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
-              onClick={() => setSubmissionWindowIsOpen(false)}
-            >
-              Cancel
-            </Button>
-          </div>
-          <div className="px-2">
-            <Button
-              className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-              onClick={handleSubmit}
-              disabled={!submitIsEnabled || !zipFile}
-            >
-              Submit
-            </Button>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <Button
-        className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-        onClick={() => setSubmissionWindowIsOpen(true)}
-      >
-        Submit Assignment
-      </Button>
-    );
-  };
-
   return (
     <div className="container mx-auto p-4">
       <div className="mb-8 flex items-center justify-between">
@@ -130,25 +109,75 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
           >
             <Edit2 size={24} />
           </Link>
-        ) : (
-          renderSubmissionControls()
-        )}
+        ) : null}
+        {profile?.role_id === ROLES.STUDENT &&
+          (submissionWindowIsOpen ? (
+            <div className="flex">
+              <div className="px-2">
+                <Button
+                  className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
+                  onClick={() => setSubmissionWindowIsOpen(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+              <div className="px-2">
+                <Button
+                  className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+                  onClick={handleSubmit}
+                  disabled={!submitIsEnabled || !zipFile}
+                >
+                  Submit
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+              onClick={() => setSubmissionWindowIsOpen(true)}
+            >
+              <ArrowUpFromLine className="mr-2" />
+              {latestSubmission ? "Reupload files" : "Upload files"}
+            </Button>
+          ))}
       </div>
 
-      <div className="flex justify-between items-center mb-3">
-        <div>
+      <div className="flex-row">
+        <div className="flex justify-between">
           <h2 className="font-bold pb-4">
-            Due Date:{" "}
             {assignment?.due_at
-              ? formatDate(assignment.due_at.toISOString())
-              : "not found"}
+              ? `Due: ${shortDate(assignment?.due_at)} at ${shortTime(
+                  assignment?.due_at
+                )}`
+              : "No due date"}
           </h2>
-          <h2 className="font-bold pb-4">
-            Available:{" "}
-            {assignment?.publish_at
-              ? formatDate(assignment.publish_at.toISOString())
-              : "not found"}
-          </h2>
+
+          {profile?.role_id === ROLES.STUDENT && latestSubmission && (
+            <div className="flex flex-col">
+              <h2 className="font-bold">
+                {latestSubmission?.submitted_at
+                  ? `Submitted: ${shortDate(
+                      latestSubmission?.submitted_at
+                    )} at ${shortTime(latestSubmission?.submitted_at)}`
+                  : "Not yet submitted"}
+              </h2>
+              <h2 className="font-bold">
+                {latestSubmission?.status === "graded"
+                  ? `Grade: ${latestSubmission?.grade}`
+                  : "Not yet graded"}
+              </h2>
+            </div>
+          )}
+        </div>
+
+        <div>
+          {assignment?.publish_at && assignment?.lock_at && (
+            <h2 className="font-bold pb-4">
+              Available {shortDate(assignment.publish_at)} at{" "}
+              {shortTime(assignment.publish_at)} to{" "}
+              {shortDate(assignment.lock_at)} at {shortTime(assignment.lock_at)}
+            </h2>
+          )}
 
           {assignment?.description && (
             <div className="font-bold pb-4">
@@ -161,14 +190,17 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
             </div>
           )}
 
+          {profile?.role_id === ROLES.STUDENT && latestSubmission && (
+            <p className="text-blue-500 pb-8">
+              <Link
+                href={`/assignments/${assignment?.assignment_id}/submissions/0`}
+              >
+                View Submission
+              </Link>
+            </p>
+          )}
         </div>
       </div>
-
-      <TerminalMaxxing 
-        containerName={containerName}
-        dockerImageId={assignment?.docker_image_id ?? null}
-        description={assignment?.description ?? null}
-      />
 
       {profile?.role_id !== ROLES.STUDENT && (
         <p className="text-blue-500 py-8">
@@ -176,6 +208,14 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
             View Submissions
           </Link>
         </p>
+      )}
+
+      {!submissionWindowIsOpen && (
+        <TerminalMaxxing
+          containerName={containerName}
+          dockerImageId={assignment?.docker_image_id ?? null}
+          description={assignment?.description ?? null}
+        />
       )}
 
       {profile?.role_id === ROLES.STUDENT && submissionWindowIsOpen && (

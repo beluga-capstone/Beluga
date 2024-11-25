@@ -1,13 +1,37 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { ROLES } from "@/constants";
 import Button from "@/components/Button"; // Ensure you have the Button component imported
-import { getRoleName } from "@/lib/utils";
+import { useUsers } from "@/hooks/useUsers";
 
 const ProfilePage: React.FC = () => {
   const { profile } = useProfile();
+  const { users, insertUser } = useUsers();
+  
+  // TODO: Remove:
+  // Adding profile to users for testing purposes
+  useEffect(() => {
+    if (profile) {
+      insertUser({
+        id: profile.user_id,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        middleName: profile.middleName,
+        email: profile.email,
+        role_id: profile.role_id,
+      });
+      console.log(users);
+    }
+  }, [profile]);
+
+  // Helper function to get the role name from role_id
+  const getRoleName = (roleId: number | undefined) => {
+    if (!roleId) return "Unknown Role";
+    const roleEntry = Object.entries(ROLES).find(([_, id]) => id === roleId);
+    return roleEntry ? roleEntry[0] : "Unknown Role";
+  };
 
   // Function to handle downloading the private key
   const handleDownloadPrivateKey = () => {

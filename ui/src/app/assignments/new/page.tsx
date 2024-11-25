@@ -4,6 +4,7 @@ import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
 import React, { useState, useEffect } from "react";
 import AssignmentForm from "../../../components/AssignmentsForm";
+import { toLocalISOString } from "@/lib/utils";
 
 const NewAssignment: React.FC = () => {
   const { assignments, addAssignment } = useAssignments();
@@ -50,10 +51,12 @@ const NewAssignment: React.FC = () => {
       courseId,
       title,
       description,
-      new Date(dueAt),
-      allowsLateSubmissions ? new Date(lockAt) : new Date(dueAt),
-      new Date(unlockAt),
-      new Date(publishAt),
+      new Date(toLocalISOString(dueAt)),
+      allowsLateSubmissions
+        ? new Date(toLocalISOString(lockAt))
+        : new Date(toLocalISOString(dueAt)),
+      new Date(toLocalISOString(unlockAt)),
+      new Date(toLocalISOString(publishAt)),
       allowsLateSubmissions,
       imageId || null
     );

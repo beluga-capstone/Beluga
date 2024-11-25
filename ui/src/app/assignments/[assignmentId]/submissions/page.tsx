@@ -1,31 +1,32 @@
 "use client";
 
-import { DEFAULT_STUDENTS } from "@/constants";
+import StudentListingForSubmission from "@/components/StudentListingForSubmission";
 import { useAssignments } from "@/hooks/useAssignments";
-import Link from "next/link";
+import { useUsers } from "@/hooks/useUsers";
+import { shortDate, shortTime } from "@/lib/utils";
 
 const AssignmentSubmissionsPage = ({
   params,
 }: {
-  params: { assignmentId: string };
+  params: { assignmentId: string; submissionId: string };
 }) => {
   const { assignments } = useAssignments();
   const assignment = assignments.find(
-    (assignment) =>
-      assignment.assignment_id === params.assignmentId
+    (assignment) => assignment.assignment_id === params.assignmentId
   );
-  const submissionId = 1;
+  const { users } = useUsers();
+  console.log(users);
 
   return (
     <div className="container mx-auto p-4">
       <div className="mb-4 flex justify-between items-center">
         <h1 className="font-bold text-4xl mb-6">{assignment?.title}</h1>
         <h2>
-          Due:{" "}
-          {assignment?.due_at?.toLocaleDateString("en-US", {
-            dateStyle: "short",
-            timeZone: "UTC",
-          })}
+          {assignment?.due_at
+            ? `Due: ${shortDate(assignment?.due_at)} at ${shortTime(
+                assignment?.due_at
+              )}`
+            : "No due date"}
         </h2>
       </div>
       <table className="table w-full">
@@ -46,29 +47,15 @@ const AssignmentSubmissionsPage = ({
               <hr />
             </td>
           </tr>
-          {DEFAULT_STUDENTS.map((student) => (
-            <tr key={student.id}>
-              <td>
-                <Link
-                  href={`/assignments/${assignment?.assignment_id}/submissions/${submissionId}`}
-                >
-                  {student.lastName}
-                </Link>
-              </td>
-              <td>
-                <Link
-                  href={`/assignments/${assignment?.assignment_id}/submissions/${submissionId}`}
-                >
-                  {student.firstName}
-                </Link>
-              </td>
-              <td>{student.middleName}</td>
-              <td className="text-center">Yes</td>
-              <td className="text-center">100</td>
-              <td className="text-center">Yes</td>
-              <td className="text-center">1 hour ago</td>
-            </tr>
-          ))}
+          {users.map((user) => {
+            return (
+              <StudentListingForSubmission
+                key={user.id}
+                student={user}
+                assignment={assignment}
+              />
+            );
+          })}
         </tbody>
       </table>
     </div>

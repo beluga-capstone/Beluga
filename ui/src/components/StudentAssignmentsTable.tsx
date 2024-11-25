@@ -1,5 +1,5 @@
 import { useAssignments } from "@/hooks/useAssignments";
-import Link from "next/link";
+import ListingForSubmission from "./ListingForSubmission";
 
 const StudentAssignmentsTable = () => {
   const { assignments } = useAssignments();
@@ -12,35 +12,19 @@ const StudentAssignmentsTable = () => {
           <th>Released</th>
           <th>Due</th>
           <th>Submitted?</th>
+          <th>Score/100</th>
+          <th>Graded?</th>
+          <th>Submission Time</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td colSpan={4}>
+          <td colSpan={7}>
             <hr />
           </td>
         </tr>
         {assignments.map((assignment) => (
-          <tr key={assignment.assignment_id}>
-            <td className="text-center py-2">
-              <Link href={`/assignments/${assignment.assignment_id}`}>
-                {assignment.title}
-              </Link>
-            </td>
-            <td className="text-center py-2">
-              {assignment.publish_at?.toLocaleDateString("en-US", {
-                dateStyle: "short",
-                timeZone: "UTC",
-              })}
-            </td>
-            <td className="text-center py-2">
-              {assignment.due_at?.toLocaleDateString("en-US", {
-                dateStyle: "short",
-                timeZone: "UTC",
-              })}
-            </td>
-            <td className="text-center py-2">No</td>
-          </tr>
+          <ListingForSubmission assignment={assignment} />
         ))}
       </tbody>
     </table>
