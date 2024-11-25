@@ -49,7 +49,11 @@ const NewContainer: React.FC = () => {
       return; // Exit early if the form is invalid
     }
 
-    const result = await runContainer(imageId ?? null, title, description);
+    let alt_desc = description;
+    if (description == ""){
+      alt_desc = "No description"
+    }
+    const result = await runContainer(imageId ?? null, title, alt_desc);
     if (result) {
       const { appPort: port, container_id: id } = result;
       console.log(`Container running on port: ${port}, ID: ${id}`);
