@@ -13,27 +13,55 @@ interface Course {
 export const useDashboard = () => {
   const [courses, setCourses] = useState<Course[]>([]);
 
+  const fetchStudentCounts = async (): Promise<{ [courseId: string]: number }> => {
+    try {
+      const counts: { [courseId: string]: number } = {};
+  
+      for (const course of courses) {
+        const response = await fetch(`http://localhost:5000/courses/${course.id}/students/count`);
+        if (!response.ok) {
+          console.error(`Failed to fetch student count for course ${course.id}`);
+          continue;
+        }
+  
+        const data = await response.json();
+        counts[course.id] = data.students_count || 0;
+      }
+  
+      return counts;
+    } catch (error) {
+      console.error("Error fetching student counts:", error);
+      return {};
+    }
+  };
+
   const fetchCourses = async () => {
     try {
       const response = await fetch("http://localhost:5000/courses");
       if (!response.ok) {
         throw new Error("Failed to fetch courses");
       }
-      const data = await response.json();
+      const data: Array<any> = await response.json();
       const transformedCourses = data.map((course: any) => ({
         id: course.course_id,
         name: course.name,
         user_id: course.user_id,
-        studentsEnrolled: course.studentsEnrolled || 0,
+        studentsEnrolled: 0, // Temporary value; updated below
         isPublished: course.publish || false,
         term: course.term || "Fall 2024",
         professor: course.professor || "Unknown",
       }));
+  
+      const counts = await fetchStudentCounts(); // Fetch student counts
+      transformedCourses.forEach((course) => {
+        course.studentsEnrolled = counts[course.id] || 0;
+      });
+
       setCourses(transformedCourses);
     } catch (error) {
       console.error("Error fetching courses:", error);
     }
-  };
+  };  
 
   const addCourse = async (
     title: string,

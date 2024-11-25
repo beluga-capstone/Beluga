@@ -91,7 +91,7 @@ const AdminCoursesTable: React.FC = () => {
               </td>
               <td className="text-center py-2">{usernames[course.user_id || ""] || "Loading..."}</td>
               <td className="text-center py-2">{course.term}</td>
-              <td className="text-center py-2">{studentCounts[course.id] || 0}</td>
+              <td className="text-center py-2">{course.studentsEnrolled}</td>
               <td className="text-center py-2">
                 <div className="flex justify-center items-center cursor-pointer">
                   {course.isPublished ? (
