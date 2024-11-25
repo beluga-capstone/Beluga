@@ -56,6 +56,7 @@ export const useAssignments = () => {
       }
 
       const data = await response.json();
+      return data;
       setAssignments((prev) => [...prev, data]);
       fetchAssignments();
     } catch (err) {
@@ -90,7 +91,8 @@ export const useAssignments = () => {
     };
 
     fetchAssignments();
-    await saveAssignment(newAssignment);
+    const data = await saveAssignment(newAssignment);
+    return data;
   };
 
   const updateAssignment = async (
