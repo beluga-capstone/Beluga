@@ -24,7 +24,7 @@ const base64ToFile = (base64: string, filename: string): File => {
 
 const makeSubmissionList = async (
   res: Response
-): Promise<Submission[] | null> => {
+): Promise<Submission[]> => {
   try {
     const submissions = await res.json();
     const itemList: Submission[] = submissions.map(
@@ -41,7 +41,7 @@ const makeSubmissionList = async (
     return itemList;
   } catch (error) {
     console.log("error make submission list:", error);
-    return null;
+    return [];
   }
 };
 
