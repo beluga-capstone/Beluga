@@ -135,7 +135,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
         )}
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-3">
         <div>
           <h2 className="font-bold pb-4">
             Due Date:{" "}

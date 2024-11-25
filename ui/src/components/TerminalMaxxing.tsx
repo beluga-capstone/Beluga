@@ -7,6 +7,8 @@ import CopyTextBox from "@/components/CopyTextBox";
 import { useContainers } from "@/hooks/useContainers";
 import ContainerPageTerminal from "./ContainerPageTerminal";
 import { useImageData } from "@/hooks/useImageData";
+import Link from 'next/link';
+import NoCopyTextBox from "./NoCopyTextBox";
 
 interface ContainerControlsProps {
   containerName: string | null;
@@ -183,13 +185,15 @@ const ContainerControls = ({
 
   return (
     <>
-    <div>
-    </div>
-    <div className="mt-3">
+    <div className="">
       <h2 className="font-bold pb-4">
-        {dockerImageId
-          ? `Image name: ${imageName}`
-          : null}
+      <ul className="pb-4 flex space-x-1">
+        <li key={dockerImageId}>
+          <Link href={`/machines/images/${dockerImageId}`}>
+            <span>Using Image: </span><NoCopyTextBox overlayText={imageName??""} />
+          </Link>
+        </li>
+      </ul>
       </h2>
       {dockerImageId && description && containerStatus === "running" && socketPort && (
         <ContainerPageTerminal 
