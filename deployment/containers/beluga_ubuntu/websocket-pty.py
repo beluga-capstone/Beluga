@@ -22,7 +22,8 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "secret!"
 app.config["fd"] = None
 app.config["child_pid"] = None
-socketio = SocketIO(app,cors_allowed_origins="http://localhost:3000")
+app.config["cors"] = "https://beluga.tacex.dev"
+socketio = SocketIO(app,cors_allowed_origins=app.config['cors'])
 
 
 def set_winsize(fd, row, col, xpix=0, ypix=0):
