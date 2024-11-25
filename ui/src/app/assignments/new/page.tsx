@@ -33,21 +33,43 @@ const NewAssignment: React.FC = () => {
       console.log("Course ID is missing!");
       return;
     }
-    await addAssignment(
-      courseId,
-      title,
-      description,
-      new Date(dueAt),
-      allowsLateSubmissions ? new Date(lockAt) : new Date(dueAt),
-      new Date(unlockAt),
-      new Date(publishAt),
-      allowsLateSubmissions,
-      imageId || null
-    );
-    router.push(`/assignments/courses/${courseId}`);
+  
+    try {
+      const response = await fetch(`http://localhost:5000/assignments/course/${courseId}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch assignments for the course.");
+      }
+      const courseAssignments = await response.json();
+  
+      const isDuplicate = courseAssignments.some(
+        (assignment: any) => assignment.title.toLowerCase() === title.toLowerCase()
+      );
+  
+      if (isDuplicate) {
+        setError("An assignment with this title already exists in the course.");
+        return;
+      }
+  
+      setError("");
+      await addAssignment(
+        courseId,
+        title,
+        description,
+        new Date(dueAt),
+        allowsLateSubmissions ? new Date(lockAt) : new Date(dueAt),
+        new Date(unlockAt),
+        new Date(publishAt),
+        allowsLateSubmissions,
+        imageId || null
+      );
+  
+      router.push(`/assignments/courses/${courseId}`);
+    } catch (error) {
+      console.error("Error checking for duplicates or adding assignment:", error);
+      setError("An error occurred while adding the assignment. Please try again.");
+    }
   };
-
-
+  
   return (
     <div className="container mx-auto p-4">
       <h1 className="font-bold text-4xl mb-6">New Assignment</h1>
