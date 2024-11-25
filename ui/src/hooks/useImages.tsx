@@ -29,6 +29,28 @@ export const useImages = () => {
     }
   };
 
+  // get image data
+  const getImage =async(docker_image_id:string|null) =>{
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`http://localhost:5000/images/search?docker_image_id=${docker_image_id}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch docker image id');
+      }
+      const data = await response.json();
+      return data;
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Fetch images from the database
   const fetchImages = async () => {
     setIsLoading(true);
@@ -143,6 +165,7 @@ export const useImages = () => {
     error,
     editImage,
     deleteImage,
+    getImage,
     toggleSelectImage,
     deleteSelectedImages,
     selectAllImages,

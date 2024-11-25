@@ -7,13 +7,14 @@ type ImageProps = {
 
 const ImageOption: React.FC<ImageProps> = ({ image }) => {
   const { imageData, loading, error } = useImageData(image.docker_image_id);
+  console.log("imageoptoin", imageData);
 
   return (
     <option key={image.docker_image_id} value={image.docker_image_id}>
       <span>
         {loading && 'Loading...'}
         {error && `Error: ${error}`}
-        {imageData ? imageData.tag[0] || 'Image data loaded' : 'No data'}
+        {imageData ? imageData.tag[0] || 'Image not found' : 'No data'}
       </span>
     </option>
   );

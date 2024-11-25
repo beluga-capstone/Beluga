@@ -212,7 +212,7 @@ const TerminalMaxxing = ({
         </li>
       </ul>
       </h2>
-      {dockerImageId && description && containerStatus === "running" && socketPort && (
+      {dockerImageId && containerStatus === "running" && socketPort && (
         <ContainerPageTerminal 
           isRunning={containerStatus === "running"} 
           containerPort={socketPort} 

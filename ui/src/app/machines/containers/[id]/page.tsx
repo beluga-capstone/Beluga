@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useContainers } from "@/hooks/useContainers";
+import { useImages } from "@/hooks/useImages";
 import { Container } from "@/types";
 import { Play, StopCircle, Loader2 } from "lucide-react";
 import TerminalMaxxing from "@/components/TerminalMaxxing";
 
 const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
+  const {getImage} = useImages();
   const { containers, checkContainerExists, startContainer, stopContainer, isStoppingContainer, isDeletingContainer} = useContainers();
   const [container, setContainer] = useState<Container | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,6 +57,13 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
           if (exists) {
             console.log("Container exists,", appPort, docker_image_id, status);
             setImageId(docker_image_id);
+
+            if (imageId) {
+              console.log("sending",imageId);
+              const msg = getImage(imageId);
+              console.log("its",msg);
+
+            }
           } else {
             retryCount++;
             console.log(`Retrying... Attempt ${retryCount}`);
@@ -65,7 +74,7 @@ const ContainerPage = ({ params }: { params: Promise<{ id: string }> }) => {
         getContainer();
       }
     }
-  }, [containerId, containers, container]);
+  }, [containerId, containers, container, imageId]);
 
 
   if (loading) {
