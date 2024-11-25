@@ -13,6 +13,8 @@ from src.util.auth import *
 import os
 import subprocess
 
+from src.util.permissions import apply_user_filters
+
 docker_client = docker.from_env()
 
 container_bp = Blueprint('container', __name__)
@@ -164,28 +166,29 @@ def create_container():
         return jsonify({'error': str(e)}), 500
 
 
-# Dynamic search for containers (GET)
 @container_bp.route('/containers/search', methods=['GET'])
 @login_required
 def search_containers():
-    filters = request.args.to_dict()  # Get all query parameters as filters
-
+    user = db.session.get(User, current_user.user_id)
+    print(user.is_admin)
+    filters = request.args.to_dict()
     try:
-        # Dynamically apply filters using the helper function `apply_filters`
-        query = apply_filters(Container, filters)
-        containers = query.all()
+        query = apply_filters(Container, filters)  # Apply dynamic filters from the frontend
+        filtered_query = apply_user_filters(user, 'containers', query)  # Apply ABAC filters
+        containers = filtered_query.all()
 
         # Format the response
         containers_list = [{
             'docker_container_id': container.docker_container_id,
             'user_id': str(container.user_id),
+            'docker_container_name': container.docker_container_name,
             'description': container.description
         } for container in containers]
 
         return jsonify(containers_list), 200
-
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 
 # Update a container (PUT)

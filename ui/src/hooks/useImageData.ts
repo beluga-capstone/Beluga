@@ -23,7 +23,10 @@ export const useImageData = (imageId: string | null): ImageDataState => {
     const fetchImageData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5000/images/${imageId}`);
+        const response = await fetch(`http://localhost:5000/images/${imageId}`, {
+          method: 'GET',
+          credentials: 'include',
+        });
         if (!response.ok) {
           throw new Error('Network error');
         }

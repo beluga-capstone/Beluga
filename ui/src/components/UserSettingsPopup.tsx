@@ -11,7 +11,7 @@ export default function UserSettingsPopup({
     try {
       const response = await fetch('http://localhost:5000/auth/logout', {
         method: 'GET',
-        credentials: 'include', // Include cookies
+        credentials: 'include',
       });
 
       if (response.ok) {

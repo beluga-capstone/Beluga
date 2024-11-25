@@ -18,7 +18,7 @@ interface ContainerHook {
     imageId: string | null,
     containerName: string | null,
     description: string | null
-  )=> Promise<{ container_id: string | null; appPort: number | null, sshPort: number | null } | null>;
+  ) => Promise<{ container_id: string | null; appPort: number | null, sshPort: number | null } | null>;
   stopContainer: (containerName: string | null) => Promise<void>;
   startContainer: (containerName: string | null) => Promise<void>;
   deleteContainer: (containerId: string | null) => Promise<void>;
@@ -30,7 +30,8 @@ interface ContainerHook {
     appPort: number | null;
     sshPort: number | null;
     status: string 
-  }>;}
+  }>;
+}
 
 export const useContainers = (): ContainerHook => {
   const { profile } = useProfile();
@@ -49,21 +50,33 @@ export const useContainers = (): ContainerHook => {
     setState((prev) => ({ ...prev, ...partialState }));
 
   const handleFetch = async (url: string, options: RequestInit) => {
-    const response = await fetch(url, options);
+    const response = await fetch(url, {
+      ...options,
+      credentials: 'include',
+    });
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.error || `Failed: ${response.statusText}`);
     }
     return response.json();
   };
+  
 
   useEffect(() => {
-    fetchContainers();
-  }, []);
+    if (profile?.user_id) {
+      fetchContainers();
+    }
+  }, [profile?.user_id]);
 
   const fetchContainers = async () => {
+    updateState({ isLoading: true, error: null });
     try {
-      const data = await handleFetch(`${API_BASE_URL}/containers`, { method: "GET" });
+      const queryParams = new URLSearchParams();
+      if (profile?.user_id) {
+        queryParams.append('user_id', profile.user_id);
+      }
+      const url = `${API_BASE_URL}/containers/search`;
+      const data = await handleFetch(url, { method: "GET" });
       setContainers(data);
     } catch (err) {
       updateState({ error: err instanceof Error ? err.message : "An error occurred" });
@@ -72,7 +85,7 @@ export const useContainers = (): ContainerHook => {
     }
   };
 
-  const checkContainerExists = async (containerName: string) : Promise<{ 
+  const checkContainerExists = async (containerName: string): Promise<{ 
     docker_image_id: string;
     exists: boolean; 
     appPort: number | null;
@@ -86,26 +99,26 @@ export const useContainers = (): ContainerHook => {
   
       updateState({ isContainerRunning: true });
 
+      console.log(data.ports)
+
       // Extract ports from the response
       const ports = data.ports as { [key: string]: string };
-  
+
       // For example, get the host port mapped to '5000/tcp'
       const appPort = ports['5000/tcp'] ? parseInt(ports['5000/tcp']) : null;
       const sshPort = ports['22/tcp'] ? parseInt(ports['22/tcp']) : null;
-  
+
       return {
-        docker_image_id:data.docker_image_id,
+        docker_image_id: data.docker_image_id,
         exists: true,
         appPort: appPort,
         sshPort: sshPort,
         status: data.status
       };
     } catch {
-      return { docker_image_id:"", exists: false, appPort: null, sshPort: null, status: "" };
+      return { docker_image_id: "", exists: false, appPort: null, sshPort: null, status: "" };
     }
   };
-  
-  
 
   const runContainer = async (
     imageId: string | null,
@@ -123,15 +136,15 @@ export const useContainers = (): ContainerHook => {
           container_name: containerName,
           docker_image_id: imageId,
           user_id: profile?.user_id,
-          description:description,
+          description: description,
         }),
       });
       const ports = data.ports as { [key: string]: string };
-  
+
       // For example, get the host port mapped to '5000/tcp'
       const appPort = ports['5000/tcp'] ? parseInt(ports['5000/tcp']) : null;
       const sshPort = ports['22/tcp'] ? parseInt(ports['22/tcp']) : null;
-  
+
       updateState({ isContainerRunning: true });
       await fetchContainers();
       return { container_id: data.docker_container_id, appPort: appPort, sshPort: sshPort };
@@ -169,6 +182,7 @@ export const useContainers = (): ContainerHook => {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
       });
+      await fetchContainers();  // Optionally refresh containers after starting
     } catch (err) {
       console.error(err);
       throw err;
@@ -208,4 +222,3 @@ export const useContainers = (): ContainerHook => {
     checkContainerExists,
   };
 };
-
