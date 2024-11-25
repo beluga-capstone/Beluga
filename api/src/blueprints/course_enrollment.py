@@ -145,3 +145,17 @@ def get_users_for_course(course_id):
             })
     
     return jsonify(users_list), 200
+
+# Get the number of students enrolled in a specific course (GET)
+@enrollment_bp.route('/courses/<uuid:course_id>/students/count', methods=['GET'])
+@admin_required  # Adjust permissions if necessary
+def get_student_count_for_course(course_id):
+    """
+    Returns the number of students enrolled in a specific course.
+    """
+    try:
+        # Query the count of enrollments for the given course ID
+        count = db.session.query(CourseEnrollment).filter_by(course_id=course_id).count()
+        return jsonify({"students_count": count}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
