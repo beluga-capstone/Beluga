@@ -2,7 +2,6 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSubmissions } from "@/hooks/useSubmissions";
 import { shortDate, shortTime } from "@/lib/utils";
 import { Assignment } from "@/types";
-import Link from "next/link";
 import { useEffect } from "react";
 
 interface ListingForSubmissionProps {
@@ -25,12 +24,14 @@ const ListingForSubmission: React.FC<ListingForSubmissionProps> = ({
   }, [profile]);
 
   return (
-    <tr key={assignment.assignment_id}>
-      <td className="text-center py-2">
-        <Link href={`/assignments/${assignment.assignment_id}`}>
-          {assignment.title}
-        </Link>
-      </td>
+    <tr
+      key={assignment.assignment_id}
+      onClick={() =>
+        (window.location.href = `/assignments/${assignment.assignment_id}`)
+      }
+      className="cursor-pointer"
+    >
+      <td className="text-center py-2">{assignment.title}</td>
       <td className="text-center py-2">
         {assignment?.publish_at
           ? `${shortDate(assignment.publish_at)} at ${shortTime(
