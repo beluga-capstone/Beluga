@@ -121,8 +121,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
       }
     };
 
-    const intervalId = setInterval(checkStatus, 1000);
-    return () => clearInterval(intervalId);
+    checkStatus();
   }, [containerName]);
 
   useEffect(() => {
@@ -325,23 +324,26 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
               : null}
           </h2>
 
-          <h2 className="font-bold pb-4">
-            {socketPort ? (
-              <>
+          <div className="flex space-x-6">
+            {renderContainerButton()}
+
+            {/*
+            <h2 className="font-bold pb-4">
+              {socketPort ? (
+                <>
                 Socket port: <CopyTextBox text={socketPort.toString()} />
-              </>
-            ) : null}
-          </h2>
+                </>
+              ) : null}
+            </h2>*/}
 
-          <h2 className="font-bold pb-4">
-            {sshPort ? (
-              <>
-                SSH port: <CopyTextBox text={sshPort.toString()} />
-              </>
-            ) : null}
-          </h2>
-
-          {renderContainerButton()}
+            <h2 className="font-bold pb-4">
+              {sshPort ? (
+                <>
+                  SSH port: <CopyTextBox text={sshPort.toString()} />
+                </>
+              ) : null}
+            </h2>
+          </div>
         </div>
       </div>
 
