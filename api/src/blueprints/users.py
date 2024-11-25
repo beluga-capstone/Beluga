@@ -194,7 +194,7 @@ def delete_user(user_id):
 
         # Remove associated SSH keys
         try:
-            shutil.rmtree(os.path.join(BASE_KEY_PATH, str(user_id)), ignore_errors=True)
+            shutil.rmtree(os.path.join(current_app.config["BASE_KEY_PATH"], str(user_id)), ignore_errors=True)
             print(f"Deleted SSH keys for user {user_id}.")
         except Exception as e:
             print(f"Error deleting SSH keys: {e}")
