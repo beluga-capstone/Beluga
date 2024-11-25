@@ -109,8 +109,10 @@ def create_container():
         subprocess.run(["docker", "exec", container_id, "mkdir", "-p", container_ssh_dir], check=True)
 
         # Copy the public key into the container's authorized_keys
-        subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
-        subprocess.run(["docker", "exec", container_id, "chown", "root:root", f"{container_ssh_dir}/authorized_keys"])
+        subprocess.run(['cp', public_key_path, ak_path])
+        subprocess.run(['tar', '-cf', '-', './authorized_keys', '--mode', 'u=rw,g=,o=', '--owner', '0', '--group', '0', '|', 'docker', 'cp', '-', f'{container_id}:{container_ssh_dir}'], check=True)
+        subprocess.run(['rm', ak_path])
+        #subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
 
         # # Set the permissions of .ssh directory and authorized_keys file
         # subprocess.run(["docker", "exec", container_id, "chmod", "700", container_ssh_dir], check=True)
