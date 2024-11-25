@@ -20,7 +20,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
   const [isPublished, setIsPublished] = React.useState(false);
   const [publishAt, setPublishAt] = React.useState("");
   const [allowsLateSubmissions, setAllowsLateSubmissions] = React.useState(false);
-  const [imageId, setImageId] = React.useState(assignment?.docker_image_id || "");
+  const [imageId, setImageId] = React.useState(assignment?.docker_image_id || null);
 
   const formatDate = (dateString: string | Date | null | undefined): string => {
     if (!dateString) return "";

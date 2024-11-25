@@ -72,7 +72,7 @@ const ContainerPageTerminal: React.FC<ContainerPageTerminalProps> = ({
       }
     }, 0);
 
-    const socket = io(`ws://localhost:${containerPort}/pty`);
+    const socket = io(`http://localhost:${containerPort}/pty`);
     socketRef.current = socket;
 
     // Set up terminal and socket communication

@@ -41,14 +41,6 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
   const [zipFile, setZipFile] = useState<File | null>(null);
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      router.refresh();
-    }, 5000);
-
-    return () => clearInterval(intervalId);
-  }, [router]);
-
   // Initialize assignment and container name
   useEffect(() => {
     const initializeAssignment = async () => {
@@ -58,7 +50,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
       if (foundAssignment) {
         setAssignment(foundAssignment);
-        const name = normalizeDockerName(`${foundAssignment.title}_con`);
+        const name = normalizeDockerName(`${foundAssignment.assignment_id}_${profile?.user_id}_container`);
         setContainerName(name);
       }
     };
