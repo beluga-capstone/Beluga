@@ -32,7 +32,7 @@ def create_app(config_name="default"):
     socketio.init_app(app, cors_allowed_origins="*")
 
     # WARNING: supports credentials may be insecure
-    CORS(app, origins="http://localhost:3000", supports_credentials=True)
+    CORS(app, origins=app.config('ORIGINS'), supports_credentials=True)
     login_manager.init_app(app)
     login_manager.login_view = '/auth/login'
 
