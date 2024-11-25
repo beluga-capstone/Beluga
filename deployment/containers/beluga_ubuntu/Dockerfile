@@ -3,7 +3,7 @@ FROM ubuntu:latest
 
 # Install Python, pip, and SSH server
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip python3-venv openssh-server sudo && \
+    apt-get install -y nodejs apt-utils openssh-server sudo && \
     apt-get clean
 
 # Configure SSH server
@@ -18,7 +18,7 @@ RUN chmod 755 /usr/sbin/sshd
 WORKDIR /app
 
 # Copy the application files
-COPY websocket-pty.py requirements.txt fullchain.pem privkey.pem /app/
+COPY websocket-pty.js requirements.txt fullchain.pem privkey.pem /app/
 
 # Create and activate a virtual environment, then install dependencies
 RUN python3 -m venv /app/venv && \
@@ -34,5 +34,5 @@ RUN useradd -ms /bin/bash student && \
     chmod 777 /root/ && chmod +r /root/.bashrc
 
 # Start SSH server and run the application
-RUN printf "/usr/sbin/sshd\n/app/venv/bin/python /app/websocket-pty.py\n" >> /docker_entrypoint.sh
+RUN printf "/usr/sbin/sshd\nsu - student -c 'node /app/websocket-pty.js'\n" >> /docker_entrypoint.sh
 CMD ["/bin/bash", "/docker_entrypoint.sh"]
