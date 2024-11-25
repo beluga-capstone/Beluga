@@ -8,7 +8,7 @@ import StudentForm from "../../StudentForm";
 
 const EditStudent = ({ params }: { params: { id: string } }) => {
   const { users, updateUser, deleteUser } = useUsers();
-  const userId = parseInt(params.id, 10);
+  const userId = params.id;
   const user = users.find((user) => user.id === userId);
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");

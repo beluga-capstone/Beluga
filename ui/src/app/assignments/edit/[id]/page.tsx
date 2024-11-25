@@ -1,7 +1,7 @@
 "use client";
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import AssignmentForm from "../../../../components/AssignmentsForm";
 
 const EditAssignment = ({ params }: { params: { id: string } }) => {
@@ -10,7 +10,6 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
     (assignment) => assignment.assignment_id === params.id
   );
   const { updateAssignment, deleteAssignment } = useAssignments();
-  
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [dueAt, setDueAt] = React.useState("");
@@ -34,7 +33,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (assignment) {
       setTitle(assignment.title || "");
       setDescription(assignment.description || "");
@@ -61,7 +60,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
   const prettyDateToIso = (formattedDate: string): Date => {
     return new Date(formattedDate);
     //const date = new Date(formattedDate);
-    //return date.toISOString().split('T')[0]; 
+    //return date.toISOString().split('T')[0];
   };
 
   const handleUpdate = () => {
@@ -83,12 +82,15 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         title.trim(),
         description.trim(),
         prettyDateToIso(dueAt),
-        allowsLateSubmissions ? prettyDateToIso(lockAt) : prettyDateToIso(dueAt),
+        allowsLateSubmissions
+          ? prettyDateToIso(lockAt)
+          : prettyDateToIso(dueAt),
         prettyDateToIso(unlockAt),
         prettyDateToIso(publishAt),
         allowsLateSubmissions,
-        imageId,
+        imageId
       );
+      window.history.back();
     } catch (error) {
       console.error("Error updating assignment:", error);
     }
@@ -150,7 +152,6 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
             <Button
               className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
               onClick={handleUpdate}
-              href="/assignments"
               disabled={!title.trim()}
             >
               Save
