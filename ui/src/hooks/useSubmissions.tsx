@@ -179,11 +179,9 @@ export const useSubmissions = () => {
     );
   };
 
-  const getLatestSubmissionForUser = (userId: string): Submission | null => {
-    // const userSubmissions = submissions.filter(
-    //   (submission) => submission.user_id === userId
-    // );
-
+  const getLatestSubmissionForUser = async (
+    userId: string
+  ): Promise<Submission | null> => {
     const userSubmissionsFunc = (): Promise<Submission | null> => {
       return fetch(`http://localhost:5000/submissions/user/${userId}/latest`, {
         method: "GET",
@@ -191,14 +189,15 @@ export const useSubmissions = () => {
           "Content-Type": "application/json",
         },
       })
-        .then((res) => {
+        .then(async (res) => {
           if (!res.ok) {
             throw new Error(`Failed to fetch submissions: ${res.status}`);
           }
-          if (res.json().submission_id === undefined) {
+          const jsonResponse = await res.json();
+          if (jsonResponse.submission_id === undefined) {
             return null;
           }
-          return res.json(); // Assuming `makeSubmissionList` expects parsed JSON
+          return jsonResponse;
         })
         .catch((error) => {
           console.error("Error fetching latest submission:", error);
@@ -206,7 +205,7 @@ export const useSubmissions = () => {
         });
     };
 
-    return userSubmissionsFunc();
+    return await userSubmissionsFunc();
   };
 
   const getAllSubmissionsForAssignmentAndUser = (
