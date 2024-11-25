@@ -204,7 +204,7 @@ const TerminalMaxxing = ({
     <div className="">
       <h2 className="font-bold pb-4">
       <ul className="pb-4 flex space-x-1">
-        <li key={dockerImageId} className="mr-2">
+        <li key={dockerImageId} className="mr-4">
           <span>Using Image: </span>
           <Link href={`/machines/images/${dockerImageId}`}>
             <NoCopyTextBox overlayText={imageName??""} />
@@ -212,7 +212,11 @@ const TerminalMaxxing = ({
         </li>
         <li>
           <span>Container description: </span>
-          <NoCopyTextBox overlayText={description??""} />
+          <div
+            className="inline-flex items-center py-2" 
+          >
+            <span>{description}</span>
+          </div>
         </li>
       </ul>
       </h2>
