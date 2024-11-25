@@ -34,7 +34,7 @@ export const useImages = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${process.env.backend}/images/search`);
+      const response = await fetch(`${process.env.backend}/images/search`, {
         method: 'GET',
         credentials: 'include',
       });
