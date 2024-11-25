@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 import uuid
-from src.util.db import db, Assignment
+from src.util.db import db, Assignment, User
 from src.util.query_utils import apply_filters
 from src.util.auth import *
+from src.util.policies import filter_assignments
 
 assignment_bp = Blueprint('assignment', __name__)
 
@@ -71,14 +72,19 @@ def create_assignment():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-# Dynamic assignment search (GET)
 @assignment_bp.route('/assignments/search', methods=['GET'])
 @login_required
 def search_assignments():
-    filters = request.args.to_dict()  # Get all query parameters as filters
+    user = db.session.get(User, current_user.user_id)
+    filters = request.args.to_dict()  # Parse query parameters for additional filters
+
     try:
-        query = apply_filters(Assignment, filters)
-        assignments = query.all()
+        query = apply_filters(Assignment, filters)  # Apply dynamic filters
+        filtered_query = filter_assignments(user, query)  # Apply ABAC filters
+        print(filtered_query)
+        assignments = filtered_query.all()
+
+        # Format the response
         assignments_list = [{
             'assignment_id': str(assignment.assignment_id),
             'course_id': str(assignment.course_id),
@@ -92,8 +98,10 @@ def search_assignments():
         } for assignment in assignments]
 
         return jsonify(assignments_list), 200
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 # Get all assignments (GET)
 @assignment_bp.route('/assignments', methods=['GET'])

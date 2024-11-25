@@ -8,7 +8,10 @@ export const useAssignments = () => {
 
   const fetchAssignments = async () => {
     try {
-      const response = await fetch('http://localhost:5000/assignments');
+      const response = await fetch('http://localhost:5000/assignments/search', {
+        method: 'GET',
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch assignments');
       }
@@ -41,6 +44,7 @@ export const useAssignments = () => {
     try {
       const response = await fetch('http://localhost:5000/assignments', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -118,6 +122,7 @@ export const useAssignments = () => {
     try {
       const response = await fetch(`http://localhost:5000/assignments/${assignment_id}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -142,6 +147,7 @@ export const useAssignments = () => {
     try {
       const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -163,6 +169,7 @@ export const useAssignments = () => {
 
       const response = await fetch(`http://localhost:5000/assignments/${assignmentId}/publish`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -192,6 +199,7 @@ export const useAssignments = () => {
 
       const response = await fetch(`http://localhost:5000/assignments/${assignmentId}/late-submissions`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },

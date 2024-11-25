@@ -4,6 +4,7 @@ from src.util.db import db, Image
 from src.util.query_utils import apply_filters
 from flask_socketio import emit
 from datetime import datetime
+from src.util.policies import filter_images
 import docker
 import io
 
@@ -93,16 +94,16 @@ def build_image():
         return jsonify({'error': str(e)}), 500
 
 
-# Dynamic search for images (GET)
 @image_bp.route('/images/search', methods=['GET'])
 @login_required
 def search_images():
-    filters = request.args.to_dict()  # Get all query parameters as filters
+    user = db.session.get(User, current_user.user_id)
+    filters = request.args.to_dict()
 
     try:
-        # Dynamically apply filters using the helper function `apply_filters`
         query = apply_filters(Image, filters)
-        images = query.all()
+        filtered_query = filter_images(user, query)
+        images = filtered_query.all()
 
         # Format the response
         images_list = [{
@@ -115,6 +116,7 @@ def search_images():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 
 # Get all images (GET)
