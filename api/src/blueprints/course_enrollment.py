@@ -12,30 +12,90 @@ enrollment_bp = Blueprint('enrollment', __name__)
 # Create a new course enrollment (POST)
 @enrollment_bp.route('/enrollments', methods=['POST'])
 @professor_required
-def create_enrollment():
-    data = request.get_json()
-
-    if not data or not data.get('course_id') or not data.get('user_id'):
-        return jsonify({'error': 'Course ID and User ID are required'}), 400
-
-    # Validate UUID format
+def create_enrollment_or_enrollments():
     try:
-        uuid.UUID(data['course_id'])
-        uuid.UUID(data['user_id'])
-    except ValueError:
-        return jsonify({'error': 'Invalid UUID format for course_id or user_id'}), 400
+        data = request.get_json()
+        print("Received data:", data)  # Debug print
+        if not data or not data.get('course_id') or not data.get('user_id'):
+            return jsonify({'error': 'Course ID and User ID are required'}), 400
+        # Validate request data
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        # Check if the input is a list (bulk creation)
+        if isinstance(data, list):
+            enrollments = []
 
-    new_enrollment = CourseEnrollment(
-        course_id=data['course_id'],
-        user_id=data['user_id'],
-        enrollment_date=data.get('enrollment_date', datetime.now())
-    )
+            for enrollment_data in data:
+                course_id = enrollment_data.get('course_id')
+                user_id = enrollment_data.get('user_id')
 
-    try:
-        db.session.add(new_enrollment)
-        db.session.commit()
-        return jsonify({'message': 'Enrollment created successfully', 'enrollment_id': str(new_enrollment.enrollment_id)}), 201
+                # Validate required fields
+                if not course_id or not user_id:
+                    return jsonify({'error': f'Missing course_id or user_id in {enrollment_data}'}), 400
+
+                # Validate UUID format
+                try:
+                    uuid.UUID(course_id)
+                    uuid.UUID(user_id)
+                except ValueError:
+                    return jsonify({'error': f'Invalid UUID format for course_id or user_id in {enrollment_data}'}), 400
+
+                # Create enrollment object
+                new_enrollment = CourseEnrollment(
+                    enrollment_id=uuid.uuid4(),
+                    course_id=course_id,
+                    user_id=user_id,
+                    enrollment_date=enrollment_data.get('enrollment_date', datetime.now())
+                )
+                db.session.add(new_enrollment)
+                enrollments.append(new_enrollment)
+
+            # Commit all enrollments
+            db.session.commit()
+
+            # Return enrollment details
+            response_data = [{"enrollment_id": str(e.enrollment_id), "course_id": str(e.course_id), "user_id": str(e.user_id)} for e in enrollments]
+            return jsonify(response_data), 201
+
+        # Handle single enrollment creation
+        elif isinstance(data, dict):
+            course_id = data.get('course_id')
+            user_id = data.get('user_id')
+
+            # Validate required fields
+            if not course_id or not user_id:
+                return jsonify({'error': 'Course ID and User ID are required'}), 400
+
+            # Validate UUID format
+            try:
+                uuid.UUID(course_id)
+                uuid.UUID(user_id)
+            except ValueError:
+                return jsonify({'error': 'Invalid UUID format for course_id or user_id'}), 400
+
+            # Create enrollment object
+            new_enrollment = CourseEnrollment(
+                enrollment_id=uuid.uuid4(),
+                course_id=course_id,
+                user_id=user_id,
+                enrollment_date=data.get('enrollment_date', datetime.now())
+            )
+
+            db.session.add(new_enrollment)
+            db.session.commit()
+
+            return jsonify({
+                'message': 'Enrollment created successfully',
+                'enrollment_id': str(new_enrollment.enrollment_id),
+                'course_id': str(new_enrollment.course_id),
+                'user_id': str(new_enrollment.user_id)
+            }), 201
+
+        else:
+            return jsonify({'error': 'Invalid input format. Expected an object or an array of objects.'}), 400
+
     except Exception as e:
+        print("Error during enrollment creation:", str(e))
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
@@ -133,12 +193,15 @@ def get_enrollments_for_user():
 @student_required
 def get_users_for_course(course_id):
     enrollments = db.session.scalars(db.select(CourseEnrollment).filter_by(course_id=course_id)).all()
-    users_list = []
+    users_list = [] 
     for enrollment in enrollments:
         user = db.session.get(User, enrollment.user_id)
         if user:
             users_list.append({
                 'user_id': str(user.user_id),
+                'firstname': user.first_name,
+                'middlename': user.middle_name,
+                'lastname': user.last_name,
                 'username': user.username,
                 'email': user.email,
                 'role_id': str(user.role_id)

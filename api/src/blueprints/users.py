@@ -41,39 +41,103 @@ def create_ssh_key_pair(user_id):
 # Create User (POST)
 @users_bp.route('/users', methods=['POST'])
 @login_required
-def create_user():
-    data = request.get_json()
-    if not data or not data.get('username') or not data.get('email'):
-        return jsonify({'error': 'Username and email are required'}), 400
-    
-    new_user = User(
-        username=data['username'],
-        email=data['email'],
-        first_name=data.get('first_name'),
-        middle_name=data.get('middle_name'),
-        last_name=data.get('last_name'),
-        role_id=data.get('role_id')
-    )
-    
+def create_user_or_users():
     try:
-        db.session.add(new_user)
-        db.session.commit()
-
-        key_paths = create_ssh_key_pair(new_user.user_id)
-        if key_paths is None:
-            return jsonify({'message': 'User created, but SSH key generation failed'}), 201
+        # Parse incoming JSON data
+        data = request.get_json()
         
-        with open(key_paths['private_key_path'], 'r') as f:
-            private_key = f.read().strip()
-        
-        os.remove(key_paths['private_key_path'])
+        # Log incoming data for debugging
+        print("Received data for user creation:", data)
 
-        return jsonify({
-            'message': 'User created successfully',
-            'user_id': str(new_user.user_id),
-            'private_key': private_key
-        }), 201
+        # Check if the input is a list (bulk creation)
+        if isinstance(data, list):
+            new_users = []
+            for user_data in data:
+                # Validate required fields for each user
+                if not user_data.get('email') or not user_data.get('firstName'):
+                    raise ValueError(f"Missing required fields for user: {user_data}")
+
+                # Handle role_id correctly
+                role = user_data.get('role', "student")  # Default to "student"
+                if role == "admin":
+                    role_id = 1  # Adjust this mapping based on your database schema
+                elif role == "professor":
+                    role_id = 2
+                elif role == "ta":
+                    role_id = 4
+                elif role == "student":
+                    role_id = 8
+                else:
+                    raise ValueError(f"Invalid role: {role}")
+
+                # Create a new user object
+                new_user = User(
+                    username=user_data.get('email').split("@")[0],  # Generate username
+                    email=user_data.get('email'),
+                    first_name=user_data.get('firstName'),
+                    middle_name=user_data.get('middleName', ""),
+                    last_name=user_data.get('lastName', ""),
+                    role_id=role_id  # Use mapped integer role_id
+                )
+                db.session.add(new_user)
+                new_users.append(new_user)
+
+            # Commit all new users in one transaction
+            db.session.commit()
+
+            # Return created users' details
+            response_data = [{"user_id": str(user.user_id), "email": user.email} for user in new_users]
+            return jsonify(response_data), 201
+
+        # Single user creation if input is not a list
+        elif isinstance(data, dict):
+            # Validate required fields
+            if not data.get('username') or not data.get('email'):
+                return jsonify({'error': 'Username and email are required'}), 400
+
+            # Handle role_id correctly
+            role = data.get('role', "student")  # Default to "student"
+            if role == "student":
+                role_id = 1  # Adjust this mapping based on your database schema
+            elif role == "professor":
+                role_id = 2
+            elif role == "admin":
+                role_id = 3
+            else:
+                raise ValueError(f"Invalid role: {role}")
+
+            # Create a single user object
+            new_user = User(
+                username=data['username'],
+                email=data['email'],
+                first_name=data.get('first_name'),
+                middle_name=data.get('middle_name'),
+                last_name=data.get('last_name'),
+                role_id=role_id  # Use mapped integer role_id
+            )
+
+            db.session.add(new_user)
+            db.session.commit()
+
+            # Generate SSH key pair for the new user
+            key_paths = create_ssh_key_pair(new_user.user_id)
+            private_key = None
+            if key_paths:
+                with open(key_paths['private_key_path'], 'r') as f:
+                    private_key = f.read().strip()
+                os.remove(key_paths['private_key_path'])
+
+            return jsonify({
+                'message': 'User created successfully',
+                'user_id': str(new_user.user_id),
+                'private_key': private_key
+            }), 201
+
+        else:
+            return jsonify({'error': 'Invalid input format. Expected an object or an array of objects.'}), 400
+
     except Exception as e:
+        print("Error during user creation:", str(e))
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 

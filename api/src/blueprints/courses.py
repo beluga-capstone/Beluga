@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from src.util.db import db, Course
+from src.util.db import db, Course, CourseEnrollment
 from datetime import datetime
 import uuid
 from src.util.auth import *
@@ -100,9 +100,14 @@ def delete_course(course_id):
         return jsonify({'error': 'Course not found'}), 404
 
     try:
+        # Delete related enrollments explicitly
+        db.session.query(CourseEnrollment).filter_by(course_id=course_id).delete(synchronize_session=False)
+
+        # Delete the course
         db.session.delete(course)
         db.session.commit()
-        return jsonify({'message': 'Course deleted successfully'}), 200
+        return jsonify({'message': 'Course and related enrollments deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
+        print(f"Error deleting course {course_id}: {str(e)}")  # Log the error for debugging
         return jsonify({'error': str(e)}), 500
