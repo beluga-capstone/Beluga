@@ -32,18 +32,22 @@ const NewUser: React.FC = () => {
         middleName,
         "student",
       );
-      console.log("User added successfully:", newUser);
-  
-      // Log courseId and newUser.user_id
-      console.log("Course ID:", courseId);
-      console.log("New User ID:", newUser.user_id);
-  
-      // Ensure both IDs are valid
-      if (!courseId) {
-        throw new Error("Missing course ID.");
-      }
-      if (!newUser.user_id) {
-        throw new Error("Missing user ID from user creation response.");
+
+      if (newUser){
+
+        console.log("User added successfully:", newUser);
+    
+        // Log courseId and newUser.user_id
+        console.log("Course ID:", courseId);
+        console.log("New User ID:", newUser.user_id);
+    
+        // Ensure both IDs are valid
+        if (!courseId) {
+          throw new Error("Missing course ID.");
+        }
+        if (!newUser.user_id) {
+          throw new Error("Missing user ID from user creation response.");
+        }
       }
   
       // Enroll the user in the course
