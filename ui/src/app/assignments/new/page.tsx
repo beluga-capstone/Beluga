@@ -5,6 +5,7 @@ import { useAssignments } from "@/hooks/useAssignments";
 import React, { useState, useEffect } from "react";
 import AssignmentForm from "../../../components/AssignmentsForm";
 import { toLocalISOString } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 const NewAssignment: React.FC = () => {
   const { assignments, addAssignment } = useAssignments();
@@ -19,6 +20,7 @@ const NewAssignment: React.FC = () => {
   const [imageId, setImageId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [duplicateName, setDuplicateName] = useState("");
+  const router = useRouter();
 
   // if select image, then unselect,imageid will be -1, fix it
   useEffect(() => {
@@ -33,7 +35,7 @@ const NewAssignment: React.FC = () => {
     }
   }, [title, duplicateName]);
 
-  const handleAddAssignment = () => {
+  const handleAddAssignment = async() => {
     const isDuplicate = assignments.some(
       (assignment) =>
         assignment.title &&
@@ -47,7 +49,7 @@ const NewAssignment: React.FC = () => {
     }
     setError("");
 
-    addAssignment(
+    const data = await addAssignment(
       courseId,
       title,
       description,
@@ -60,7 +62,7 @@ const NewAssignment: React.FC = () => {
       allowsLateSubmissions,
       imageId || null
     );
-    window.history.back();
+    router.back();
   };
 
   return (

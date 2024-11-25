@@ -57,6 +57,7 @@ export const useAssignments = () => {
 
       const data = await response.json();
       setAssignments((prev) => [...prev, data]);
+      fetchAssignments();
     } catch (err) {
       console.log(err);
     }
@@ -88,6 +89,7 @@ export const useAssignments = () => {
       docker_image_id: docker_image_id,
     };
 
+    fetchAssignments();
     await saveAssignment(newAssignment);
   };
 
