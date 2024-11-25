@@ -22,7 +22,7 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "secret!"
 app.config["fd"] = None
 app.config["child_pid"] = None
-app.config["cors"] = "https://beluga.tacex.dev"
+app.config["cors"] = "*"
 socketio = SocketIO(app,cors_allowed_origins=app.config['cors'])
 
 

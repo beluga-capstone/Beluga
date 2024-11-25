@@ -12,10 +12,11 @@ import socket
 from src.util.auth import *
 import os
 import subprocess
+import requests
+import random
 
 from src.util.permissions import apply_user_filters
 
-docker_client = docker.from_env()
 
 container_bp = Blueprint('container', __name__)
 
@@ -39,6 +40,8 @@ def normalize_container_name(name: str) -> str:
 def get_containers():
     try:
         # Get all containers from Docker including stopped ones
+        docker_client = docker.DockerClient(base_url="ssh://beluga-containers")
+
         docker_containers = docker_client.containers.list(all=True)
         
         containers_list = []
@@ -65,6 +68,8 @@ def get_containers():
 @container_bp.route('/containers', methods=['POST'])
 @student_required
 def create_container():
+    docker_client = docker.DockerClient(base_url="ssh://beluga-containers")
+
     data = request.get_json()
     
     # get a port number to give to the container    
@@ -88,19 +93,31 @@ def create_container():
         return jsonify({'error': f'A container "{container_name}" already exists'}), 400
     
     try:
-        container = docker_client.containers.run(
-            data['docker_image_id'],
-            detach=True,
-            name=container_name,  # Use normalized container name
+        image_id = data['docker_image_id']
+        image_tag = find_image_tag_from_registry(image_id)
+        ssh_port = get_port()
+        pty_port = ssh_port + 1
 
-            # expose 5000 in the container as 'port' on the host
-            ports=ports,
-        )
+        #docker_client.images.pull(
+        #    image_tag
+        #)
+
+        #container = docker_client.containers.run(
+        #    data['docker_image_id'],
+        #    image_tag,
+        #    detach=True,
+        #    name=container_name,
+        #    ports=ports
+        #)
+
+
+        #docker --context beluga-containers pull {tag}
+        # docker --context --memory=128m --cpus=0.2 -d --name container_name -p 1111:5000 -p 1112:22 192.168.100.2:5000/container_name
+        subprocess.run(["docker", "--context", "beluga-containers", "pull", image_tag])
+        result = subprocess.run(["docker", "--context", "beluga-containers", "run", "--memory=128m", "--cpus=0.2", "-d", "--name", container_name, "-p", f"{pty_port}:5000", "-p", f"{ssh_port}:22", image_tag], capture_output=True)
         
-        container_id = container.id
+        container_id = result.stdout.decode('utf-8').strip()
         user_id = data['user_id']
-
-
 
         public_key_path = os.path.join(current_app.config["BASE_KEY_PATH"], str(user_id), 'id_rsa.pub')
         ak_path = os.path.join(current_app.config["BASE_KEY_PATH"], str(user_id), 'authorized_keys')
@@ -110,11 +127,12 @@ def create_container():
         
         # Create .ssh directory in container
         container_ssh_dir = "/root/.ssh"
-        subprocess.run(["docker", "exec", container_id, "mkdir", "-p", container_ssh_dir], check=True)
+        print(' '.join(["docker", "--context", "beluga-containers", "exec", container_id, "mkdir", "-p", container_ssh_dir]))
+        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "mkdir", "-p", container_ssh_dir], check=True)
 
         # Copy the public key into the container's authorized_keys
-        subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
-        subprocess.run(["docker", "exec", container_id, "chown", "root:root", f"{container_ssh_dir}/authorized_keys"])
+        subprocess.run(["docker", "--context", "beluga-containers", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
+        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chown", "root:root", f"{container_ssh_dir}/authorized_keys"])
 
         # # Set the permissions of .ssh directory and authorized_keys file
         # subprocess.run(["docker", "exec", container_id, "chmod", "700", container_ssh_dir], check=True)
@@ -135,7 +153,7 @@ def create_container():
 
         # Save container information to the database
         new_container = Container(
-            docker_container_id=container.id,
+            docker_container_id=container_id,
             docker_container_name=container_name,  # Use normalized container name
             user_id=data['user_id'],
             description=data.get('description', alt_desc)
@@ -143,16 +161,16 @@ def create_container():
         db.session.add(new_container)
         db.session.commit()
 
-        container.reload()  # Refresh container attributes
-        port_bindings = container.attrs['NetworkSettings']['Ports']
-        assigned_ports = {}
-        for container_port, bindings in port_bindings.items():
-            if bindings:
-                assigned_ports[container_port] = bindings[0]['HostPort']
-            else:
-                assigned_ports[container_port] = None
+        #container.reload()  # Refresh container attributes
+        #port_bindings = container.attrs['NetworkSettings']['Ports']
+        #assigned_ports = {}
+        #for container_port, bindings in port_bindings.items():
+        #    if bindings:
+        #        assigned_ports[container_port] = bindings[0]['HostPort']
+        #    else:
+        #        assigned_ports[container_port] = None
 
-        return jsonify({'message': 'Container created and started successfully', 'ports': assigned_ports, 'docker_container_id': container.id}), 201
+        return jsonify({'message': 'Container created and started successfully', 'ports': {'22/tcp': ssh_port, '5000/tcp': pty_port}, 'docker_container_id': container_id}), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
@@ -207,10 +225,15 @@ def update_container(docker_container_id):
 @student_required
 def get_container(container_name):
     try:
+        docker_client = docker.DockerClient(base_url="ssh://beluga-containers")
+
         # Normalize container name
         container_name = normalize_container_name(container_name)
         
         containers = docker_client.containers.list(all=True)  # Include stopped containers
+        if len(containers) == 0:
+            return jsonify({'error': 'Docker container not found'}), 404
+
         for container in containers:
             if f"/{container_name}" in container.attrs['Name'] or container_name in container.name:
                 container = db.session.get(Container, container.id)
@@ -250,6 +273,7 @@ def get_container(container_name):
 @student_required
 def delete_container(container_id):
     try:
+        docker_client = docker.DockerClient(base_url="ssh://beluga-containers")
         # Retrieve the container record from the database
         container = db.session.get(Container, container_id)
         if not container:
@@ -288,6 +312,7 @@ def find_available_port(start_port: int, end_port: int) -> int:
 @student_required
 def start_container(container_name):
     try:
+        docker_client = docker.DockerClient(base_url="ssh://beluga-containers")
         # Normalize container name
         container_name = normalize_container_name(container_name)
         
@@ -309,6 +334,8 @@ def start_container(container_name):
 @student_required
 def stop_container(container_name):
     try:
+        docker_client = docker.DockerClient(base_url="ssh://beluga-containers")
+
         # Normalize container name
         container_name = normalize_container_name(container_name)
         
@@ -328,6 +355,8 @@ def stop_container(container_name):
 @student_required
 def attach_container(container_name):
     try:
+        docker_client = docker.DockerClient(base_url="ssh://beluga-containers")
+
         # Normalize container name
         container_name = normalize_container_name(container_name)
         
@@ -356,3 +385,44 @@ def get_keys_path(user_id):
         "private_key_path": private_key_path,
         "public_key_path": public_key_path
     }
+
+def find_image_tag_from_registry(image_id):
+    registry_ip = current_app.config['REGISTRY_IP']
+    registry_port = current_app.config['REGISTRY_PORT']
+
+    registry_url = f"http://{registry_ip}:{registry_port}/v2"
+    headers = {"Accept": "application/vnd.docker.distribution.manifest.v2+json"}
+
+    try:
+        repos_url = f"{registry_url}/_catalog"
+        res = requests.get(repos_url)
+        res.raise_for_status()
+        repositories = res.json().get("repositories", [])
+
+        for repo in repositories:
+            tags_url = f"{registry_url}/{repo}/tags/list"
+            tags_res = requests.get(tags_url)
+            tags_res.raise_for_status()
+            tags = tags_res.json().get("tags", [])
+
+            for tag in tags:
+                manifest_url = f"{registry_url}/{repo}/manifests/{tag}"
+                manifest_response = requests.get(manifest_url, headers=headers)
+                manifest_response.raise_for_status()
+                manifest = manifest_response.json()
+
+                if "config" in manifest and manifest["config"]["digest"].endswith(image_id):
+                    return f"{registry_ip}:{registry_port}/{repo}:{tag}"
+
+        return "Image tag not found from ID on registry"
+
+    except Exception as e:
+        return f"Error tag from id in registry: {str(e)}"
+
+def get_port():
+    port = random.randint(current_app.config['CONTAINER_START_PORT'], current_app.config['CONTAINER_END_PORT'])
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        while s.connect_ex(("localhost", port)) == 0:
+            port += 1
+
+    return port

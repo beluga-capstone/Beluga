@@ -19,8 +19,8 @@ ADMIN_ID='dd85014a-edad-4298-b9c6-808268b3d15e'
 def load_user(user_id):
     return User.query.get(user_id)
 
-# @login_manager.request_loader
-# def load_user_from_request(request): return User.query.get(ADMIN_ID)
+@login_manager.request_loader
+def load_user_from_request(request): return User.query.get(ADMIN_ID)
 
 
 def create_app(config_name="default"):
@@ -202,7 +202,7 @@ def init_default_images():
             image, logs = docker_client.images.build(
                 path=image_info['context_path'],
                 dockerfile=image_info['dockerfile'],
-                tag=image_tag_registry
+                tag=image_info['image_tag']
             )
 
             # Save image to database
@@ -218,6 +218,7 @@ def init_default_images():
                 print(f"Initialized default image: {image_info['image_tag']}")
 
             client = docker.APIClient()
+            image.tag(image_tag_registry)
             push_logs = client.push(
                 image_tag_registry, stream=True, decode=True
             )

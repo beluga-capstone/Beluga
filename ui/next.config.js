@@ -5,9 +5,9 @@ module.exports = {
     ignoreDuringBuilds: true,
   },
   env: {
-    backend: 'https://api.beluga.tacex.dev',
+    backend: 'http://localhost:5000',
     //backend: 'http://localhost:5000', // for local dev
-    wsbackend: 'ws://beluga.tacex.dev',
+    wsbackend: 'ws://192.168.100.4',
     //wsbackend: 'ws://localhost' // for local dev
   },
 }
