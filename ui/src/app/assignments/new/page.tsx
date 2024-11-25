@@ -62,7 +62,7 @@ const NewAssignment: React.FC = () => {
       allowsLateSubmissions,
       imageId || null
     );
-    router.back();
+    router.push(`/assignments/${data.assignment_id}`);
   };
 
   return (

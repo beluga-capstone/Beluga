@@ -90,8 +90,10 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
       if (foundAssignment) {
         setAssignment(foundAssignment);
-        const name = normalizeDockerName(`${foundAssignment.title}_con`);
-        setContainerName(name);
+        if (foundAssignment?.docker_image_id){
+          const name = normalizeDockerName(`${foundAssignment.title}_con`);
+          setContainerName(name);
+        }
       }
     };
 
