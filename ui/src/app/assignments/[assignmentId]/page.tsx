@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import confetti from "canvas-confetti";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowUpFromLine, Edit2 } from "lucide-react";
@@ -10,8 +11,6 @@ import TerminalMaxxing from "@/components/TerminalMaxxing";
 import { ROLES } from "@/constants";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useProfile } from "@/hooks/useProfile";
-import { useContainers } from "@/hooks/useContainers";
-import { useImageData } from "@/hooks/useImageData";
 import { Assignment, Submission } from "@/types";
 import { useSubmissions } from "@/hooks/useSubmissions";
 import { shortDate, shortTime } from "@/lib/utils";
@@ -48,6 +47,23 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
   const [latestSubmission, setLatestSubmission] = useState<Submission | null>(
     null
   );
+
+  const handleSubmit = () => {
+    if (profile && assignment && zipFile) {
+      setSubmissionWindowIsOpen(false);
+      setSubmitIsEnabled(false);
+      console.log(zipFile);
+      submit(profile.user_id, assignment?.assignment_id ?? "", zipFile!);
+      setZipFile(null);
+
+      confetti({
+        particleCount: 100,
+        spread: 100,
+        origin: { y: 0.6 },
+      });
+    }
+  };
+
   useEffect(() => {
     if (!assignment || !profile) return;
     const submission = getLatestSubmission(
@@ -55,7 +71,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
       profile.user_id
     );
     setLatestSubmission(submission);
-  }, [assignment, profile]);
+  }, [assignment, profile, zipFile]);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -108,16 +124,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
               <div className="px-2">
                 <Button
                   className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-                  onClick={() => {
-                    setSubmissionWindowIsOpen(false);
-                    setSubmitIsEnabled(false);
-                    console.log(zipFile);
-                    submit(
-                      profile.user_id,
-                      assignment?.assignment_id ?? "",
-                      zipFile!
-                    );
-                  }}
+                  onClick={handleSubmit}
                   disabled={!submitIsEnabled || !zipFile}
                 >
                   Submit
