@@ -189,8 +189,9 @@ const ContainerControls = ({
       <h2 className="font-bold pb-4">
       <ul className="pb-4 flex space-x-1">
         <li key={dockerImageId}>
+          <span>Using Image: </span>
           <Link href={`/machines/images/${dockerImageId}`}>
-            <span>Using Image: </span><NoCopyTextBox overlayText={imageName??""} />
+            <NoCopyTextBox overlayText={imageName??""} />
           </Link>
         </li>
       </ul>
