@@ -3,7 +3,9 @@ import io from "socket.io-client";
 import { useRouter } from "next/navigation";
 import { useProfile } from "@/hooks/useProfile";
 
-const socket = io(`${process.env.backend}`);
+const socket = io(`${process.env.backend}`, {
+  withCredentials: true,
+});
 
 const normalizeDockerImageName = (name: string) => {
   return name

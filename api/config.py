@@ -44,7 +44,7 @@ class Config:
     }
     REGISTRY_IP = environ.get("REGISTRY_IP", "localhost")
     REGISTRY_PORT = environ.get("REGISTRY_PORT", "8000")
-    ORIGINS = environ.get("ORIGINS", "http://localhost:3000")
+    ORIGINS = environ.get("ORIGINS", ["https://api.beluga.tacex.dev", "https://beluga.tacex.dev", "http://localhost:8123", "http://localhost:8124"])
 
 
 class TestingConfig:
