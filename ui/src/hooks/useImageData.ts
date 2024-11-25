@@ -23,7 +23,7 @@ export const useImageData = (imageId: string | null): ImageDataState => {
     const fetchImageData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${process.env.backend}/images/${imageId}`);
+        const response = await fetch(`${process.env.backend}/images/${imageId}`, {
           method: 'GET',
           credentials: 'include',
         });

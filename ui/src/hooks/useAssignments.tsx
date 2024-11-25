@@ -8,7 +8,7 @@ export const useAssignments = () => {
 
   const fetchAssignments = async () => {
     try {
-      const response = await fetch(`${process.env.backend}/assignments/search`);
+      const response = await fetch(`${process.env.backend}/assignments/search`, {
         method: 'GET',
         credentials: 'include',
       });

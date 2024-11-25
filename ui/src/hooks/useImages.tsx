@@ -12,7 +12,7 @@ export const useImages = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${process.env.backend}/assignments/search?docker_image_id=${docker_image_id}`);
+      const response = await fetch(`${process.env.backend}/assignments/search?docker_image_id=${docker_image_id}`, {
         method: 'GET',
         credentials: 'include',
       });
