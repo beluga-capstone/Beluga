@@ -81,7 +81,6 @@ def search_assignments():
     try:
         query = apply_filters(Assignment, filters)  # Apply dynamic filters
         filtered_query = filter_assignments(user, query)  # Apply ABAC filters
-        print(filtered_query)
         assignments = filtered_query.all()
 
         # Format the response
