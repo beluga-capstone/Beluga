@@ -336,7 +336,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
           <h2 className="font-bold pb-4">
             {sshPort ? (
               <>
-                Socket port: <CopyTextBox text={sshPort.toString()} />
+                SSH port: <CopyTextBox text={sshPort.toString()} />
               </>
             ) : null}
           </h2>
