@@ -57,8 +57,11 @@ export const useAllImagesData = (imageIds: string[]) => {
       try {
         setLoading(true);
         const promises = imageIds.map(id => 
-          fetch(`http://localhost:5000/images/${id}`).then(res => res.json())
-        );
+          fetch(`http://localhost:5000/images/${id}`, {
+              credentials: 'include'
+          }).then(res => res.json())
+      );
+      
         const results = await Promise.all(promises);
         const newImagesData = results.reduce((acc, data) => {
           acc[data.docker_image_id] = data;
