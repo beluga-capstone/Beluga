@@ -1,0 +1,212 @@
+import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import Button from "@/components/Button";
+import CopyTextBox from "@/components/CopyTextBox";
+import { useContainers } from "@/hooks/useContainers";
+import ContainerPageTerminal from "./ContainerPageTerminal";
+
+interface ContainerControlsProps {
+  containerName: string | null;
+  dockerImageId: string | null;
+  description: string | null;
+}
+
+interface ContainerStatus {
+  exists: boolean;
+  appPort: number | null;
+  sshPort: number | null;
+  status: string;
+}
+
+const ContainerControls = ({
+  containerName = null,
+  dockerImageId = null,
+  description = null,
+}: ContainerControlsProps) => {
+  const router = useRouter();
+  const [containerStatus, setContainerStatus] = useState<string>("none");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [socketPort, setSocketPort] = useState<number | null>(null);
+  const [sshPort, setSshPort] = useState<number | null>(null);
+  const { checkContainerExists, runContainer, startContainer, stopContainer} = useContainers();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkStatus = async () => {
+      if (!containerName) return;
+
+      try {
+        const status: ContainerStatus = await checkContainerExists(containerName);
+        
+        if (!isMounted) return;
+
+        if (status.exists) {
+          setContainerStatus(status.status === "running" ? "running" : "stopped");
+          setSocketPort(status.appPort);
+          setSshPort(status.sshPort);
+        } else {
+          setContainerStatus("none");
+          setSocketPort(null);
+          setSshPort(null);
+        }
+      } catch (error) {
+        console.error("Error checking container status:", error);
+        if (isMounted) {
+          setContainerStatus("error");
+          setSocketPort(null);
+          setSshPort(null);
+        }
+      }
+    };
+
+    const intervalId = setInterval(checkStatus, 5000);
+    checkStatus();
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, [containerName]);
+
+  const handleContainerAction = async () => {
+    if (isProcessing || !containerName || !dockerImageId) return;
+
+    setIsProcessing(true);
+
+    try {
+      switch (containerStatus) {
+        case "none": {
+          const result = await runContainer(
+            dockerImageId,
+            containerName,
+            description
+          );
+          if (result?.appPort && result?.sshPort) {
+            setSocketPort(result.appPort);
+            setSshPort(result.sshPort);
+            setContainerStatus("running");
+            showToast("Container created successfully");
+          } else {
+            throw new Error("Failed to create the container");
+          }
+          break;
+        }
+
+        case "stopped": {
+          await startContainer(containerName);
+          const status = await checkContainerExists(containerName);
+          if (status.exists) {
+            setContainerStatus("running");
+            setSocketPort(status.appPort);
+            setSshPort(status.sshPort);
+            showToast("Container started successfully");
+          }
+          break;
+        }
+
+        case "running": {
+          await stopContainer(containerName);
+          setContainerStatus("stopped");
+          setSocketPort(null);
+          setSshPort(null);
+          showToast("Container stopped successfully");
+          break;
+        }
+      }
+      router.refresh();
+    } catch (error) {
+      console.error("Container action failed:", error);
+      showToast(`Failed to ${getActionText(containerStatus)}`, true);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const getActionText = (status: string) => {
+    switch (status) {
+      case "none":
+        return "create";
+      case "running":
+        return "stop";
+      case "stopped":
+        return "start";
+      default:
+        return "manage";
+    }
+  };
+
+  const showToast = (message: string, isError = false) => {
+    const toastFn = isError ? toast.error : toast.success;
+    toastFn(message);
+  };
+
+  const getButtonConfig = () => {
+    switch (containerStatus) {
+      case "stopped":
+        return {
+          text: "Start Container",
+          bgColor: "bg-green-500",
+          loadingText: "Starting...",
+        };
+      case "running":
+        return {
+          text: "Stop Container",
+          bgColor: "bg-red-500",
+          loadingText: "Stopping...",
+        };
+      default:
+        return {
+          text: "Create Container",
+          bgColor: "bg-blue-500",
+          loadingText: "Creating...",
+        };
+    }
+  };
+
+  if (!dockerImageId) {
+    return null;
+  }
+
+  const buttonConfig = getButtonConfig();
+
+  return (
+    <div className="mt-3">
+      {dockerImageId && description && containerStatus === "running" && socketPort && (
+        <ContainerPageTerminal 
+          isRunning={containerStatus === "running"} 
+          containerPort={socketPort} 
+        />
+      )}
+      
+      <div className="mt-4 flex space-x-6">
+        <div className="flex items-center">
+          <Button
+            className={`${buttonConfig.bgColor} px-4 py-2 mb-4`}
+            onClick={handleContainerAction}
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <div className="flex items-center">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {buttonConfig.loadingText}
+              </div>
+            ) : (
+              buttonConfig.text
+            )}
+          </Button>
+        </div>
+        
+        {sshPort && (
+          <h2 className="font-bold pb-4 flex items-center">
+            SSH port <CopyTextBox text={sshPort.toString()} />
+          </h2>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ContainerControls;

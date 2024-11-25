@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import { Copy, Check } from "lucide-react";
 
-const CopyTextBox = ({ text }) => {
+interface CopyTextBoxProps {
+  text: string;
+}
+
+const CopyTextBox: React.FC<CopyTextBoxProps> = ({ text }) => {
   const [isCopied, setIsCopied] = useState(false);
 
   const copyToClipboard = async () => {
@@ -17,7 +21,7 @@ const CopyTextBox = ({ text }) => {
   return (
     <button
       onClick={copyToClipboard}
-      className="inline-flex items-center gap-2 px-4 py-2 border rounded-lg shadow-sm transition-colors cursor-pointer group"
+      className="ml-2 inline-flex items-center gap-2 px-4 py-2 border rounded-lg shadow-sm transition-colors cursor-pointer group"
       aria-label={isCopied ? "Copied" : "Copy to clipboard"}
     >
       <span className="text-sm font-medium">{text}</span>
