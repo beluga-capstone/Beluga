@@ -67,7 +67,7 @@ def build_image():
                 socketio.emit('build_status', {'status': message})
 
         # After successful build, retrieve the image by tag
-        image = docker_client.images.get(image_tag)
+        image = docker_client.images.get(image_tag_registry)
 
         # Check if an image with the same tag already exists in the database
         existing_image = Image.query.filter_by(docker_image_id=image.id).first()
@@ -88,13 +88,13 @@ def build_image():
         )
         db.session.add(new_image)
         db.session.commit()
-
         # Push to registry
-        push_logs = api_client.push(image_tag_registry, stream=True, decode=True)
-        for push_log in push_logs:
-            push_message = push_log.get('status') or push_log.get('error', '').strip()
-            if push_message:
-                socketio.emit('push_status', {'status': push_message})
+        docker_client.images.push(image_tag_registry)
+        # push_logs = api_client.push(image_tag_registry, stream=True, decode=True)
+        # for push_log in push_logs:
+        #     push_message = push_log.get('status') or push_log.get('error', '').strip()
+        #     if push_message:
+        #         socketio.emit('push_status', {'status': push_message})
 
         # Remove image locally
         try:
@@ -236,7 +236,7 @@ def find_image_tag_from_registry(image_id):
         repositories = res.json().get("repositories", [])
 
         for repo in repositories:
-            #print('repo:', repo)
+            # print('repo:', repo)
             tags_url = f"{registry_url}/{repo}/tags/list"
             tags_res = requests.get(tags_url)
             tags_res.raise_for_status()

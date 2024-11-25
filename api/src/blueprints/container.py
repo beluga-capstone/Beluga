@@ -12,6 +12,7 @@ import socket
 from src.util.auth import *
 import os
 import subprocess
+import requests
 
 from src.util.permissions import apply_user_filters
 
@@ -90,7 +91,6 @@ def create_container():
     try:
         image_id = data['docker_image_id']
         image_tag = find_image_tag_from_registry(image_id)
-
         container = docker_client.containers.run(
             # data['docker_image_id'],
             image_tag,
@@ -125,9 +125,9 @@ def create_container():
         # subprocess.run(["docker", "exec", container_id, "/usr/sbin/sshd"], check=True)
 
         # Get the image tag
-        image_tag = ""
-        image = docker_client.images.get(data['docker_image_id'])
-        image_tag = image.tags[0]
+        # image_tag = ""
+        # image = docker_client.images.get(data['docker_image_id'])
+        # image_tag = image.tags[0]
 
         # Set alt description
         alt_desc = f"Container running with image {data['docker_image_id']}"
@@ -384,7 +384,6 @@ def find_image_tag_from_registry(image_id):
         repositories = res.json().get("repositories", [])
 
         for repo in repositories:
-            #print('repo:', repo)
             tags_url = f"{registry_url}/{repo}/tags/list"
             tags_res = requests.get(tags_url)
             tags_res.raise_for_status()

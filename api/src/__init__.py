@@ -9,6 +9,9 @@ from config import config_options
 from flask_socketio import SocketIO
 from flask_cors import CORS 
 import logging
+import requests
+from flask import current_app
+
 socketio = SocketIO()
 
 login_manager = LoginManager()
@@ -18,8 +21,8 @@ ADMIN_ID='dd85014a-edad-4298-b9c6-808268b3d15e'
 def load_user(user_id):
     return User.query.get(user_id)
 
-# @login_manager.request_loader
-# def load_user_from_request(request): return User.query.get(ADMIN_ID)
+@login_manager.request_loader
+def load_user_from_request(request): return User.query.get(ADMIN_ID)
 
 
 def create_app(config_name="default"):
@@ -169,13 +172,12 @@ def create_example_course():
 from src.blueprints.image import Image
 import docker
 import os
-
 def init_default_images():
     """Initialize default Docker images in the database if they do not exist."""
     docker_client = docker.from_env()
     default_images = [
         {
-            'context_path': '../deployment/containers/beluga_ubuntu/', 
+            'context_path': '../deployment/containers/beluga_ubuntu/',
             'dockerfile': 'Dockerfile',
             'image_tag': 'beluga_base_ubuntu',
             'description': 'Base image for ubuntu machines',
@@ -183,7 +185,7 @@ def init_default_images():
             'user_id': ADMIN_ID
         },
         {
-            'context_path': '../deployment/containers/beluga_fedora/', 
+            'context_path': '../deployment/containers/beluga_fedora/',
             'dockerfile': 'Dockerfile',
             'image_tag': 'beluga_base_fedora',
             'description': 'Base image for fedora machines',
@@ -191,36 +193,133 @@ def init_default_images():
             'user_id': ADMIN_ID
         },
     ]
+    registry_ip = current_app.config['REGISTRY_IP']
+    registry_port = current_app.config['REGISTRY_PORT']
 
     for image_info in default_images:
+        image_tag = image_info['image_tag']
 
-        # Check if context_path exists
-        context_path = image_info['context_path']
-        if not os.path.isdir(context_path):
-            print(f"Error: The directory '{context_path}' does not exist.")
-            continue
+        # Check if the image tag exists in the registry
+        docker_image_id = get_docker_image_id_from_registry(image_tag)
 
-        try:
-            # Set build context to the specified directory
-            image, logs = docker_client.images.build(
-                path=image_info['context_path'],
-                dockerfile=image_info['dockerfile'],
-                tag=image_info['image_tag']
-            )
+        if docker_image_id:
+            # If the docker_image_id exists in the registry, check if it's already in the database
+            if check_image_in_database(docker_image_id):
+                print(f"Image with ID {docker_image_id} exists in the registry. Add to DB.")
+                continue
+            else:
+                # If the image ID is not in the database, add it using the registry's docker_image_id
+                new_image = Image(
+                    docker_image_id=docker_image_id,
+                    description=image_info['description'],
+                    user_id=image_info['user_id'],
+                    packages=image_info['packages'],
+                )
+                db.session.add(new_image)
+                db.session.commit()
+                print(f"Imaege in registry but not db , added image {image_tag} to the db u.")
+        else:
+            # If the image tag doesn't exist in the registry, we need to build the image
+            registry_tag = f"{registry_ip}:{registry_port}/{image_tag}"
 
-            # Save image to database
-            new_image = Image(
-                docker_image_id=image.id,
-                description=image_info['description'],
-                user_id=image_info['user_id'],
-                packages=image_info['packages'],
-            )
-            db.session.add(new_image)
-            db.session.commit()
-            print(f"Initialized default image: {image_info['image_tag']}")
+            # Check if context_path exists
+            context_path = image_info['context_path']
+            if not os.path.isdir(context_path):
+                print(f"Error: The directory '{context_path}' does not exist.")
+                continue
 
-        except Exception as e:
-            db.session.rollback()
-            print(f"Failed to initialize default image {image_info['image_tag']}: {e}")
+            try:
+                # Set build context to the specified directory
+                image, logs = docker_client.images.build(
+                    path=image_info['context_path'],
+                    dockerfile=image_info['dockerfile'],
+                    tag=image_info['image_tag']
+                )
+
+                # Push to registry
+                image.tag(registry_tag)
+                docker_client.images.push(registry_tag)
+
+                # Save image to database
+                new_image = Image(
+                    docker_image_id=image.id,
+                    description=image_info['description'],
+                    user_id=image_info['user_id'],
+                    packages=image_info['packages'],
+                )
+                db.session.add(new_image)
+                db.session.commit()
+                print(f"Initialized default image: {image_info['image_tag']}")
+
+                # Remove locally
+                docker_client.images.remove(image_tag)
+                docker_client.images.remove(registry_tag)
+
+            except Exception as e:
+                db.session.rollback()
+                print(f"Failed to initialize default image {image_info['image_tag']}: {e}")
 
 
+def check_image_in_registry(image_tag):
+    try:
+        registry_ip = current_app.config['REGISTRY_IP']
+        registry_port = current_app.config['REGISTRY_PORT']
+
+        if ":" in image_tag:
+            repository, tag = image_tag.rsplit(":", 1)
+        else:
+            repository = image_tag
+            tag = "latest"
+
+        registry_url = f"http://{registry_ip}:{registry_port}/v2/{repository}/manifests/{tag}"
+
+        headers = {
+            "Accept": "application/vnd.docker.distribution.manifest.v2+json"
+        }
+
+        response = requests.get(registry_url, headers=headers)
+
+        if response.status_code == 200:
+            return True
+        elif response.status_code == 404:
+            return False
+        else:
+            response.raise_for_status()
+    except Exception as e:
+        print(f"Error checking image in registry: {e}")
+        return False
+
+def get_docker_image_id_from_registry(image_tag):
+    try:
+        registry_ip = current_app.config['REGISTRY_IP']
+        registry_port = current_app.config['REGISTRY_PORT']
+
+        if ":" in image_tag:
+            repository, tag = image_tag.rsplit(":", 1)
+        else:
+            repository = image_tag
+            tag = "latest"
+
+        registry_url = f"http://{registry_ip}:{registry_port}/v2/{repository}/manifests/{tag}"
+
+        headers = {
+            "Accept": "application/vnd.docker.distribution.manifest.v2+json"
+        }
+
+        response = requests.get(registry_url, headers=headers)
+
+        if response.status_code == 200:
+            manifest = response.json()
+            docker_image_id = manifest['config']['digest']  # This is the docker image ID
+            return docker_image_id
+        elif response.status_code == 404:
+            return None
+        else:
+            response.raise_for_status()
+    except Exception as e:
+        print(f"Error retrieving image ID from registry: {e}")
+        return None
+
+def check_image_in_database(docker_image_id):
+    image = Image.query.filter_by(docker_image_id=docker_image_id).first()
+    return image is not None
