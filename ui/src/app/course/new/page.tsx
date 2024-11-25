@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import Papa from "papaparse";
 import Button from "@/components/Button";
-import CoursesForm from "@/components/CoursesForm";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useUsers } from "@/hooks/useUsers";
 import StudentsTable from "../../students/StudentsTable";
@@ -19,36 +18,8 @@ const NewCourse: React.FC = () => {
   const router = useRouter();
 
   const [title, setTitle] = useState("");
-  const [section, setSection] = useState<string>("");
-  const [professor, setProfessor] = useState<string>("");
-  const [semester, setSemester] = useState("");
   const [students, setStudents] = useState<User[]>([]);
-  const [termId, setTermId] = useState<string | null>(null);
-
-  // Fetch termId dynamically based on semester
-  useEffect(() => {
-    const fetchTermId = async () => {
-      if (!semester) return;
-
-      try {
-        const response = await fetch(`http://localhost:5000/terms?name=${semester}`, {
-          method: "GET",
-        });
-        const data = await response.json();
-
-        if (data.length > 0) {
-          setTermId(data[0].term_id);
-        } else {
-          setTermId(null); // Fallback for unknown terms
-        }
-      } catch (error) {
-        console.error("Error fetching term ID:", error);
-        setTermId(null);
-      }
-    };
-
-    fetchTermId();
-  }, [semester]); // Re-fetch termId whenever semester changes
+  const [csvRowCount, setCsvRowCount] = useState<number>(0);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -65,7 +36,9 @@ const NewCourse: React.FC = () => {
             email: student["Email"],
             role: "Student",
           }));
+
         setStudents(parsedStudents);
+        setCsvRowCount(parsedStudents.length);
       },
     });
   }, []);
@@ -76,20 +49,16 @@ const NewCourse: React.FC = () => {
   });
 
   const handleAddCourse = async () => {
-    if (!profile || !termId) {
-      alert("Profile or Term ID is missing!");
+    if (!title || !profile) {
+      alert("Course Title or Profile is missing!");
       return;
     }
 
     const courseId = Date.now();
     await addCourse(
       title,
-      section,
-      professor,
-      semester,
-      students.length,
-      profile.user_id, // Include user ID from profile
-      termId // Include term ID
+      csvRowCount, // Number of students
+      profile.user_id
     );
     await fetchCourses();
 
@@ -107,16 +76,17 @@ const NewCourse: React.FC = () => {
       <h1 className="font-bold text-4xl mb-6">New Course</h1>
 
       {/* Course Form */}
-      <CoursesForm
-        title={title}
-        setTitle={setTitle}
-        section={section}
-        setSection={setSection}
-        professor={professor}
-        setProfessor={setProfessor}
-        semester={semester}
-        setSemester={setSemester}
-      />
+      <div className="flex flex-col w-1/5 mb-8">
+        <label className="font-semibold mb-1">Course Name</label>
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          type="text"
+          className="border rounded p-2 bg-surface"
+          placeholder="Course name"
+          aria-label="Course name"
+        />
+      </div>
 
       {/* CSV Upload Section */}
       <h2 className="font-bold text-2xl mt-8 mb-4">Upload Students</h2>

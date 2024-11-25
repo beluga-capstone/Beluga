@@ -10,6 +10,7 @@ const AdminCoursesTable: React.FC = () => {
   const { fetchUserById } = useUsers();
   const [usernames, setUsernames] = useState<{ [key: string]: string }>({});
 
+  // Fetch instructor names for courses
   useEffect(() => {
     const loadUsernames = async () => {
       const usernameMap: { [key: string]: string } = {};
@@ -17,7 +18,11 @@ const AdminCoursesTable: React.FC = () => {
       for (const course of courses) {
         if (course.user_id && !usernameMap[course.user_id]) {
           const user = await fetchUserById(course.user_id);
-          usernameMap[course.user_id] = user ? user.username : "Unknown User";
+          if (user) {
+            usernameMap[course.user_id] = `${user.firstName} ${user.lastName || ""}`.trim();
+          } else {
+            usernameMap[course.user_id] = "Unknown User";
+          }
         }
       }
       setUsernames(usernameMap);
@@ -28,7 +33,6 @@ const AdminCoursesTable: React.FC = () => {
     }
   }, [courses, fetchUserById]);
 
-  // Fetch courses
   useEffect(() => {
     const loadCourses = async () => {
       await fetchCourses();
@@ -54,6 +58,7 @@ const AdminCoursesTable: React.FC = () => {
             <th>Course</th>
             <th>Instructor</th>
             <th>Term</th>
+            <th>Students Enrolled</th>
             <th>Published</th>
             <th>Actions</th>
           </tr>
@@ -61,9 +66,14 @@ const AdminCoursesTable: React.FC = () => {
         <tbody>
           {courses.map((course: Course) => (
             <tr key={course.id}>
-              <td className="text-center py-2">{course.name}</td>
+              <td className="text-center py-2">
+                <Link href={`/assignments/courses/${course.id}`}>
+                  {course.name}
+                </Link>
+              </td>
               <td className="text-center py-2">{usernames[course.user_id || ""] || "Loading..."}</td>
               <td className="text-center py-2">{course.term}</td>
+              <td className="text-center py-2">{course.studentsEnrolled || 0}</td>
               <td className="text-center py-2">
                 <div className="flex justify-center items-center cursor-pointer">
                   {course.isPublished ? (

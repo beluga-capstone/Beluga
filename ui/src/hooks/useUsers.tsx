@@ -12,7 +12,7 @@ const saveUsersToStorage = (users: User[]) => {
   localStorage.setItem("users", JSON.stringify(users));
 };
 
-const fetchUserById = async (userId: string): Promise<{ username: string } | null> => {
+const fetchUserById = async (userId: string): Promise<{ firstName: string; lastName: string } | null> => {
   try {
     const response = await fetch(`http://localhost:5000/users/${userId}`, {
       credentials: "include",
@@ -27,7 +27,8 @@ const fetchUserById = async (userId: string): Promise<{ username: string } | nul
 
     const data = await response.json();
     return {
-      username: data.username,
+      firstName: data.first_name,
+      lastName: data.last_name,
     };
   } catch (error) {
     console.error(`Error fetching user with ID ${userId}:`, error);
@@ -108,7 +109,7 @@ export const useUsers = () => {
 
   return {
     users,
-    fetchUserById, // Added this
+    fetchUserById,
     addUser,
     addUsers,
     updateUser,

@@ -2,12 +2,15 @@
 
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
-import React, {useState,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import AssignmentForm from "../../../components/AssignmentsForm";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const NewAssignment: React.FC = () => {
+  const router = useRouter();
   const { addAssignment } = useAssignments();
-  const courseId = "1f3999da-09c1-4e6b-898b-139d417cddac";
+  const searchParams = useSearchParams();
+  const courseId = searchParams.get("courseId"); // Extract `courseId` from the URL
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [publishAt, setPublishAt] = React.useState("");
@@ -18,10 +21,30 @@ const NewAssignment: React.FC = () => {
     React.useState(false);
   const [imageId, setImageId] = useState<string | null>(null);
 
-  // if select image, then unselect,imageid will be -1, fix it
-  useEffect(()=>{
+  // Handle case where `imageId` is set to `-1`
+  useEffect(() => {
     if (imageId === "-1") setImageId(null);
   }, [imageId]);
+
+  const handleAddAssignment = async () => {
+    if (!courseId) {
+      alert("Course ID is missing!");
+      return;
+    }
+    await addAssignment(
+      courseId,
+      title,
+      description,
+      new Date(dueAt),
+      allowsLateSubmissions ? new Date(lockAt) : new Date(dueAt),
+      new Date(unlockAt),
+      new Date(publishAt),
+      allowsLateSubmissions,
+      imageId || null
+    );
+    router.push(`/assignments/courses/${courseId}`); // Redirect to the correct course page
+  };
+
 
   return (
     <div className="container mx-auto p-4">
@@ -50,7 +73,7 @@ const NewAssignment: React.FC = () => {
         <div className="p-2">
           <Button
             className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
-            href="/assignments"
+            href={`/assignments?courseId=${courseId}`}
           >
             Cancel
           </Button>
@@ -58,21 +81,8 @@ const NewAssignment: React.FC = () => {
         <div className="p-2">
           <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={() =>
-              addAssignment(
-                courseId,
-                title,
-                description,
-                new Date(dueAt),
-                allowsLateSubmissions ? new Date(lockAt) : new Date(dueAt),
-                new Date(unlockAt),
-                new Date(publishAt),
-                allowsLateSubmissions,
-                imageId || null
-              )
-            }
-            href="/assignments"
-            disabled={!title}
+            onClick={handleAddAssignment}
+            disabled={!title || !courseId}
           >
             Add Assignment
           </Button>

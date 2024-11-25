@@ -1,18 +1,18 @@
 import { useState } from "react";
 
 interface Course {
-  user_id: any;
-  id: number;
+  user_id?: string;
+  id: string;
   name: string;
-  section: number;
-  term: string;
   studentsEnrolled: number;
   isPublished: boolean;
-  professor: string;
+  term?: string;
+  professor?: string;
 }
 
 export const useDashboard = () => {
   const [courses, setCourses] = useState<Course[]>([]);
+
   const fetchCourses = async () => {
     try {
       const response = await fetch("http://localhost:5000/courses");
@@ -23,10 +23,10 @@ export const useDashboard = () => {
       const transformedCourses = data.map((course: any) => ({
         id: course.course_id,
         name: course.name,
-        term: course.term_id || "Unknown Term",
         user_id: course.user_id,
         studentsEnrolled: course.studentsEnrolled || 0,
         isPublished: course.publish || false,
+        term: course.term || "Fall 2024",
         professor: course.professor || "Unknown",
       }));
       setCourses(transformedCourses);
@@ -37,23 +37,17 @@ export const useDashboard = () => {
 
   const addCourse = async (
     title: string,
-    section: string,
-    professor: string,
-    semester: string,
     studentsEnrolled: number,
     userId: string,
-    termId: string
+    publish: boolean = false
   ) => {
     const newCourse = {
       name: title,
-      section: parseInt(section, 10),
-      professor,
-      term: semester,
       studentsEnrolled,
-      user_id: userId, // Add user_id
-      term_id: termId, // Add term_id
+      user_id: userId,
+      publish,
     };
-  
+
     try {
       const response = await fetch("http://localhost:5000/courses", {
         method: "POST",
@@ -62,7 +56,7 @@ export const useDashboard = () => {
         },
         body: JSON.stringify(newCourse),
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to add course");
       }
@@ -72,42 +66,7 @@ export const useDashboard = () => {
     }
   };
 
-  const updateCourse = async (
-    id: number,
-    title: string,
-    section: string | number,
-    semester: string,
-    professor: string
-  ) => {
-    try {
-      const updatedCourse = {
-        id,
-        title,
-        section,
-        semester,
-        professor,
-      };
-  
-      const response = await fetch(`http://localhost:5000/courses/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedCourse),
-      });
-  
-      if (!response.ok) {
-        throw new Error("Failed to update course");
-      }
-  
-      await fetchCourses(); // Refresh courses
-    } catch (error) {
-      console.error("Error updating course:", error);
-    }
-  };
-  
-
-  const setPublished = async (id: number, status: boolean) => {
+  const setPublished = async (id: string, status: boolean) => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}/publish`, {
         method: "PATCH",
@@ -131,7 +90,7 @@ export const useDashboard = () => {
     }
   };
 
-  const deleteCourse = async (id: number) => {
+  const deleteCourse = async (id: string) => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}`, {
         method: "DELETE",
@@ -153,7 +112,6 @@ export const useDashboard = () => {
     courses,
     fetchCourses,
     addCourse,
-    updateCourse,
     setPublished,
     deleteCourse,
   };

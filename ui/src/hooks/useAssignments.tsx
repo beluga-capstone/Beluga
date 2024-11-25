@@ -15,6 +15,7 @@ export const useAssignments = () => {
       const data = await response.json();
 
       const transformedData = data.map((assignment: Assignment) => ({
+
         assignment_id: assignment.assignment_id,
         course_id: assignment.course_id,
         title: assignment.title,
@@ -22,8 +23,10 @@ export const useAssignments = () => {
         due_at: assignment.due_at ? new Date(assignment.due_at) : null,
         lock_at: assignment.lock_at ? new Date(assignment.lock_at) : null,
         unlock_at: assignment.unlock_at ? new Date(assignment.unlock_at) : null,
-        user_id: assignment.user_id,
-        docker_image_id: assignment.docker_image_id,
+        publish_at: assignment.publish_at ? new Date(assignment.publish_at) : null,
+        is_published: assignment.is_published || false,
+        allows_late_submissions: assignment.allows_late_submissions || false,
+        docker_image_id: assignment.docker_image_id || null,
       }));
 
       setAssignments(transformedData);
@@ -32,11 +35,35 @@ export const useAssignments = () => {
     }
   };
 
-  useEffect(() => {
-    fetchAssignments();
-  }, []);
-
-  // add an assignment to the db
+  const fetchAssignmentsByCourseId = async (courseId: string): Promise<Assignment[]> => {
+    try {
+      console.log("Fetching assignments for courseId:", courseId);
+      const response = await fetch(`http://localhost:5000/assignments?course_id=${courseId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch assignments for course ${courseId}`);
+      }
+      const data = await response.json();
+      console.log("Response from backend for courseId:", courseId, data);
+  
+      return data.map((assignment: any) => ({
+        assignment_id: assignment.assignment_id,
+        course_id: assignment.course_id,
+        title: assignment.title,
+        description: assignment.description,
+        due_at: assignment.due_at ? new Date(assignment.due_at) : null,
+        lock_at: assignment.lock_at ? new Date(assignment.lock_at) : null,
+        unlock_at: assignment.unlock_at ? new Date(assignment.unlock_at) : null,
+        publish_at: assignment.publish_at ? new Date(assignment.publish_at) : null,
+        is_published: assignment.is_published || false,
+        allows_late_submissions: assignment.allows_late_submissions || false,
+        docker_image_id: assignment.docker_image_id || null,
+      }));
+    } catch (err) {
+      console.error("Error in fetchAssignmentsByCourseId:", err);
+      return [];
+    }
+  };
+  
   const saveAssignment = async (newAssignment: Assignment) => {
     try {
       const response = await fetch('http://localhost:5000/assignments', {
@@ -81,7 +108,7 @@ export const useAssignments = () => {
       is_published: Date.now() >= publish_at.getTime(),
       publish_at,
       allows_late_submissions,
-      docker_image_id: docker_image_id,
+      docker_image_id,
     };
 
     await saveAssignment(newAssignment);
@@ -100,20 +127,19 @@ export const useAssignments = () => {
     docker_image_id: string
   ) => {
     const updatedAssignment = {
-      assignment_id: assignment_id,
-      course_id: course_id,
-      title:title,
-      description:description,
-      due_at:due_at,
-      lock_at:lock_at,
-      unlock_at:unlock_at,
+      assignment_id,
+      course_id,
+      title,
+      description,
+      due_at,
+      lock_at,
+      unlock_at,
       is_unlocked: Date.now() >= unlock_at.getTime(),
       is_published: Date.now() >= publish_at.getTime(),
-      publish_at:publish_at,
-      allows_late_submissions:allows_late_submissions,
-      docker_image_id:docker_image_id,  
+      publish_at,
+      allows_late_submissions,
+      docker_image_id,
     };
-    console.log("updating with",assignment_id,course_id,title,description,due_at,lock_at,unlock_at,docker_image_id)
 
     try {
       const response = await fetch(`http://localhost:5000/assignments/${assignment_id}`, {
@@ -145,8 +171,7 @@ export const useAssignments = () => {
       });
 
       if (!response.ok) {
-        console.log("failed del",assignmentId);
-        throw new Error('Failed to delete assignment ');
+        throw new Error('Failed to delete assignment');
       }
 
       setAssignments((prev) =>
@@ -214,6 +239,8 @@ export const useAssignments = () => {
 
   return {
     assignments,
+    fetchAssignments,
+    fetchAssignmentsByCourseId, // Add this
     addAssignment,
     updateAssignment,
     deleteAssignment,
@@ -221,4 +248,3 @@ export const useAssignments = () => {
     setLateSubmissions,
   };
 };
-
