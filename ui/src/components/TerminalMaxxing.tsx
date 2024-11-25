@@ -23,7 +23,7 @@ interface ContainerStatus {
   status: string;
 }
 
-const ContainerControls = ({
+const TerminalMaxxing = ({
   containerName = null,
   dockerImageId = null,
   description = null,
@@ -232,4 +232,4 @@ const ContainerControls = ({
   );
 };
 
-export default ContainerControls;
+export default TerminalMaxxing;
