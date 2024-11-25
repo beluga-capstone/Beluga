@@ -324,36 +324,36 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
               : null}
           </h2>
 
-          <div className="flex space-x-6">
-            {renderContainerButton()}
-
-            {/*
-            <h2 className="font-bold pb-4">
-              {socketPort ? (
-                <>
-                Socket port: <CopyTextBox text={socketPort.toString()} />
-                </>
-              ) : null}
-            </h2>*/}
-
-            <h2 className="font-bold pb-4">
-              {sshPort ? (
-                <>
-                  SSH port: <CopyTextBox text={sshPort.toString()} />
-                </>
-              ) : null}
-            </h2>
-          </div>
         </div>
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mt-3">
         {assignment && (
           <ContainerPageTerminal
             isRunning={containerStatus === "running"}
             containerPort={socketPort}
           />
         )}
+      </div>
+      <div className="flex space-x-6 mt-3">
+        {renderContainerButton()}
+
+        {/*
+        <h2 className="font-bold pb-4">
+          {socketPort ? (
+            <>
+            Socket port: <CopyTextBox text={socketPort.toString()} />
+            </>
+          ) : null}
+        </h2>*/}
+
+        <h2 className="font-bold pb-4">
+          {sshPort ? (
+            <>
+              SSH port: <CopyTextBox text={sshPort.toString()} />
+            </>
+          ) : null}
+        </h2>
       </div>
 
       {profile?.role_id !== ROLES.STUDENT && (
