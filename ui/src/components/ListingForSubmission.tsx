@@ -20,6 +20,7 @@ const ListingForSubmission: React.FC<ListingForSubmissionProps> = ({
   useEffect(() => {
     if (profile) {
       getLatestSubmission(assignment.assignment_id, profile.user_id);
+      console.log("latestSubmission",latestSubmission)
     }
   }, [profile]);
 

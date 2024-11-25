@@ -24,7 +24,7 @@ const StudentAssignmentsTable = () => {
           </td>
         </tr>
         {assignments.map((assignment) => (
-          <ListingForSubmission assignment={assignment} />
+          <ListingForSubmission key={assignment.assignment_id} assignment={assignment} />
         ))}
       </tbody>
     </table>

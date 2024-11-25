@@ -2,11 +2,23 @@ import { useAssignments } from "@/hooks/useAssignments";
 import { useSubmissions } from "@/hooks/useSubmissions";
 import { shortDate, shortTime } from "@/lib/utils";
 import { ToggleLeft, ToggleRight } from "lucide-react";
+import { useState, useEffect} from "react";
 import Link from "next/link";
 
 const ProfessorAssignmentsTable = () => {
   const { assignments, setPublished, setLateSubmissions } = useAssignments();
   const { getSubmissionCountForAssignment } = useSubmissions();
+  const [submissionCounts, setSubmissionCounts] = useState({});
+  useEffect(() => {
+    const fetchSubmissionCounts = async () => {
+      const counts = {};
+      for (const assignment of assignments) {
+        counts[assignment.assignment_id] = await getSubmissionCountForAssignment(assignment.assignment_id);
+      }
+      setSubmissionCounts(counts);
+    };
+    fetchSubmissionCounts();
+  }, [assignments, getSubmissionCountForAssignment]);
 
   return (
     <table className="table w-full">
@@ -50,7 +62,7 @@ const ProfessorAssignmentsTable = () => {
                 : "-"}
             </td>
             <td className="text-center py-2">
-              {getSubmissionCountForAssignment(assignment.assignment_id)}
+              {submissionCounts[assignment.assignment_id] ?? "Loading..."}
             </td>
             <td className="py-2">
               <div className="flex justify-center items-center">

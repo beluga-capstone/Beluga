@@ -9,10 +9,10 @@ import {
 } from "./types";
 
 export const ROLES = {
-  ADMIN: 1,
+  ADMIN: 8,
   PROFESSOR: 2,
   TA: 4,
-  STUDENT: 8,
+  STUDENT: 1,
 };
 
 export const ROLE_NAMES = {
