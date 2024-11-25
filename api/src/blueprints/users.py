@@ -218,13 +218,28 @@ def delete_user(user_id):
         return jsonify({'error': 'User not found'}), 404
     
     try:
+        # Delete related records in course_enrollment
+        print(f"Deleting related enrollments for user {user_id}")
+        db.session.execute(
+            db.text("DELETE FROM course_enrollment WHERE user_id = :user_id"),
+            {"user_id": str(user_id)}
+        )
+
+        # Delete the user
+        print(f"Deleting user {user_id}")
         db.session.delete(user)
         db.session.commit()
 
-        shutil.rmtree(os.path.join(BASE_KEY_PATH, str(user_id)))
+        # Remove associated SSH keys
+        try:
+            shutil.rmtree(os.path.join(BASE_KEY_PATH, str(user_id)), ignore_errors=True)
+            print(f"Deleted SSH keys for user {user_id}.")
+        except Exception as e:
+            print(f"Error deleting SSH keys: {e}")
 
         return jsonify({'message': 'User deleted successfully'}), 200
     except Exception as e:
+        print(f"Error deleting user: {e}")
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
