@@ -1,62 +1,94 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { useDashboard } from "@/hooks/useDashboard";
-import CoursesForm from "@/components/CoursesForm";
+import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Button from "@/components/Button";
 
 const EditCourse: React.FC = () => {
-  const { courses, fetchCourses, updateCourse } = useDashboard();
   const router = useRouter();
-  const { courseId } = useParams();
+  const params = useParams();
+  const courseId = Array.isArray(params.courseId) ? params.courseId[0] : params.courseId; // Ensure courseId is a string
 
   const [loading, setLoading] = useState(true);
-  const [title, setTitle] = useState("");
-  const [section, setSection] = useState("");
-  const [semester, setSemester] = useState("");
-  const [professor, setProfessor] = useState("");
+  const [name, setName] = useState("");
+  const [originalName, setOriginalName] = useState(""); // Track the original name for comparison
 
   useEffect(() => {
     const loadCourse = async () => {
-      setLoading(true);
-      await fetchCourses();
-      const course = courses.find((c) => c.id === Number(courseId));
-      if (course) {
-        setTitle(course.name || "");
-        setSection(course.section?.toString() || "");
-        setSemester(course.term || "");
-        setProfessor(course.professor || "");
-      } else {
+      if (!courseId) {
+        console.error("Course ID is missing.");
         router.push("/");
+        return;
       }
-      setLoading(false);
+      try {
+        setLoading(true);
+        const response = await fetch(`http://localhost:5000/courses/${courseId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch course details");
+        }
+        const course = await response.json();
+        setName(course.name || "");
+        setOriginalName(course.name || ""); // Set the original name
+      } catch (error) {
+        console.error("Error loading course:", error);
+        router.push("/");
+      } finally {
+        setLoading(false);
+      }
     };
-  
     loadCourse();
-  }, [courseId, fetchCourses, router]);
+  }, [courseId, router]);
 
   const handleUpdateCourse = async () => {
-    await updateCourse(Number(courseId), title, section, semester, professor);
-    router.push("/");
+    if (!courseId) {
+      console.error("Course ID is missing.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5000/courses/${courseId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update course");
+      }
+
+      console.log("Course updated successfully");
+      router.push("/"); // Redirect to the dashboard after updating
+    } catch (error) {
+      console.error("Error updating course:", error);
+    }
   };
 
-  if (loading) return <div>Loading...</div>;
+  // Check if any changes have been made
+  const hasChanges = name.trim() !== originalName.trim();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="font-bold text-4xl mb-6">Edit Course</h1>
 
-      <CoursesForm
-        title={title}
-        setTitle={setTitle}
-        section={section}
-        setSection={setSection}
-        semester={semester}
-        setSemester={setSemester}
-        professor={professor}
-        setProfessor={setProfessor}
-      />
+      <div className="flex flex-col w-1/5 mb-8">
+        <label className="font-semibold mb-1" htmlFor="course-name">
+          Course Name
+        </label>
+        <input
+          id="course-name"
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="border rounded p-2 bg-surface"
+        />
+      </div>
 
       <div className="flex flex-row justify-end pt-4 space-x-2">
         <Button className="bg-gray-500 text-white px-4 py-2 rounded" href="/">
@@ -65,7 +97,7 @@ const EditCourse: React.FC = () => {
         <Button
           className="bg-blue-500 text-white px-4 py-2 rounded"
           onClick={handleUpdateCourse}
-          disabled={!title}
+          disabled={!hasChanges || !name.trim()} // Disable if no changes or empty name
         >
           Save Changes
         </Button>

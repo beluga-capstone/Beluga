@@ -97,8 +97,32 @@ export const useDashboard = () => {
     }
   };
   
+  const updateCourse = async (id: string, updatedData: { name: string }) => {
+    try {
+      const response = await fetch(`http://localhost:5000/courses/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedData),
+      });
   
-
+      if (!response.ok) {
+        throw new Error("Failed to update course");
+      }
+  
+      const updatedCourse = await response.json();
+  
+      setCourses((prevCourses) =>
+        prevCourses.map((course) =>
+          course.id === id ? { ...course, name: updatedData.name } : course
+        )
+      );
+    } catch (error) {
+      console.error("Error updating course:", error);
+    }
+  };
+  
   const setPublished = async (id: string, status: boolean) => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}/publish`, {
@@ -145,6 +169,7 @@ export const useDashboard = () => {
     courses,
     fetchCourses,
     addCourse,
+    updateCourse,
     setPublished,
     deleteCourse,
   };

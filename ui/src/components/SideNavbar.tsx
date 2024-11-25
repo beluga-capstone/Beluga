@@ -7,8 +7,9 @@ import { usePathname, useParams } from 'next/navigation';
 import { Icon } from '@iconify/react';
 
 const SideNavbar = () => {
-  const params = useParams(); 
-  const pathname = usePathname(); 
+  const params = useParams();
+  const pathname = usePathname();
+
   const getSideNavItems = (): SideNavItem[] => {
     const defaultItems: SideNavItem[] = [
       {
@@ -16,36 +17,36 @@ const SideNavbar = () => {
         path: '/',
         icon: <Icon icon="lucide:home" width="24" height="24" />,
       },
-      {
-        title: 'Machines',
-        path: '/machines',
-        icon: <Icon icon="lucide:monitor" width="24" height="24" />,
-        subMenuItems: [
-          { title: 'Containers', path: '/machines/containers' },
-          { title: 'Images', path: '/machines/images' },
-        ],
-      },
     ];
 
-    if (params.courseId) {
-      const courseItems: SideNavItem[] = [
-        {
-          title: 'Students',
-          path: `/students/courses/${params.courseId}`,
-          icon: <Icon icon="lucide:users" width="24" height="24" />,
-          dynamic: true,
-        },
-        {
-          title: 'Assignments',
-          path: `/assignmnets/courses/${params.courseId}`,
-          icon: <Icon icon="lucide:folder" width="24" height="24" />,
-          dynamic: true,
-        },
-      ];
-      return [...defaultItems, ...courseItems];
-    }
+    const courseItems: SideNavItem[] = params.courseId
+      ? [
+          {
+            title: 'Students',
+            path: `/students/courses/${params.courseId}`,
+            icon: <Icon icon="lucide:users" width="24" height="24" />,
+            dynamic: true,
+          },
+          {
+            title: 'Assignments',
+            path: `/assignments/courses/${params.courseId}`,
+            icon: <Icon icon="lucide:folder" width="24" height="24" />,
+            dynamic: true,
+          },
+        ]
+      : [];
 
-    return defaultItems;
+    const machinesItem: SideNavItem = {
+      title: 'Machines',
+      path: '/machines',
+      icon: <Icon icon="lucide:monitor" width="24" height="24" />,
+      subMenuItems: [
+        { title: 'Containers', path: '/machines/containers' },
+        { title: 'Images', path: '/machines/images' },
+      ],
+    };
+
+    return [...defaultItems, ...courseItems, machinesItem];
   };
 
   const sideNavItems = getSideNavItems();
