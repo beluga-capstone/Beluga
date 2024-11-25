@@ -10,7 +10,7 @@ const NewAssignment: React.FC = () => {
   const { assignments, addAssignment } = useAssignments();
   const courseId = "1f3999da-09c1-4e6b-898b-139d417cddac";
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState<string|null>(null);
+  const [description, setDescription] = useState("");
   const [publishAt, setPublishAt] = useState("");
   const [dueAt, setDueAt] = useState("");
   const [lockAt, setLockAt] = useState("");
