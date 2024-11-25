@@ -162,7 +162,6 @@ def create_container():
 @login_required
 def search_containers():
     user = db.session.get(User, current_user.user_id)
-    print(user.is_admin)
     filters = request.args.to_dict()
     try:
         query = apply_filters(Container, filters)  # Apply dynamic filters from the frontend
