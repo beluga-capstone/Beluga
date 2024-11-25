@@ -68,12 +68,29 @@ export const useUsers = () => {
     saveUsersToStorage(updatedUsers);
   };
 
-  const addUsers = (newUsers: User[]) => {
-    const updatedUsers = [...users, ...newUsers];
-    setUsers(updatedUsers);
-    saveUsersToStorage(updatedUsers);
-  };
-
+  const addUsers = async (users: User[]): Promise<{ user_id: string; email: string }[]> => { // Fix: Return user_id and email
+    try {
+      const response = await fetch("http://localhost:5000/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(users),
+      });
+  
+      if (!response.ok) {
+        console.error("Failed to add users. Status:", response.status, response.statusText);
+        throw new Error(`Error adding users: ${response.statusText}`);
+      }
+  
+      const addedUsers = await response.json();
+      console.log("Users added successfully:", addedUsers);
+      return addedUsers; // Ensure it returns user_id and email
+    } catch (error) {
+      console.error("Error adding users:", error);
+      return [];
+    }
+  };  
+  
+  
   const updateUser = (
     id: number,
     firstName: string,

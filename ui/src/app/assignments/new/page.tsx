@@ -10,7 +10,7 @@ const NewAssignment: React.FC = () => {
   const router = useRouter();
   const { addAssignment } = useAssignments();
   const searchParams = useSearchParams();
-  const courseId = searchParams.get("courseId"); // Extract `courseId` from the URL
+  const courseId = searchParams.get("courseId");
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [publishAt, setPublishAt] = React.useState("");
@@ -42,7 +42,7 @@ const NewAssignment: React.FC = () => {
       allowsLateSubmissions,
       imageId || null
     );
-    router.push(`/assignments/courses/${courseId}`); // Redirect to the correct course page
+    router.push(`/assignments/courses/${courseId}`);
   };
 
 

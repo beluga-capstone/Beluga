@@ -40,14 +40,14 @@ export const useDashboard = () => {
     studentsEnrolled: number,
     userId: string,
     publish: boolean = false
-  ) => {
+  ): Promise<{ course_id: string } | null> => { // Fix: Expect course_id
     const newCourse = {
       name: title,
       studentsEnrolled,
       user_id: userId,
       publish,
     };
-
+  
     try {
       const response = await fetch("http://localhost:5000/courses", {
         method: "POST",
@@ -56,15 +56,20 @@ export const useDashboard = () => {
         },
         body: JSON.stringify(newCourse),
       });
-
+  
       if (!response.ok) {
         throw new Error("Failed to add course");
       }
-      await fetchCourses();
+  
+      const data = await response.json();
+      return data; // Ensure course_id is returned
     } catch (error) {
       console.error("Error adding course:", error);
+      return null;
     }
   };
+  
+  
 
   const setPublished = async (id: string, status: boolean) => {
     try {

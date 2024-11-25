@@ -9,6 +9,24 @@ const AdminCoursesTable: React.FC = () => {
   const { courses, fetchCourses, setPublished, deleteCourse } = useDashboard();
   const { fetchUserById } = useUsers();
   const [usernames, setUsernames] = useState<{ [key: string]: string }>({});
+  const [studentCounts, setStudentCounts] = useState<{ [key: string]: number }>({});
+
+  // Fetch student counts for courses
+  useEffect(() => {
+    const loadStudentCounts = async () => {
+      const counts: { [key: string]: number } = {};
+      for (const course of courses) {
+        const response = await fetch(`/courses/${course.id}/students/count`);
+        const data = await response.json();
+        counts[course.id] = data.students_count || 0;
+      }
+      setStudentCounts(counts);
+    };
+
+    if (courses.length > 0) {
+      loadStudentCounts();
+    }
+  }, [courses]);
 
   // Fetch instructor names for courses
   useEffect(() => {
@@ -73,7 +91,7 @@ const AdminCoursesTable: React.FC = () => {
               </td>
               <td className="text-center py-2">{usernames[course.user_id || ""] || "Loading..."}</td>
               <td className="text-center py-2">{course.term}</td>
-              <td className="text-center py-2">{course.studentsEnrolled || 0}</td>
+              <td className="text-center py-2">{studentCounts[course.id] || 0}</td>
               <td className="text-center py-2">
                 <div className="flex justify-center items-center cursor-pointer">
                   {course.isPublished ? (
