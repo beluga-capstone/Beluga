@@ -7,5 +7,7 @@ module.exports = {
   env: {
     backend: 'https://api.beluga.tacex.dev',
     //backend: 'http://localhost:5000', // for local dev
+    wsbackend: 'ws://beluga.tacex.dev',
+    //wsbackend: 'ws://localhost' // for local dev
   },
 }

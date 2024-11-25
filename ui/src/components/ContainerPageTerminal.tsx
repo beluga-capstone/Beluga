@@ -66,7 +66,7 @@ const ContainerPageTerminal: React.FC<ContainerPageTerminalProps> = ({
     term.open(terminalRef.current);
     fitAddon.fit();
 
-    const socket = io(`ws://localhost:${containerPort}/pty`);
+    const socket = io(`${process.env.wsbackend}:${containerPort}/pty`);
     socketRef.current = socket;
 
     // Set up terminal and socket communication
