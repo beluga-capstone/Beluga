@@ -3,12 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowUpFromLine, Edit2, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-
+import { ArrowUpFromLine, Edit2 } from "lucide-react";
 import Button from "@/components/Button";
 import SubmissionZone from "@/components/SubmissionZone";
-import ContainerPageTerminal from "@/components/ContainerPageTerminal";
+import TerminalMaxxing from "@/components/TerminalMaxxing";
 import { ROLES } from "@/constants";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useProfile } from "@/hooks/useProfile";
@@ -40,20 +38,13 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
   const router = useRouter();
   const { profile } = useProfile();
   const { assignments } = useAssignments();
-  const { runContainer, startContainer, stopContainer, checkContainerExists } =
-    useContainers();
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const { getLatestSubmission, submit } = useSubmissions();
   const [containerName, setContainerName] = useState<string | null>(null);
-  const [containerStatus, setContainerStatus] = useState<string>("none"); // "none" | "created" | "running" | "stopped"
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [imageName, setImageName] = useState<string | null>(null);
   const [submissionWindowIsOpen, setSubmissionWindowIsOpen] = useState(false);
   const [submitIsEnabled, setSubmitIsEnabled] = useState(false);
   const [zipFile, setZipFile] = useState<File | null>(null);
-  const [socketPort, setSocketPort] = useState<number | null>(null);
-  const [sshPort, setSshPort] = useState<number | null>(null);
   const [latestSubmission, setLatestSubmission] = useState<Submission | null>(
     null
   );
@@ -66,8 +57,6 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
     setLatestSubmission(submission);
   }, [assignment, profile]);
 
-  const { imageData } = useImageData(assignment?.docker_image_id ?? null);
-
   useEffect(() => {
     const intervalId = setInterval(() => {
       router.refresh();
@@ -76,7 +65,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
     return () => clearInterval(intervalId);
   }, [router]);
 
-  // Initialize container and check status
+  // Initialize assignment and container name
   useEffect(() => {
     const initializeAssignment = async () => {
       const foundAssignment = assignments.find(
@@ -87,169 +76,11 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
         setAssignment(foundAssignment);
         const name = normalizeDockerName(`${foundAssignment.title}_con`);
         setContainerName(name);
-
-        try {
-          const { exists, appPort, sshPort, status } =
-            await checkContainerExists(name);
-          if (exists && appPort) {
-            // Extract the ports
-            setSocketPort(appPort);
-            setSshPort(sshPort);
-            setContainerStatus(status === "running" ? "running" : "stopped");
-          } else {
-            setContainerStatus("none");
-          }
-        } catch (error) {
-          console.error("Error checking container:", error);
-          toast.error("Failed to check container status");
-        }
       }
     };
 
     initializeAssignment();
   }, [assignments, params.assignmentId]);
-
-  // Set up periodic status checking
-  useEffect(() => {
-    if (!containerName) return;
-
-    const checkStatus = async () => {
-      try {
-        const { exists, appPort, sshPort, status } = await checkContainerExists(
-          containerName
-        );
-        if (exists) {
-          setContainerStatus(status === "running" ? "running" : "stopped");
-          setSocketPort(appPort);
-          setSshPort(sshPort);
-        } else {
-          setContainerStatus("none");
-          setSocketPort(null);
-          setSshPort(null);
-        }
-      } catch (error) {
-        console.error("Error checking container status:", error);
-      }
-    };
-
-    const intervalId = setInterval(checkStatus, 1000);
-    return () => clearInterval(intervalId);
-  }, [containerName]);
-
-  useEffect(() => {
-    if (imageData?.tag?.[0]) {
-      setImageName(imageData.tag[0]);
-    }
-  }, [imageData]);
-
-  const handleContainerAction = async () => {
-    if (isProcessing || !containerName) return;
-
-    setIsProcessing(true);
-
-    try {
-      switch (containerStatus) {
-        case "none":
-          // Create container
-          const result = await runContainer(
-            assignment?.docker_image_id ?? null,
-            containerName,
-            assignment?.description ?? null
-          );
-          if (result) {
-            setSocketPort(result.appPort);
-            setSshPort(result.sshPort);
-            setContainerStatus("running");
-            toast.success("Container created successfully");
-            router.refresh();
-          } else {
-            throw new Error("Failed to create the container");
-          }
-          break;
-
-        case "stopped":
-          // Start container
-          await startContainer(containerName);
-          setContainerStatus("running");
-          const { exists, appPort, sshPort, status } =
-            await checkContainerExists(containerName);
-          if (exists) {
-            setSocketPort(appPort);
-            setSshPort(sshPort);
-          }
-          toast.success("Container started successfully");
-          router.refresh();
-          break;
-
-        case "running":
-          // Stop container
-          await stopContainer(containerName);
-          setContainerStatus("stopped");
-          setSocketPort(null);
-          setSshPort(null);
-          toast.success("Container stopped successfully");
-          break;
-      }
-      router.refresh();
-    } catch (error) {
-      console.error("Container action failed:", error);
-      toast.error(
-        `Failed to ${
-          containerStatus === "none"
-            ? "create"
-            : containerStatus === "running"
-            ? "stop"
-            : "start"
-        } container`
-      );
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const renderContainerButton = () => {
-    if (!assignment?.docker_image_id) return null;
-
-    let buttonConfig = {
-      text: "Create Container",
-      bgColor: "bg-blue-500",
-      loadingText: "Creating...",
-    };
-
-    switch (containerStatus) {
-      case "stopped":
-        buttonConfig = {
-          text: "Start Container",
-          bgColor: "bg-green-500",
-          loadingText: "Starting...",
-        };
-        break;
-      case "running":
-        buttonConfig = {
-          text: "Stop Container",
-          bgColor: "bg-red-500",
-          loadingText: "Stopping...",
-        };
-        break;
-    }
-
-    return (
-      <Button
-        className={`${buttonConfig.bgColor} text-white px-4 py-2 mb-4 rounded`}
-        onClick={handleContainerAction}
-        disabled={isProcessing}
-      >
-        {isProcessing ? (
-          <div className="flex items-center">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {buttonConfig.loadingText}
-          </div>
-        ) : (
-          buttonConfig.text
-        )}
-      </Button>
-    );
-  };
 
   return (
     <div className="container mx-auto p-4">
@@ -353,10 +184,6 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
             </h2>
           )}
 
-          <h2 className="font-bold pb-4">
-            {assignment?.docker_image_id ? `Image name: ${imageName}` : null}
-          </h2>
-
           {profile?.role_id === ROLES.STUDENT && latestSubmission && (
             <p className="text-blue-500 pb-8">
               <Link
@@ -366,22 +193,14 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
               </Link>
             </p>
           )}
-
-          <p className="text-lg">Socket Port: {socketPort ?? "N/A"}</p>
-          <p className="text-lg">SSH Port: {sshPort ?? "N/A"}</p>
-
-          {renderContainerButton()}
         </div>
       </div>
 
-      <div className="flex justify-between items-center">
-        {assignment && (
-          <ContainerPageTerminal
-            isRunning={containerStatus === "running"}
-            containerPort={socketPort}
-          />
-        )}
-      </div>
+      <TerminalMaxxing
+        containerName={containerName}
+        dockerImageId={assignment?.docker_image_id ?? null}
+        description={assignment?.description ?? null}
+      />
 
       {profile?.role_id !== ROLES.STUDENT && (
         <p className="text-blue-500 py-8">

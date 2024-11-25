@@ -1,11 +1,10 @@
 import FormInput from "./FormInput";
 import FormTextArea from "./FormTextArea";
-import FormDateInput from "./FormDateInput";
 import React from "react";
 import LabeledToggleSwitch from "./LabeledToggleSwitch";
 import { useImages } from "@/hooks/useImages";
-import { useImageData } from "@/hooks/useImageData";
 import ImageOption from "./ImageOption";
+import FormDateTimeInput from "./FormDateTimeInput";
 
 interface AssignmentFormProps {
   title: string;
@@ -49,10 +48,6 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
     React.useState(false);
   const [isPublishedLater, setIsPublishedLater] = React.useState(false);
 
-  //useEffect(()=>{
-  //  console.log("due changed to ",dueAt);
-  //},[dueAt]);
-
   return (
     <>
       <FormInput title="Assignment Name" value={title} onChange={setTitle} />
@@ -63,7 +58,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         onChange={setDescription}
       />
 
-      <FormDateInput title="Due at" value={dueAt} onChange={setDueAt} />
+      <FormDateTimeInput title="Due at" value={dueAt} onChange={setDueAt} />
 
       <LabeledToggleSwitch
         title="Publish later"
@@ -71,16 +66,18 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         onChange={() => {
           setIsPublishedLater(!isPublishedLater);
           if (!isPublishedLater) {
-            setPublishAt(new Date().toISOString());
+            const timezoneOffset = new Date().getTimezoneOffset() * 60000;
+            setPublishAt(new Date(Date.now() - timezoneOffset).toISOString());
           }
         }}
       />
 
       {isPublishedLater && (
-        <FormDateInput
+        <FormDateTimeInput
           title="Publish at"
           value={publishAt}
           onChange={setPublishAt}
+          defaultTime={"00:00"}
         />
       )}
 
@@ -90,16 +87,18 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         onChange={() => {
           setIsVisibleBeforeRelease(!isVisibleBeforeRelease);
           if (!isVisibleBeforeRelease) {
-            setUnlockAt(new Date().toISOString());
+            const timezoneOffset = new Date().getTimezoneOffset() * 60000;
+            setUnlockAt(new Date(Date.now() - timezoneOffset).toISOString());
           }
         }}
       />
 
       {isVisibleBeforeRelease && (
-        <FormDateInput
+        <FormDateTimeInput
           title="Unlock at"
           value={unlockAt}
           onChange={setUnlockAt}
+          defaultTime="00:00"
         />
       )}
 
@@ -109,26 +108,32 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         onChange={() => {
           setAllowsLateSubmissions(!allowsLateSubmissions);
           if (!allowsLateSubmissions) {
-            setLockAt(new Date().toISOString());
+            const timezoneOffset = new Date().getTimezoneOffset() * 60000;
+            setLockAt(new Date(Date.now() - timezoneOffset).toISOString());
           }
         }}
       />
 
       {allowsLateSubmissions && (
-        <FormDateInput title="Lock at" value={lockAt} onChange={setLockAt} />
+        <FormDateTimeInput
+          title="Lock at"
+          value={lockAt}
+          onChange={setLockAt}
+          defaultTime="23:59"
+        />
       )}
 
       <h2>Image</h2>
       <div className="pt-2 pb-8">
         <select
           title="Image"
-          value={imageId??""}
-          onChange={(e) => setImageId(e.target.value)} 
+          value={imageId ?? ""}
+          onChange={(e) => setImageId(e.target.value)}
           className="border rounded p-1 bg-surface"
         >
           <option value={-1}>Select an image</option>
           {images.map((image) => (
-            <ImageOption key={image.docker_image_id} image={image}/>
+            <ImageOption key={image.docker_image_id} image={image} />
           ))}
         </select>
       </div>

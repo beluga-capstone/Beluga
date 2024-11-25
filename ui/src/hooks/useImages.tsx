@@ -12,7 +12,10 @@ export const useImages = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:5000/assignments/search?docker_image_id=${docker_image_id}`);
+      const response = await fetch(`http://localhost:5000/assignments/search?docker_image_id=${docker_image_id}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch docker image id');
       }
@@ -31,7 +34,10 @@ export const useImages = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:5000/images');
+      const response = await fetch('http://localhost:5000/images/search', {
+        method: 'GET',
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch images');
       }
@@ -53,6 +59,7 @@ export const useImages = () => {
     try {
       const response = await fetch(`http://localhost:5000/images/${updatedImage.docker_image_id}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -78,6 +85,7 @@ export const useImages = () => {
     try {
       const response = await fetch(`http://localhost:5000/images/${docker_image_id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {

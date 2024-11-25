@@ -2,8 +2,6 @@
 
 import React, { useEffect } from "react";
 import { useProfile } from "@/hooks/useProfile";
-import { Edit2 } from "lucide-react";
-import Link from "next/link";
 import { ROLES } from "@/constants";
 import Button from "@/components/Button"; // Ensure you have the Button component imported
 import { useUsers } from "@/hooks/useUsers";

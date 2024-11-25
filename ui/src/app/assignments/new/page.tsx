@@ -2,7 +2,7 @@
 
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
-import React, {useState,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import AssignmentForm from "../../../components/AssignmentsForm";
 
 const NewAssignment: React.FC = () => {
@@ -19,7 +19,7 @@ const NewAssignment: React.FC = () => {
   const [imageId, setImageId] = useState<string | null>(null);
 
   // if select image, then unselect,imageid will be -1, fix it
-  useEffect(()=>{
+  useEffect(() => {
     if (imageId === "-1") setImageId(null);
   }, [imageId]);
 
@@ -58,19 +58,22 @@ const NewAssignment: React.FC = () => {
         <div className="">
           <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={() =>
+            onClick={() => {
+              const timezoneOffset = new Date().getTimezoneOffset() * 60000;
               addAssignment(
                 courseId,
                 title,
                 description,
-                new Date(dueAt),
-                allowsLateSubmissions ? new Date(lockAt) : new Date(dueAt),
-                new Date(unlockAt),
-                new Date(publishAt),
+                new Date(new Date(dueAt).getTime() - timezoneOffset),
+                allowsLateSubmissions
+                  ? new Date(new Date(lockAt).getTime() - timezoneOffset)
+                  : new Date(new Date(dueAt).getTime() - timezoneOffset),
+                new Date(new Date(unlockAt).getTime() - timezoneOffset),
+                new Date(new Date(publishAt).getTime() - timezoneOffset),
                 allowsLateSubmissions,
                 imageId || null
-              )
-            }
+              );
+            }}
             href="/assignments"
             disabled={!title}
           >
