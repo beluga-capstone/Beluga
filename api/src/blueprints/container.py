@@ -101,6 +101,8 @@ def create_container():
 
 
         public_key_path = os.path.join(current_app.config["BASE_KEY_PATH"], str(user_id), 'id_rsa.pub')
+        ak_path = os.path.join(current_app.config["BASE_KEY_PATH"], str(user_id), 'authorized_keys')
+
         if not os.path.exists(public_key_path):
             return jsonify({'error': 'Public key not found for user'}), 400
         
@@ -109,9 +111,15 @@ def create_container():
         subprocess.run(["docker", "exec", container_id, "mkdir", "-p", container_ssh_dir], check=True)
 
         # Copy the public key into the container's authorized_keys
+        import sys
+
+        print('lmao-1', file=sys.stderr)
         subprocess.run(['cp', public_key_path, ak_path])
-        subprocess.run(['tar', '-cf', '-', './authorized_keys', '--mode', 'u=rw,g=,o=', '--owner', '0', '--group', '0', '|', 'docker', 'cp', '-', f'{container_id}:{container_ssh_dir}'], check=True)
+        print('lmao', file=sys.stderr)
+        subprocess.Popen(f"tar -cf - {ak_path} --mode u=rw,g=,o= --owner 0 --group 0 | docker cp - {container_id}:/root/.ssh/", shell=True)
+        print('lmao2', file=sys.stderr)
         subprocess.run(['rm', ak_path])
+        print('lmao3', file=sys.stderr)
         #subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
 
         # # Set the permissions of .ssh directory and authorized_keys file
