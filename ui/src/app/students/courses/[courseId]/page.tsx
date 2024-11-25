@@ -35,11 +35,14 @@ const CourseStudents: React.FC = () => {
 
         const mappedStudents = data.map((user: any) => ({
             id: user.user_id,
-            firstName: user.firstname || user.username?.split(" ")[0] || "", // Correct key is `firstname`
-            lastName: user.lastname || user.username?.split(" ")[1] || "",  // Correct key is `lastname`
+            firstName: user.firstname,
+            lastName: user.lastname,
             middleName: user.middlename || "",
             email: user.email,
-            role: user.role || "student",
+            role: 
+              Number(user.role_id) === 8 ? "Student" : 
+              Number(user.role_id) === 4 ? "TA" : 
+              "Unknown",
             courseId,
         }));
         setStudents(mappedStudents);
