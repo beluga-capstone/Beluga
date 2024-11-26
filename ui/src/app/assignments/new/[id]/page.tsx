@@ -2,14 +2,15 @@
 
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
-import React, { useState } from "react";
-import AssignmentForm from "../../../components/AssignmentsForm";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import AssignmentForm from "../../../../components/AssignmentsForm";
+import { useRouter, useParams } from "next/navigation";
 import { toLocalISOString } from "@/lib/utils";
 
 const NewAssignment: React.FC = () => {
   const { addAssignment } = useAssignments();
-  const courseId = "unused";
+  const params = useParams();
+  const courseId = params.id;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [publishAt, setPublishAt] = useState("");
@@ -66,7 +67,7 @@ const NewAssignment: React.FC = () => {
       setError("");
 
       await addAssignment(
-        courseId,
+        Array.isArray(courseId) ? courseId[0] : courseId,
         title,
         description,
         new Date(toLocalISOString(dueAt)),

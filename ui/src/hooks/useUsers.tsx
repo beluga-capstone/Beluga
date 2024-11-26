@@ -91,6 +91,26 @@ export const useUsers = () => {
       courseId,
     };
 
+    try {
+      const resp = await fetch(`http://localhost:5000/users/search?email=${email}`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      const users = await resp.json();  // Assuming the response is a JSON array
+
+      if (Array.isArray(users) && users.length > 0) {
+        // Do something if the list is non-empty
+        console.log("Users found:", users);
+        return users[0];
+        // Perform your additional logic here
+      } else {
+        console.log("No users found for the given email.");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+    
     const response = await fetch("http://localhost:5000/users", {
       method: "POST",
       credentials: "include",
@@ -116,6 +136,8 @@ export const useUsers = () => {
   ): Promise<{ user_id: string; email: string }[]> => {
     // Fix: Return user_id and email
     try {
+
+
       const response = await fetch("http://localhost:5000/users", {
         method: "POST",
         credentials: "include",

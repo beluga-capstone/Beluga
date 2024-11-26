@@ -15,13 +15,6 @@ import { Assignment, Submission } from "@/types";
 import { useSubmissions } from "@/hooks/useSubmissions";
 import { shortDate, shortTime } from "@/lib/utils";
 
-const formatDate = (date: string) =>
-  new Date(date).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
 const normalizeDockerName = (name: string) => {
   return name
     .toLowerCase()
@@ -36,7 +29,7 @@ interface AssignmentPageProps {
 const AssignmentPage = ({ params }: AssignmentPageProps) => {
   const router = useRouter();
   const { profile } = useProfile();
-  const { assignments,fetchAssignmentsById,fetchAssignmentsByCourseId } = useAssignments();
+  const { assignments, fetchAssignmentsById } = useAssignments();
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const { getLatestSubmission, submit } = useSubmissions();
@@ -88,14 +81,20 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
     return () => clearInterval(intervalId);
   }, [router]);
-  
+
+  useEffect(()=>{
+    const name = normalizeDockerName(`${assignment?.title}_${profile?.user_id}`);
+    setContainerName(name);
+  },[assignment,profile]);
   useEffect(() => {
+    console.log("LOADING");
     const loadAssignment = async () => {
       try {
-        const fetchedAssignment = await fetchAssignmentsById(params.assignmentId);
+        const fetchedAssignment = await fetchAssignmentsById(
+          params.assignmentId
+        );
+        console.log("ASSIGN",fetchedAssignment,profile);
         setAssignment(fetchedAssignment);
-        const name = normalizeDockerName(`${fetchedAssignment.title}_con`);
-        setContainerName(name);
       } catch (error) {
         console.error("Failed to fetch assignment by ID:", error);
         //toast.error("Could not load assignment.");
@@ -106,30 +105,9 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
     loadAssignment();
   }, [params.assignmentId, router]);
 
-  // Initialize assignment and container name
-  useEffect(() => {
-    const initializeAssignment = async () => {
-      const foundAssignment = assignments.find(
-        (a) => a.assignment_id === params.assignmentId
-      );
-
-      if (foundAssignment) {
-        setAssignment(foundAssignment);
-        if (foundAssignment?.docker_image_id){
-          const name = normalizeDockerName(`${foundAssignment.assignment_id}_${profile?.user_id}_container`);
-          setContainerName(name);
-        }
-      }
-    };
-
-    initializeAssignment();
-  }, [assignments, params.assignmentId]);
-
-  console.log(latestSubmission)
-
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-8 flex items-center">
+      <div className="mb-8 flex items-center justify-between">
         <h1 className="font-bold text-4xl">{assignment?.title}</h1>
         {profile?.role_id !== ROLES.STUDENT ? (
           <Link

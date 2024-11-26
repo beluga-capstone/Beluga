@@ -69,9 +69,9 @@ const NewCourse: React.FC = () => {
       const addedUsers = await addUsers(students);
       console.log("Added users:", addedUsers);
   
-      if (addedUsers.length === 0) {
-        throw new Error("Failed to add users");
-      }
+      // if (addedUsers.length === 0) {
+      //   throw new Error("Failed to add users");
+      // }
   
       // Step 3: Enroll students in the course (individually)
       for (const user of addedUsers) {
@@ -79,7 +79,7 @@ const NewCourse: React.FC = () => {
           course_id: courseId,
           user_id: user.user_id, // Fix: Use user_id
         });
-        const enrollmentResponse = await fetch("http://localhost:5000/enrollments/search", {
+        const enrollmentResponse = await fetch("http://localhost:5000/enrollments", {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
@@ -145,7 +145,7 @@ const NewCourse: React.FC = () => {
         <Button
           className="bg-blue-500 text-white px-4 py-2 rounded"
           onClick={handleAddCourse}
-          disabled={!title || students.length === 0}
+          disabled={!title}
         >
           Add Course
         </Button>

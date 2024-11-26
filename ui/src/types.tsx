@@ -21,7 +21,7 @@ export interface Profile {
 }
 
 export interface Course {
-  id: string;
+  course_id: string;
   name: string;
   term?: string; 
   term_id?: string;

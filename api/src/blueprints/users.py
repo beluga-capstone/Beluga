@@ -130,7 +130,7 @@ def get_users():
 
 # Read User by ID (GET)
 @users_bp.route('/users/<uuid:user_id>', methods=['GET'])
-@admin_required
+@login_required
 def get_user(user_id):
     user = db.session.get(User, user_id)
     if user is None:

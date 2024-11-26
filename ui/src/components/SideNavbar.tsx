@@ -1,39 +1,30 @@
 'use client';
 
-import { SideNavItem } from '@/types';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Icon } from '@iconify/react';
+import { SideNavItem } from '@/types';
 import { useDashboard } from '@/hooks/useDashboard';
+import { useCourseId } from '@/hooks/useCourseId';
 
 const SideNavbar = () => {
-  const params = useParams();
   const pathname = usePathname();
-  const {fetchCourses,getCourse} = useDashboard(); 
-  const [courseId, setCourseId] = useState<string | null>(null);
-  const [courseName,setCourseName] = useState<string|null>(null);
+  const { fetchCourses, getCourse } = useDashboard();
+  const { courseId, setCourseId } = useCourseId();
+  const [courseName, setCourseName] = useState<string | null>(null);
 
   useEffect(() => {
     const getCourses = async () => {
       await fetchCourses();
     };
 
-    // Set an interval to fetch courses every 5 seconds
     const intervalId = setInterval(() => {
       getCourses();
     }, 5000);
 
-    // Ensure we handle both string and string[] cases for courseId
-    if (Array.isArray(params.courseId)) {
-      setCourseId(params.courseId[0] || null); // Take the first element if it's an array
-    } else {
-      setCourseId(params.courseId || null); // Directly use the string if it's not an array
-    }
-
-    // Cleanup the interval on component unmount or dependency change
     return () => clearInterval(intervalId);
-  }, [params.courseId]);
+  }, []);
 
   useEffect(()=>{
     if (!courseId) return;
@@ -41,12 +32,14 @@ const SideNavbar = () => {
   
       const response = await getCourse(courseId);
       if (response){
+        console.log("got coursename with id",response.name,courseId);
         setCourseName(response.name);
       }
     };
     getIt();
 
   },[courseId])
+
 
   const getSideNavItems = (): SideNavItem[] => {
     const defaultItems: SideNavItem[] = [
@@ -132,7 +125,9 @@ const MenuItem = ({ item, pathname }: { item: SideNavItem; pathname: string }) =
           >
             <div className="flex flex-row space-x-4 items-center">
               {item.icon}
-              <span className="font-semibold text-xl flex">{item.title}</span>
+              <span className="font-semibold text-xl flex truncate max-w-[120px] hover:max-w-[120px] hover:overflow" title={item.title}>
+        {item.title}
+      </span>
             </div>
             <div className={`${subMenuOpen ? 'rotate-180' : ''} flex`}>
               <Icon icon="lucide:chevron-down" width="24" height="24" />
@@ -167,3 +162,4 @@ const MenuItem = ({ item, pathname }: { item: SideNavItem; pathname: string }) =
     </div>
   );
 };
+

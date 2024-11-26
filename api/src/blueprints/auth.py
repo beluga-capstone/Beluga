@@ -20,7 +20,7 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 def login():
     return redirect(url_for('auth.oauth_authorize', provider='google'))
 
-@auth_bp.route('/logout', methods=['GET'])
+@auth_bp.route('/logout', methods=['POST'])
 @login_required
 def logout():
     logout_user()
@@ -99,7 +99,7 @@ def oauth_callback(provider):
     fname = provider_config['userinfo']['given_name'](res.json())
     lname = provider_config['userinfo']['family_name'](res.json())
     username = provider_config['userinfo']['username'](res.json())
-    role = 8
+    role = 2
 
     user = User.query.filter_by(email=email).first()
 

@@ -16,7 +16,7 @@ export const useDashboard = () => {
   const searchCourses = async (filters: Record<string, string> = {}) => {
     try {
       const queryParams = new URLSearchParams(filters).toString();
-      const response = await fetch(`http://localhost:5000/courses/search?${queryParams}`, {
+      const response = await fetch(`http://localhost:5000/courses/search`, {
         method: "GET",
         credentials: "include",
         headers: {
@@ -31,6 +31,7 @@ export const useDashboard = () => {
       const data = await response.json();
       console.log("Fetched courses:", data); // Debugging log
       setCourses(data);
+      return data;
     } catch (error) {
       console.error("Error fetching courses:", error);
     }
@@ -63,7 +64,10 @@ export const useDashboard = () => {
 
   const getCourse = async (id: string): Promise<Course | null> => {
     try {
-      const response = await fetch(`http://localhost:5000/courses/${id}`);
+      const response = await fetch(`http://localhost:5000/courses/${id}`,{
+        method:"GET",
+        credentials:"include"
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch course details");
       }
@@ -231,6 +235,7 @@ export const useDashboard = () => {
     addCourse,
     updateCourse,
     setPublished,
+    fetchStudentCounts,
     deleteCourse,
     getCourse
   };

@@ -1,22 +1,25 @@
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface UserSettingsPopupProps {
   setMenuIsOpen: (value: boolean) => void;
 }
 
-export default function UserSettingsPopup({
+export default function UserPopup({
   setMenuIsOpen,
 }: UserSettingsPopupProps) {
+  const router = useRouter();
+
   const handleLogout = async () => {
     try {
       const response = await fetch('http://localhost:5000/auth/logout', {
-        method: 'GET',
+        method: 'POST',
         credentials: 'include',
       });
 
       if (response.ok) {
-        // Redirect to login or home after logout
-        window.location.href = '/';
+        setMenuIsOpen(false);
+        router.replace('/login');
       } else {
         console.error('Failed to log out', response.statusText);
       }
@@ -35,15 +38,6 @@ export default function UserSettingsPopup({
             className="block px-4 py-2 hover:bg-surface"
           >
             Profile
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="/settings"
-            onClick={() => setMenuIsOpen(false)}
-            className="block px-4 py-2 hover:bg-surface"
-          >
-            Settings
           </Link>
         </li>
         <li>

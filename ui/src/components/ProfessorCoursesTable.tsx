@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ToggleLeft, ToggleRight, Edit2, Trash2 } from "lucide-react";
+import { ToggleLeft, ToggleRight, Plus,Edit2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useUsers } from "@/hooks/useUsers";
@@ -58,14 +58,16 @@ const ProfessorCoursesTable: React.FC = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Professor's Courses</h2>
+      <div className="mb-4">
+        <h1 className="font-bold text-4xl mb-6">Courses</h1>
         <Link href="/course/new">
           <button className="flex items-center bg-blue-500 text-white px-4 py-2 rounded">
+            <Plus className="mr-2" />
             Add Course
           </button>
         </Link>
       </div>
+      <br/>
 
       <table className="table w-full">
         <thead>
@@ -74,7 +76,6 @@ const ProfessorCoursesTable: React.FC = () => {
             <th>Instructor</th>
             <th>Term</th>
             <th>Students Enrolled</th>
-            <th>Published</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -104,23 +105,6 @@ const ProfessorCoursesTable: React.FC = () => {
                   </td>
                   <td className="text-center py-2">{course.term_id || "Fall 2024"}</td>
                   <td className="text-center py-2">{course.students_count || 0}</td>
-                  <td className="text-center py-2">
-                    <div className="flex justify-center items-center cursor-pointer">
-                      {course.publish ? (
-                        <ToggleRight
-                          size={32}
-                          className="text-green-500"
-                          onClick={() => setPublished(course.course_id, false)}
-                        />
-                      ) : (
-                        <ToggleLeft
-                          size={32}
-                          className="text-red-500"
-                          onClick={() => setPublished(course.course_id, true)}
-                        />
-                      )}
-                    </div>
-                  </td>
                   <td className="text-center py-2 flex space-x-4 justify-center">
                     <Link href={`/course/edit/${course.course_id}`}>
                       <button className="py-2 text-blue-500">

@@ -21,7 +21,7 @@ export default function ImageDetailsPage({ params }: { params: { id: string } })
       }
     };
     startup();
-  }, [dockerImageId, getAssignmentsForImage]);
+  }, [dockerImageId]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error loading data</p>;

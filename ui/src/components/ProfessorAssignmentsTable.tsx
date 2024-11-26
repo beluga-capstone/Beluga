@@ -5,6 +5,8 @@ import { ToggleLeft, ToggleRight } from "lucide-react";
 import { useState, useEffect} from "react";
 import Link from "next/link";
 import { Assignment } from "@/types";
+import { shortDate, shortTime } from "@/lib/utils";
+import { useSubmissions } from "@/hooks/useSubmissions";
 
 interface ProfessorAssignmentsTableProps {
   assignments: Assignment[];
@@ -14,13 +16,6 @@ interface ProfessorAssignmentsTableProps {
     allowsLateSubmissions: boolean
   ) => void;
 }
-
-const format_date = (date: string) =>
-  new Date(date).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 
 const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({
   assignments,
@@ -53,90 +48,42 @@ const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({
             <th>Released</th>
             <th>Due</th>
             <th>Submissions</th>
-            <th>Published</th>
-            <th>Late Submissions</th>
           </tr>
         </thead>
-        {assignments.length > 0 && (
+        <tbody>
           <tr>
-            <td colSpan={6} className="py-2">
-              <hr className="border-gray-300" />
+            <td colSpan={6}>
+              <hr />
             </td>
           </tr>
-        )}
-        <tbody>
-          {assignments.length === 0 ? (
-            <tr>
-              <td colSpan={6} className="text-center py-4">
-                No assignments found.
+          {assignments.map((assignment) => (
+            <tr
+              key={assignment.assignment_id}
+              onClick={() =>
+                (window.location.href = `/assignments/${assignment.assignment_id}`)
+              }
+              className="cursor-pointer"
+            >
+              <td className="text-center py-2">{assignment.title}</td>
+              <td className="text-center py-2">
+                {assignment.publish_at
+                  ? `${shortDate(assignment.publish_at)} at ${shortTime(
+                      assignment.publish_at
+                    )}`
+                  : "-"}
+              </td>
+              <td className="text-center py-2">
+                {assignment.due_at
+                  ? `${shortDate(assignment.due_at)} at ${shortTime(
+                      assignment.due_at
+                    )}`
+                  : "-"}
+              </td>
+              <td className="text-center py-2">
+                {getSubmissionCountForAssignment(assignment.assignment_id)}
               </td>
             </tr>
-          ) : (
-            assignments.map((assignment) => (
-              <tr key={assignment.assignment_id}>
-                <td className="text-center py-2">
-                  <Link href={`/assignments/${assignment.assignment_id}`}>
-                    {assignment.title}
-                  </Link>
-                </td>
-                <td className="text-center py-2">
-                  {assignment.publish_at
-                    ? format_date(assignment.publish_at.toISOString())
-                    : "Not Found"}
-                </td>
-                <td className="text-center py-2">
-                  {assignment.due_at
-                    ? format_date(assignment.due_at.toISOString())
-                    : "Not Found"}
-                </td>
-                <td className="text-center py-2">
-                    {submissionCounts[assignment.assignment_id] ?? "Loading..."}
-                </td>
-                <td className="py-2">
-                  <div className="flex justify-center items-center">
-                    {assignment.is_published ? (
-                      <ToggleRight
-                        size={32}
-                        className="text-green-500"
-                        onClick={() =>
-                          setPublished(assignment.assignment_id, false)
-                        }
-                      />
-                    ) : (
-                      <ToggleLeft
-                        size={32}
-                        className="text-red-500"
-                        onClick={() =>
-                          setPublished(assignment.assignment_id, true)
-                        }
-                      />
-                    )}
-                  </div>
-                </td>
-                <td className="py-2">
-                  <div className="flex justify-center items-center">
-                    {assignment.allows_late_submissions ? (
-                      <ToggleRight
-                        size={32}
-                        className="text-green-500"
-                        onClick={() =>
-                          setLateSubmissions(assignment.assignment_id, false)
-                        }
-                      />
-                    ) : (
-                      <ToggleLeft
-                        size={32}
-                        className="text-red-500"
-                        onClick={() =>
-                          setLateSubmissions(assignment.assignment_id, true)
-                        }
-                      />
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))
-          )}
+          ))}
         </tbody>
       </table>
     </div>
