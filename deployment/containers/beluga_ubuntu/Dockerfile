@@ -28,7 +28,8 @@ EXPOSE 22 5000
 RUN useradd -ms /bin/bash student && \
     adduser student sudo && \
     echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
-    chmod 777 /root/ && chmod +r /root/.bashrc
+    chmod 777 /root/ && chmod +r /root/.bashrc && \
+    chown -R student:student /app
 
 # Start SSH server and run the application
 RUN printf "/usr/sbin/sshd\nsu - student -c 'node /app/websocket-pty.js'\n" >> /docker_entrypoint.sh

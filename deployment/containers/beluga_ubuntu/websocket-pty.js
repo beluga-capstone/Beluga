@@ -1,4 +1,6 @@
 const WebSocket = require('ws');
+const HttpsServer = require('https').createServer;
+const fs = require("fs");
 const os = require('os');
 const pty = require('node-pty');
 const process = require('process');
@@ -8,10 +10,15 @@ const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
 const port = process.argv[2] ? parseInt(process.argv[2], 10) : 5000;
 
 // Allowed origins for CORS
-const allowedOrigins = ['http://localhost:3000', 'https://your-domain.com'];
+const allowedOrigins = ['http://localhost:3000', 'https://beluga.tacex.dev'];
+
+const ssl = HttpsServer({
+    cert: fs.readFileSync('/app/fullchain.pem'),
+    key: fs.readFileSync('/app/privkey.pem')
+})
 
 const server = new WebSocket.Server({
-    port,
+    server: ssl,
     verifyClient: (info, done) => {
         const origin = info.origin;
         if (allowedOrigins.includes(origin)) {
@@ -79,3 +86,5 @@ server.on('connection', (ws) => {
         ptyProcess.kill();
     });
 });
+
+ssl.listen(port);
