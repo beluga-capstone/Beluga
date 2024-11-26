@@ -104,7 +104,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
     };
 
     loadAssignment();
-  }, [params.assignmentId, fetchAssignmentsById, router]);
+  }, [params.assignmentId, router]);
 
   // Initialize assignment and container name
   useEffect(() => {

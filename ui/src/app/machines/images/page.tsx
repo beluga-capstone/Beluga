@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
-import { CheckSquare, Plus, Square } from "lucide-react";
+import { CheckSquare, Plus, Square,StopCircle } from "lucide-react";
 import ImageItem from "@/components/ImageItem";
 import CheckBox from "@/components/CheckBox";
 import Link from "next/link";
@@ -31,13 +31,15 @@ export default function Images() {
         {selectedImageIds.length > 0 && (
           <button
             onClick={deleteSelectedImages}
-            className="bg-red-700 text-white ml-2 px-4 py-2 rounded"
+            className="bg-red-700 text-white ml-2 px-4 py-2 rounded flex items-center"
           >
-            Delete Selected
+            <StopCircle className="mr-2"/>
+            <span>Delete Selected</span>
           </button>
         )}
       </div>
 
+      <br/>
       {images.length > 0 && (
         <div className="flex items-center mb-4">
           <button
