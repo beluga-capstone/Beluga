@@ -24,21 +24,21 @@ const base64ToFile = (base64: string, filename: string): File => {
 
 const makeSubmissionList = async (res: Response): Promise<Submission[]> => {
   try {
-    const submissions = await res.json();
-    const itemList: Submission[] = submissions.map(
-      (submission: Submission) => ({
-        submission_id: submission.submission_id,
-        user_id: submission.user_id,
-        assignment_id: submission.assignment_id,
-        submitted_at: submission.submitted_at
-          ? new Date(submission.submitted_at)
-          : null,
-        grade: submission.grade,
-        status: submission.status,
-        data: submission.data,
-      })
-    );
-    return itemList;
+      const submissions = await res.json();
+      const itemList: Submission[] = submissions.map(
+        (submission: Submission) => ({
+          submission_id: submission.submission_id,
+          user_id: submission.user_id,
+          assignment_id: submission.assignment_id,
+          submitted_at: submission.submitted_at
+            ? new Date(submission.submitted_at)
+            : null,
+          grade: submission.grade,
+          status: submission.status,
+          data: base64ToFile(submission.data, `${submission.submission_id}.zip`),
+        })
+      );
+      return itemList;
   } catch (error) {
     console.log("error make submission list:", error);
     return [];
@@ -163,6 +163,8 @@ export const useSubmissions = () => {
         if (jsonResponse.submission_id === undefined) {
           return null;
         }
+        jsonResponse.data = base64ToFile(jsonResponse.data, `${jsonResponse.submission_id}.zip`)
+        jsonResponse.submitted_at= jsonResponse.submission_date ? new Date(jsonResponse.submission_date) : null
         return jsonResponse;
       } catch (error) {
         console.error("Error in fetching submissions:", error);
@@ -215,9 +217,10 @@ export const useSubmissions = () => {
     assignmentId: string,
     userId: string
   ): Promise<Submission[]> => {
-    const fetchSubmissions = (): Promise<Submission[]> => {
+    const fetchSubmissions = async (): Promise<Submission[]> => {
       return fetch(
-        `http://localhost:5000/submissions/search?assignment_id=${assignmentId}&user_id=${userId}`,
+        //`http://localhost:5000/submissions/search?assignment_id=${assignmentId}&user_id=${userId}`,
+          `http://localhost:5000/submissions/user/${userId}/assignment/${assignmentId}`,
         {
           method: "GET",
           headers: {
@@ -225,13 +228,7 @@ export const useSubmissions = () => {
           },
         }
       )
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error(`Failed to fetch submissions: ${res.status}`);
-          }
-          return res;
-        })
-        .then((data) => {
+        .then( (data) => {
           return makeSubmissionList(data);
         })
         .catch((error) => {

@@ -62,11 +62,11 @@ const ListingForSubmission: React.FC<ListingForSubmissionProps> = ({
       </td>
 
       <td className="text-center py-2">
-        {latestSubmission
-          ? `${shortDate(latestSubmission.submitted_at)} at ${shortTime(
-              latestSubmission.submitted_at
-            )}`
-          : "-"}
+        {/*{latestSubmission*/}
+        {/*  ? `${shortDate(latestSubmission.submitted_at)} at ${shortTime(*/}
+        {/*      latestSubmission.submitted_at*/}
+        {/*    )}`*/}
+        {/*  : "-"}*/}
       </td>
     </tr>
   );
