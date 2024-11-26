@@ -69,9 +69,9 @@ const NewCourse: React.FC = () => {
       const addedUsers = await addUsers(students);
       console.log("Added users:", addedUsers);
   
-      if (addedUsers.length === 0) {
-        throw new Error("Failed to add users");
-      }
+      // if (addedUsers.length === 0) {
+      //   throw new Error("Failed to add users");
+      // }
   
       // Step 3: Enroll students in the course (individually)
       for (const user of addedUsers) {
@@ -145,7 +145,7 @@ const NewCourse: React.FC = () => {
         <Button
           className="bg-blue-500 text-white px-4 py-2 rounded"
           onClick={handleAddCourse}
-          disabled={!title || students.length === 0}
+          disabled={!title}
         >
           Add Course
         </Button>
