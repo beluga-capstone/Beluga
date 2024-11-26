@@ -125,7 +125,7 @@ const MenuItem = ({ item, pathname }: { item: SideNavItem; pathname: string }) =
           >
             <div className="flex flex-row space-x-4 items-center">
               {item.icon}
-              <span className="font-semibold text-xl flex truncate max-w-[140px] hover:max-w-[140px] hover:overflow" title={item.title}>
+              <span className="font-semibold text-xl flex truncate max-w-[120px] hover:max-w-[120px] hover:overflow" title={item.title}>
         {item.title}
       </span>
             </div>
