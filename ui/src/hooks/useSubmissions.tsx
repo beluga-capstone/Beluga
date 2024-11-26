@@ -22,9 +22,7 @@ const base64ToFile = (base64: string, filename: string): File => {
   return new File([u8arr], filename, { type: mime });
 };
 
-const makeSubmissionList = async (
-  res: Response
-): Promise<Submission[]> => {
+const makeSubmissionList = async (res: Response): Promise<Submission[]> => {
   try {
     const submissions = await res.json();
     const itemList: Submission[] = submissions.map(
@@ -32,7 +30,9 @@ const makeSubmissionList = async (
         submission_id: submission.submission_id,
         user_id: submission.user_id,
         assignment_id: submission.assignment_id,
-        submitted_at: new Date(submission.submitted_at),
+        submitted_at: submission.submitted_at
+          ? new Date(submission.submitted_at)
+          : null,
         grade: submission.grade,
         status: submission.status,
         data: submission.data,
@@ -66,7 +66,10 @@ const saveSubmissionsToStorage = async (submissions: Submission[]) => {
   const submissionsWithBase64 = await Promise.all(
     submissions.map(async (submission) => ({
       ...submission,
-      data: await fileToBase64(submission.data),
+      data:
+        submission.data instanceof File
+          ? await fileToBase64(submission.data)
+          : submission.data,
     }))
   );
   localStorage.setItem("submissions", JSON.stringify(submissionsWithBase64));
