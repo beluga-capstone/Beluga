@@ -100,26 +100,36 @@ def create_container():
         
         container_id = container.id
         user_id = data['user_id']
-
-
-
+        
+        # Path to the user's public key on the host
         public_key_path = os.path.join(current_app.config["BASE_KEY_PATH"], str(user_id), 'id_rsa.pub')
         if not os.path.exists(public_key_path):
             return jsonify({'error': 'Public key not found for user'}), 400
         
-        # Create .ssh directory in container
+        # Define the .ssh directory inside the container
         container_ssh_dir = "/root/.ssh"
+        container_authorized_keys = f"{container_ssh_dir}/authorized_keys"
+        
+        # Ensure the .ssh directory exists
         subprocess.run(["docker", "exec", container_id, "mkdir", "-p", container_ssh_dir], check=True)
-
-        # Copy the public key into the container's authorized_keys
-        subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
-
-        # # Set the permissions of .ssh directory and authorized_keys file
-        # subprocess.run(["docker", "exec", container_id, "chmod", "700", container_ssh_dir], check=True)
-        # subprocess.run(["docker", "exec", container_id, "chmod", "600", f"{container_ssh_dir}/authorized_keys"], check=True)
-
-        # # Start sshd in the container
-        # subprocess.run(["docker", "exec", container_id, "/usr/sbin/sshd"], check=True)
+        
+        # Copy the public key into authorized_keys
+        subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_authorized_keys}"], check=True)
+        
+        # Set ownership to root:root
+        subprocess.run(["docker", "exec", container_id, "chown", "root:root", container_ssh_dir, container_authorized_keys], check=True)
+        
+        # Set permissions
+        subprocess.run(["docker", "exec", container_id, "chmod", "700", container_ssh_dir], check=True)
+        subprocess.run(["docker", "exec", container_id, "chmod", "600", container_authorized_keys], check=True)
+        
+        # Optionally, set permissions for /root if necessary
+        # Ensure /root has at least 700 permissions
+        subprocess.run(["docker", "exec", container_id, "chmod", "700", "/root"], check=True)
+        
+        # Start the SSH daemon
+        subprocess.run(["docker", "exec", container_id, "/usr/sbin/sshd"], check=True)
+        
 
         # Get the image tag
         image_tag = ""
@@ -131,14 +141,7 @@ def create_container():
         if image_tag != "":
             alt_desc = f"Container running with image {image_tag}"
 
-        container_id = container.id
-        ssh_keys = get_keys_path(data['user_id'])
-        public_key_path = ssh_keys["public_key_path"]
-
-
-        # Copy the key into Docker's authorized key file
-        subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
-
+        
         # Save container information to the database
         new_container = Container(
             docker_container_id=container.id,
