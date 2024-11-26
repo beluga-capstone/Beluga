@@ -36,7 +36,7 @@ interface AssignmentPageProps {
 const AssignmentPage = ({ params }: AssignmentPageProps) => {
   const router = useRouter();
   const { profile } = useProfile();
-  const { assignments } = useAssignments();
+  const { assignments,fetchAssignmentsById,fetchAssignmentsByCourseId } = useAssignments();
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const { getLatestSubmission, submit } = useSubmissions();
@@ -72,6 +72,31 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
     );
     setLatestSubmission(submission);
   }, [assignment, profile, zipFile]);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      router.refresh();
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [router]);
+  
+  useEffect(() => {
+    const loadAssignment = async () => {
+      try {
+        const fetchedAssignment = await fetchAssignmentsById(params.assignmentId);
+        setAssignment(fetchedAssignment);
+        const name = normalizeDockerName(`${fetchedAssignment.title}_con`);
+        setContainerName(name);
+      } catch (error) {
+        console.error("Failed to fetch assignment by ID:", error);
+        //toast.error("Could not load assignment.");
+        router.push("/assignments");
+      }
+    };
+
+    loadAssignment();
+  }, [params.assignmentId, fetchAssignmentsById, router]);
 
   // Initialize assignment and container name
   useEffect(() => {

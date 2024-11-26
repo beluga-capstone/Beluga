@@ -5,20 +5,18 @@ import { useDashboard } from "@/hooks/useDashboard";
 import { useProfile } from "@/hooks/useProfile";
 import StudentCoursesTable from "@/components/StudentCoursesTable";
 import ProfessorCoursesTable from "@/components/ProfessorCoursesTable";
+import AdminCoursesTable from "@/components/AdminCoursesTable";
 import { ROLES } from "@/constants";
 
 const Dashboard: React.FC = () => {
   const { profile } = useProfile();
-  const { courses, setPublished } = useDashboard();
   
   return (
     <div>
       <div className="container mx-auto p-4">
-        {profile?.role_id == ROLES.STUDENT ? (
-          <StudentCoursesTable />
-        ) : (
-          <ProfessorCoursesTable />
-        )}
+        {profile?.role_id === ROLES.ADMIN && <AdminCoursesTable />}
+        {profile?.role_id === ROLES.PROFESSOR && <ProfessorCoursesTable />}
+        {profile?.role_id === ROLES.STUDENT && <StudentCoursesTable />}
       </div>
     </div>
   );

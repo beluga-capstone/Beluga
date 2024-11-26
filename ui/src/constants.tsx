@@ -30,13 +30,15 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
   },
   {
     title: "Students",
-    path: "/students",
+    path: "/students/courses/[courseId]",
     icon: <Users size={24} />,
+    dynamic: true,
   },
   {
     title: "Assignments",
-    path: "/assignments",
+    path: "assignments/courses/[courseId]",
     icon: <Folder size={24} />,
+    dynamic: true,
   },
   {
     title: "Machines",
@@ -46,73 +48,6 @@ export const SIDENAV_ITEMS: SideNavItem[] = [
       { title: "Containers", path: "/machines/containers" },
       { title: "Images", path: "/machines/images" },
     ],
-  },
-];
-
-export const DEFAULT_COURSES: Course[] = [
-  {
-    id: 1,
-    name: "CSCE 120",
-    section: 500,
-    term: "Fall 2024",
-    studentsEnrolled: 50,
-    isPublished: true,
-  },
-  {
-    id: 2,
-    name: "CSCE 313",
-    section: 200,
-    term: "Fall 2024",
-    studentsEnrolled: 67,
-    isPublished: true,
-  },
-  {
-    id: 3,
-    name: "CSCE 410",
-    section: 500,
-    term: "Spring 2024",
-    studentsEnrolled: 0,
-    isPublished: false,
-  },
-];
-
-export const DEFAULT_STUDENTS: Student[] = [
-  {
-    id: 1,
-    firstName: "Bode",
-    lastName: "Raymond",
-    email: "boderaymond@tamu.edu",
-  },
-  {
-    id: 2,
-    firstName: "Deric",
-    lastName: "Le",
-    email: "rake@tamu.edu",
-  },
-  {
-    id: 3,
-    firstName: "Drew",
-    lastName: "Pusey",
-    email: "drewpusey@tamu.edu",
-  },
-  {
-    id: 4,
-    firstName: "Jeffrey",
-    lastName: "Li",
-    email: "cherrytree1324@tamu.edu",
-  },
-  {
-    id: 5,
-    firstName: "Minh",
-    lastName: "Nguyen",
-    middleName: "Dao",
-    email: "minhdao@tamu.edu",
-  },
-  {
-    id: 6,
-    firstName: "Nitesh",
-    lastName: "Duraivel",
-    email: "niteshduraivel@tamu.edu",
   },
 ];
 
