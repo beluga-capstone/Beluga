@@ -1,10 +1,11 @@
 from src import socketio
-from src.util.db import db, Container
+from src.util.db import db, Container, Image
 from datetime import datetime
 from src import socketio
 from src.util.query_utils import apply_filters
 from flask_socketio import emit
 from flask import Blueprint, current_app, request, jsonify
+from flask_login import current_user
 import docker
 import io
 import re
@@ -70,6 +71,8 @@ def get_containers():
 def create_container():
     docker_client = docker.DockerClient(base_url="ssh://beluga-containers")
 
+    print(current_user.user_id)
+
     data = request.get_json()
     
     # get a port number to give to the container    
@@ -114,25 +117,31 @@ def create_container():
         #docker --context beluga-containers pull {tag}
         # docker --context --memory=128m --cpus=0.2 -d --name container_name -p 1111:5000 -p 1112:22 192.168.100.2:5000/container_name
         subprocess.run(["docker", "--context", "beluga-containers", "pull", image_tag])
-        result = subprocess.run(["docker", "--context", "beluga-containers", "run", "--memory=128m", "--cpus=0.2", "-d", "--name", container_name, "-p", f"{pty_port}:5000", "-p", f"{ssh_port}:22", image_tag], capture_output=True)
+        result = subprocess.run(["docker", "--context", "beluga-containers", "run", "--memory=512m", "--cpus=0.5", "-d", "--name", container_name, "-p", f"{pty_port}:5000", "-p", f"{ssh_port}:22", image_tag], capture_output=True)
         
         container_id = result.stdout.decode('utf-8').strip()
         user_id = data['user_id']
 
-        public_key_path = os.path.join(current_app.config["BASE_KEY_PATH"], str(user_id), 'id_rsa.pub')
-        ak_path = os.path.join(current_app.config["BASE_KEY_PATH"], str(user_id), 'authorized_keys')
+        img = Image.query.filter_by(docker_image_id=image_id).first()
 
-        if not os.path.exists(public_key_path):
+        root_key_path = os.path.join(current_app.config["BASE_KEY_PATH"], str(img.user_id), 'id_rsa.pub')
+        user_key_path = os.path.join(current_app.config["BASE_KEY_PATH"], str(user_id), 'id_rsa.pub')
+        #public_key_path = os.path.join(current_app.config["BASE_KEY_PATH"], str(user_id), 'id_rsa.pub')
+
+        if not os.path.exists(root_key_path) or not os.path.exists(user_key_path):
             return jsonify({'error': 'Public key not found for user'}), 400
         
         # Create .ssh directory in container
-        container_ssh_dir = "/root/.ssh"
-        print(' '.join(["docker", "--context", "beluga-containers", "exec", container_id, "mkdir", "-p", container_ssh_dir]))
-        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "mkdir", "-p", container_ssh_dir], check=True)
+        root_ssh_dir = "/root/.ssh"
+        user_ssh_dir = "/home/student/.ssh"
+        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "mkdir", "-p", root_ssh_dir], check=True)
+        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "mkdir", "-p", user_ssh_dir], check=True)
 
         # Copy the public key into the container's authorized_keys
-        subprocess.run(["docker", "--context", "beluga-containers", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
-        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chown", "root:root", f"{container_ssh_dir}/authorized_keys"])
+        subprocess.run(["docker", "--context", "beluga-containers", "cp", root_key_path, f"{container_id}:{root_ssh_dir}/authorized_keys"], check=True)
+        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chown", "root:root", f"{root_ssh_dir}/authorized_keys"])
+        subprocess.run(["docker", "--context", "beluga-containers", "cp", user_key_path, f"{container_id}:{user_ssh_dir}/authorized_keys"], check=True)
+        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chown", "root:root", f"{user_ssh_dir}/authorized_keys"])
 
         # # Set the permissions of .ssh directory and authorized_keys file
         # subprocess.run(["docker", "exec", container_id, "chmod", "700", container_ssh_dir], check=True)
