@@ -73,14 +73,6 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
     setLatestSubmission(submission);
   }, [assignment, profile, zipFile]);
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      router.refresh();
-    }, 5000);
-
-    return () => clearInterval(intervalId);
-  }, [router]);
-
   // Initialize assignment and container name
   useEffect(() => {
     const initializeAssignment = async () => {
@@ -91,7 +83,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
       if (foundAssignment) {
         setAssignment(foundAssignment);
         if (foundAssignment?.docker_image_id){
-          const name = normalizeDockerName(`${foundAssignment.title}_con`);
+          const name = normalizeDockerName(`${foundAssignment.assignment_id}_${profile?.user_id}_container`);
           setContainerName(name);
         }
       }
@@ -102,7 +94,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex items-center">
         <h1 className="font-bold text-4xl">{assignment?.title}</h1>
         {profile?.role_id !== ROLES.STUDENT ? (
           <Link
