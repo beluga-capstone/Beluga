@@ -2,13 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Assignment } from "@/types";
-import { useRouter } from "next/navigation"; // Use useRouter directly here
 
 export const useAssignments = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
 
   useEffect(()=>{
-    console.log("updated is ",assignments);
   },[assignments]);
 
   const fetchAssignments = async () => {
@@ -44,7 +42,6 @@ export const useAssignments = () => {
 
   const fetchAssignmentsByCourseId = async (courseId: string): Promise<Assignment[]> => {
     try {
-      console.log(`Fetching assignments for courseId: ${courseId}`);
       const response = await fetch(`http://localhost:5000/assignments/course/${courseId}`, {
         method: "GET",
         credentials: "include",
@@ -53,7 +50,6 @@ export const useAssignments = () => {
       if (!response.ok) {
         const errorData = await response.json();
         if (errorData.error === "No assignments found for this course") {
-          console.log("No assignments found for this course. Returning empty array.");
           return [];
         }
         throw new Error(`Failed to fetch assignments for course ${courseId}`);

@@ -31,7 +31,6 @@ const CourseAssignments: React.FC = () => {
 
     const loadAssignments = async () => {
       try {
-        console.log(`Loading assignments for courseId: ${resolvedCourseId}`);
         const fetchedAssignments = await fetchAssignmentsByCourseId(
           resolvedCourseId
         );
@@ -42,7 +41,6 @@ const CourseAssignments: React.FC = () => {
             ? fetchedAssignments.filter((assignment) => assignment.is_published)
             : fetchedAssignments;
 
-        console.log("Filtered assignments:", filteredAssignments);
         setAssignments(filteredAssignments);
       } catch (err) {
         console.error("Failed to fetch assignments:", err);

@@ -23,8 +23,6 @@ const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({
   setPublished,
   setLateSubmissions,
 }) => {
-  console.log("Assignments passed to ProfessorAssignmentsTable:", assignments);
-
   return (
     <div>
       <table className="table w-full">
