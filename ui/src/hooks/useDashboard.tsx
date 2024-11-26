@@ -90,6 +90,7 @@ export const useDashboard = () => {
       }
   
       const data = await response.json();
+      fetchCourses();
       return data; // Ensure course_id is returned
     } catch (error) {
       console.error("Error adding course:", error);
