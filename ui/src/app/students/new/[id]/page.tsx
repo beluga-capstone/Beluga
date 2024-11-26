@@ -51,7 +51,7 @@ const NewUser: React.FC = () => {
       }
   
       // Enroll the user in the course
-      const enrollmentResponse = await fetch("http://localhost:5000/enrollments", {
+      const enrollmentResponse = await fetch(`${process.env.backend}/enrollments`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
