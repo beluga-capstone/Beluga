@@ -56,7 +56,9 @@ export const useAssignments = () => {
       }
 
       const data = await response.json();
+      return data;
       setAssignments((prev) => [...prev, data]);
+      fetchAssignments();
     } catch (err) {
       console.log(err);
     }
@@ -88,7 +90,9 @@ export const useAssignments = () => {
       docker_image_id: docker_image_id,
     };
 
-    await saveAssignment(newAssignment);
+    fetchAssignments();
+    const data = await saveAssignment(newAssignment);
+    return data;
   };
 
   const updateAssignment = async (
@@ -209,7 +213,7 @@ export const useAssignments = () => {
       if (!response.ok) {
         throw new Error('Failed to update late submissions setting');
       }
-
+      fetchAssignments();
       setAssignments((prev) =>
         prev.map((assignment) =>
           assignment.assignment_id === assignmentId ? { ...assignment, allowsLateSubmissions } : assignment

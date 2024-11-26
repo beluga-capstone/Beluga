@@ -13,7 +13,7 @@ const ImageOption: React.FC<ImageProps> = ({ image }) => {
       <span>
         {loading && 'Loading...'}
         {error && `Error: ${error}`}
-        {imageData ? imageData.tag[0] || 'Image data loaded' : 'No data'}
+        {imageData ? imageData.tag[0] || 'Image not found' : 'No data'}
       </span>
     </option>
   );

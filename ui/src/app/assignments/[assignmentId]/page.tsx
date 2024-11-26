@@ -82,8 +82,10 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
       if (foundAssignment) {
         setAssignment(foundAssignment);
-        const name = normalizeDockerName(`${foundAssignment.assignment_id}_${profile?.user_id}_container`);
-        setContainerName(name);
+        if (foundAssignment?.docker_image_id){
+          const name = normalizeDockerName(`${foundAssignment.assignment_id}_${profile?.user_id}_container`);
+          setContainerName(name);
+        }
       }
     };
 
@@ -206,7 +208,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
         <TerminalMaxxing
           containerName={containerName}
           dockerImageId={assignment?.docker_image_id ?? null}
-          description={assignment?.description ?? null}
+          description={`Container for Assignment ${assignment?.title}`}
         />
       )}
 
