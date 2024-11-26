@@ -38,9 +38,15 @@ const SideNavbar = () => {
   const getSideNavItems = (): SideNavItem[] => {
     const defaultItems: SideNavItem[] = [
       {
+        title: 'Home',
+        path: `/`,
+        icon: <Icon icon="lucide:home" width="24" height="24" />,
+      },
+      {
         title: 'Courses',
         path: '/',
         icon: <Icon icon="lucide:notebook-pen" width="24" height="24" />,
+        dynamic:true,
         ...(courses.length > 0 && {
           subMenuItems: courses.map(course => ({
             title: course.name,
