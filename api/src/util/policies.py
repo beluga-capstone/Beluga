@@ -131,29 +131,7 @@ def filter_users(user, query):
     - Students can only see their own profile.
     - Other roles can have restricted access as defined.
     """
-    if user.is_admin():
-        return query
-    elif user.is_prof():
-        # Subquery to get courses taught by the professor
-        courses_taught_subq = db.session.query(Course.course_id).filter(
-            Course.user_id == user.user_id
-        ).subquery()
-        courses_taught_select = select(courses_taught_subq.c.course_id)
-        
-        # Subquery to get user IDs enrolled in those courses
-        users_in_courses_subq = db.session.query(CourseEnrollment.user_id).filter(
-            CourseEnrollment.course_id.in_(courses_taught_select)
-        ).subquery()
-        users_in_courses_select = select(users_in_courses_subq.c.user_id)
-        
-        return query.filter(User.user_id.in_(users_in_courses_select))
-
-    elif user.is_student():
-        # Students can only see their own profile
-        return query
-    else:
-        # No access by default
-        return query.filter(False)
+    return query
 
 
 def filter_courses(user, query):

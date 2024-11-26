@@ -144,6 +144,7 @@ export const useImages = () => {
         selectedImageIds.map(docker_image_id =>
           fetch(`${process.env.backend}/images/${docker_image_id}`, {
             method: 'DELETE',
+            credentials:"include",
           })
         )
       );
