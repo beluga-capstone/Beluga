@@ -80,7 +80,7 @@ const AdminCoursesTable: React.FC = () => {
               </td>
             </tr>
           ) : (
-            courses.map((course: Course) => (
+            courses.map((course) => (
               <tr key={course.id}>
                 <td className="text-center py-2">
                   <Link href={`/assignments/courses/${course.id}`}>
