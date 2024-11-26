@@ -11,7 +11,7 @@ const AddTermForm: React.FC = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/terms", {
+      const response = await fetch(`${process.env.backend}/terms`, {
         method: "POST",
         credentials: "include",
         headers: {

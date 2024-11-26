@@ -45,7 +45,7 @@ export const useAssignments = () => {
   const fetchAssignmentsByCourseId = async (courseId: string): Promise<Assignment[]> => {
     try {
       console.log(`Fetching assignments for courseId: ${courseId}`);
-      const response = await fetch(`http://localhost:5000/assignments/course/${courseId}`, {
+      const response = await fetch(`${process.env.backend}/assignments/course/${courseId}`, {
         method: "GET",
         credentials: "include",
       });
@@ -84,7 +84,7 @@ export const useAssignments = () => {
   
   const fetchAssignmentsById = async (assignmentId: string): Promise<Assignment> => {
     try {
-      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`, {
+      const response = await fetch(`${process.env.backend}/assignments/${assignmentId}`, {
         method: 'GET',
         credentials: 'include',
       });

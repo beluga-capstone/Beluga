@@ -34,7 +34,7 @@ export const useImages = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:5000/images/search?docker_image_id=${docker_image_id}`, {
+      const response = await fetch(`${process.env.backend}/images/search?docker_image_id=${docker_image_id}`, {
         method: 'GET',
         credentials: 'include',
       });

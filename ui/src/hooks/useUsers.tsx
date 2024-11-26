@@ -6,7 +6,7 @@ import { getRoleName } from "@/lib/utils";
 
 const fetchUserById = async (userId: string): Promise<User | null> => {
   try {
-    const response = await fetch(`http://localhost:5000/users/${userId}`, {
+    const response = await fetch(`${process.env.backend}/users/${userId}`, {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
@@ -35,7 +35,7 @@ const fetchUserById = async (userId: string): Promise<User | null> => {
 
 const fetchCourseStudents = async (courseId: string): Promise<Student[]> => {
   try {
-    const response = await fetch(`http://localhost:5000/courses/${courseId}/users`, {
+    const response = await fetch(`${process.env.backend}/courses/${courseId}/users`, {
       method: "GET",
       credentials: "include",
     });
@@ -91,7 +91,7 @@ export const useUsers = () => {
       courseId,
     };
 
-    const response = await fetch("http://localhost:5000/users", {
+    const response = await fetch(`${process.env.backend}/users`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -116,7 +116,7 @@ export const useUsers = () => {
   ): Promise<{ user_id: string; email: string }[]> => {
     // Fix: Return user_id and email
     try {
-      const response = await fetch("http://localhost:5000/users", {
+      const response = await fetch(`${process.env.backend}/users`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

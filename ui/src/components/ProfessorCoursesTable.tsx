@@ -13,7 +13,7 @@ const ProfessorCoursesTable: React.FC = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await fetch("http://localhost:5000/courses/search", {
+        const response = await fetch(`${process.env.backend}/courses/search`, {
           credentials: "include",
           headers: {
             "Content-Type": "application/json",

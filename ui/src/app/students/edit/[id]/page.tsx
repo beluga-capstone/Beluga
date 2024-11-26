@@ -22,7 +22,7 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/users/${userId}`, {
+        const response = await fetch(`${process.env.backend}/users/${userId}`, {
           method: "GET",
           credentials: "include",
         });
@@ -54,7 +54,7 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/users/${userId}`, {
+      const response = await fetch(`${process.env.backend}/users/${userId}`, {
         method: "PUT",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -80,7 +80,7 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/users/${userId}`, {
+      const response = await fetch(`${process.env.backend}/users/${userId}`, {
         method: "DELETE",
         credentials: "include",
       });

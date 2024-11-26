@@ -23,7 +23,7 @@ const EditCourse: React.FC = () => {
       }
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5000/courses/${courseId}`, {
+        const response = await fetch(`${process.env.backend}/courses/${courseId}`, {
           method: "GET",
           credentials: "include",
         });
@@ -50,7 +50,7 @@ const EditCourse: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/courses/${courseId}`, {
+      const response = await fetch(`${process.env.backend}/courses/${courseId}`, {
         method: "PUT",
         credentials: "include",
         headers: {

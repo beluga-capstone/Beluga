@@ -17,7 +17,7 @@ const TopNavbar = () => {
   // Fetch courses when the component mounts
   useEffect(() => {
     const fetchCourses = async () => {
-      const response = await fetch("http://localhost:5000/courses/search", {
+      const response = await fetch(`${process.env.backend}/courses/search`, {
         method: "GET",
         credentials: "include",
       });
