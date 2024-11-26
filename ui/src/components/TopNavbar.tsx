@@ -16,6 +16,21 @@ const TopNavbar = () => {
 
   // Fetch courses when the component mounts
   useEffect(() => {
+    const fetchCourses = async () => {
+      const response = await fetch("http://localhost:5000/courses/search", {
+        method: "GET",
+        credentials: "include",
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCourses(data);
+        console.log("courses", data);
+      } else {
+        console.error("Failed to fetch courses");
+      }
+    };
+    fetchCourses();
+
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuIsOpen(false);

@@ -23,14 +23,20 @@ const StudentPage = ({ params }: { params: { id: string } }) => {
     const fetchStudentAndCourse = async () => {
       try {
         // Fetch user details
-        const userResponse = await fetch(`http://localhost:5000/users/${params.id}`);
+        const userResponse = await fetch(`http://localhost:5000/users/${params.id}`, {
+          method: "GET",
+          credentials: "include",
+        });
         if (!userResponse.ok) {
           throw new Error(`Failed to fetch student with ID ${params.id}`);
         }
         const userData = await userResponse.json();
 
         // Fetch enrollment details to get course_id
-        const enrollmentResponse = await fetch(`http://localhost:5000/enrollments`);
+        const enrollmentResponse = await fetch(`http://localhost:5000/enrollments`, {
+          method: "GET",
+          credentials: "include",
+        });
         if (!enrollmentResponse.ok) {
           throw new Error("Failed to fetch enrollments.");
         }

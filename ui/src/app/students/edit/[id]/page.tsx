@@ -22,7 +22,10 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/users/${userId}`);
+        const response = await fetch(`http://localhost:5000/users/${userId}`, {
+          method: "GET",
+          credentials: "include",
+        });
         if (!response.ok) {
           throw new Error(`Failed to fetch user with ID ${userId}`);
         }
@@ -53,6 +56,7 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
     try {
       const response = await fetch(`http://localhost:5000/users/${userId}`, {
         method: "PUT",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           first_name: firstName,
@@ -78,6 +82,7 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
     try {
       const response = await fetch(`http://localhost:5000/users/${userId}`, {
         method: "DELETE",
+        credentials: "include",
       });
   
       if (!response.ok) {

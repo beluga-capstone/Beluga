@@ -13,12 +13,38 @@ interface Course {
 export const useDashboard = () => {
   const [courses, setCourses] = useState<Course[]>([]);
 
+  const searchCourses = async (filters: Record<string, string> = {}) => {
+    try {
+      const queryParams = new URLSearchParams(filters).toString();
+      const response = await fetch(`http://localhost:5000/courses/search?${queryParams}`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch courses: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("Fetched courses:", data); // Debugging log
+      setCourses(data);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
+  };
+
   const fetchStudentCounts = async (): Promise<{ [courseId: string]: number }> => {
     try {
       const counts: { [courseId: string]: number } = {};
   
       for (const course of courses) {
-        const response = await fetch(`http://localhost:5000/courses/${course.id}/students/count`);
+        const response = await fetch(`http://localhost:5000/courses/${course.id}/students/count`, {
+          method: "GET",
+          credentials: "include",
+        });
         if (!response.ok) {
           console.error(`Failed to fetch student count for course ${course.id}`);
           continue;
@@ -37,7 +63,10 @@ export const useDashboard = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch("http://localhost:5000/courses");
+      const response = await fetch("http://localhost:5000/courses/search", {
+        method: "GET",
+        credentials: "include",
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch courses");
       }
@@ -79,6 +108,7 @@ export const useDashboard = () => {
     try {
       const response = await fetch("http://localhost:5000/courses", {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -102,6 +132,7 @@ export const useDashboard = () => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}`, {
         method: "PUT",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -128,6 +159,7 @@ export const useDashboard = () => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}/publish`, {
         method: "PATCH",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -152,6 +184,7 @@ export const useDashboard = () => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}`, {
         method: "DELETE",
+        credentials: "include",
       });
 
       if (!response.ok) {
@@ -169,6 +202,7 @@ export const useDashboard = () => {
   return {
     courses,
     fetchCourses,
+    searchCourses,
     addCourse,
     updateCourse,
     setPublished,

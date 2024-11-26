@@ -71,7 +71,7 @@ function NewImageForm() {
       if (description !== "") {
         altDesc = description
       }
-      const response = await fetch("http://localhost:5000/images", {
+      const response = await fetch("http://localhost:5000/images/search", {
         credentials: 'include',
         method: "POST",
         headers: {

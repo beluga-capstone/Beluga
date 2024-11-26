@@ -23,7 +23,10 @@ const EditCourse: React.FC = () => {
       }
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:5000/courses/${courseId}`);
+        const response = await fetch(`http://localhost:5000/courses/${courseId}`, {
+          method: "GET",
+          credentials: "include",
+        });
         if (!response.ok) {
           throw new Error("Failed to fetch course details");
         }
@@ -49,6 +52,7 @@ const EditCourse: React.FC = () => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${courseId}`, {
         method: "PUT",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },

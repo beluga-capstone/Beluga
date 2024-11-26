@@ -54,10 +54,13 @@ def create_app(config_name="default"):
         db.create_all()
     
         # init the database
+        print("initializing")
         init_roles()
         init_admin_user()
+        print("building")
         init_default_images()
         create_example_course()
+        print("done")
         
         return app
 

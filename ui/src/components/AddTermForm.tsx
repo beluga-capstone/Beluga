@@ -13,6 +13,7 @@ const AddTermForm: React.FC = () => {
     try {
       const response = await fetch("http://localhost:5000/terms", {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
