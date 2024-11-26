@@ -1,8 +1,9 @@
-import { User } from "@/types";
+// StudentsTable.tsx
+import { Student,User } from "@/types";
 import Link from "next/link";
 
 interface StudentsTableProps {
-  students: User[];
+  students: Student[]|User[]; 
   hasClickableNames?: boolean;
 }
 
@@ -55,7 +56,7 @@ const StudentsTable: React.FC<StudentsTableProps> = ({
               )}
             </td>
             <td className="text-center py-2">{student.email}</td>
-            <td className="text-center py-2">{student.role_id}</td>
+            <td className="text-center py-2">{student.role}</td>
           </tr>
         ))}
       </tbody>

@@ -29,3 +29,18 @@ def test_create_enrollment_missing_fields(test_client):
     response = test_client.post('/enrollments', json=data)
     assert response.status_code == 400
     assert b'Course ID and User ID are required' in response.data
+    
+
+def test_get_student_count_for_course(test_client, course_id):
+    # Make the GET request
+    response = test_client.get(f'/courses/{course_id}/students/count')
+    
+    # Assert the status code
+    assert response.status_code == 200
+
+    # Parse the response
+    data = response.get_json()
+
+    # Check that the count is a valid integer
+    assert "students_count" in data
+    assert isinstance(data["students_count"], int)

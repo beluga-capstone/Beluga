@@ -54,4 +54,3 @@ export const useProfile = () => {
     error, // Expose the error state
   };
 };
-

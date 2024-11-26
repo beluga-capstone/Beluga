@@ -84,7 +84,7 @@ class Course(db.Model):
 class CourseEnrollment(db.Model):
     __tablename__ = 'course_enrollment'
     enrollment_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    course_id = db.Column(UUID(as_uuid=True), db.ForeignKey('course.course_id'))
+    course_id = db.Column(UUID(as_uuid=True), db.ForeignKey('course.course_id', ondelete='CASCADE'))
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
     enrollment_date = db.Column(db.DateTime, default=datetime.now)
 
@@ -97,6 +97,7 @@ class Assignment(db.Model):
     due_at = db.Column(db.DateTime)
     lock_at = db.Column(db.DateTime)
     unlock_at = db.Column(db.DateTime)
+    is_published = db.Column(db.Boolean, default=False)
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
     docker_image_id = db.Column(db.String(80), db.ForeignKey('image.docker_image_id'), nullable=True)
 

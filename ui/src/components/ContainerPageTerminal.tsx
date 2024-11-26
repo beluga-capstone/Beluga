@@ -61,7 +61,11 @@ const ContainerPageTerminal: React.FC<ContainerPageTerminalProps> = ({
     term.loadAddon(webLinksAddon);
 
     // Define websocket
+<<<<<<< HEAD
     const ws = new WebSocket(`${process.env.wsbackend}:${containerPort}`);
+=======
+    const ws = new WebSocket(`ws://localhost:${containerPort}`);
+>>>>>>> origin/api-ui-integration
     socketRef.current = ws;
 
     // Open terminal
@@ -112,7 +116,11 @@ const ContainerPageTerminal: React.FC<ContainerPageTerminalProps> = ({
       };
       resizeTerminal(); // Recalculate and resize terminal
     };
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> origin/api-ui-integration
     window.addEventListener('resize', handleResize);
 
     // Cleanup
@@ -133,4 +141,3 @@ const ContainerPageTerminal: React.FC<ContainerPageTerminalProps> = ({
 };
 
 export default ContainerPageTerminal;
-

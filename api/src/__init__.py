@@ -8,6 +8,7 @@ from src.util.db import db, User
 from config import config_options
 from flask_socketio import SocketIO
 from flask_cors import CORS 
+from src.util.constants import default_image_ids
 import logging
 import docker
 socketio = SocketIO()
@@ -19,8 +20,8 @@ ADMIN_ID='dd85014a-edad-4298-b9c6-808268b3d15e'
 def load_user(user_id):
     return User.query.get(user_id)
 
-@login_manager.request_loader
-def load_user_from_request(request): return User.query.get(ADMIN_ID)
+# @login_manager.request_loader
+# def load_user_from_request(request): return User.query.get(ADMIN_ID)
 
 
 def create_app(config_name="default"):
@@ -55,10 +56,13 @@ def create_app(config_name="default"):
         db.create_all()
     
         # init the database
+        print("initializing")
         init_roles()
         init_admin_user()
+        print("building")
         init_default_images()
         create_example_course()
+        print("done")
         
         return app
 
@@ -204,6 +208,7 @@ def init_default_images():
                 dockerfile=image_info['dockerfile'],
                 tag=image_info['image_tag']
             )
+            default_image_ids.append(image.id)
 
             # Save image to database
             new_image = Image(
@@ -212,6 +217,7 @@ def init_default_images():
                 user_id=image_info['user_id'],
                 packages=image_info['packages'],
             )
+            
             if db.session.query(Image).filter_by(docker_image_id=image.id).first() is None:
                 db.session.add(new_image)
                 db.session.commit()

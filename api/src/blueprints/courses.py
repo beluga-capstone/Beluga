@@ -1,8 +1,11 @@
 from flask import Blueprint, request, jsonify
-from src.util.db import db, Course
+from src.util.db import db, Course, User, CourseEnrollment
 from datetime import datetime
 import uuid
 from src.util.auth import *
+from src.util.query_utils import apply_filters
+from src.util.policies import *
+from src.util.permissions import *
 
 course_bp = Blueprint('course', __name__)
 
@@ -20,7 +23,7 @@ def create_course():
         user_id=data.get('user_id'),
         description=data.get('description'),
         publish=data.get('publish', False),
-        start_at=data.get('start_at'),
+        start_at=data.get('start_at') or datetime.now(),
         term_id=data.get('term_id')
     )
 
@@ -67,13 +70,60 @@ def get_course(course_id):
         'term_id': course.term_id
     }), 200
 
+# Search Courses (GET)
+@course_bp.route('/courses/search', methods=['GET'])
+@login_required
+def search_courses():
+    """
+    Search for courses based on query parameters.
+    Applies dynamic filters and enforces access control policies.
+    """
+    user = db.session.get(User, current_user.user_id)
+    filters = request.args.to_dict()
+    
+    try:
+        # Apply dynamic filters from the frontend
+        query = apply_filters(Course, filters)
+        
+        # Apply ABAC filters based on user permissions
+        filtered_query = apply_user_filters(user, 'courses', query)
+        
+        courses = filtered_query.all()
+        
+        # Format the response
+        courses_list = [{
+            'course_id': str(course.course_id),
+            'name': course.name,
+            'user_id': str(course.user_id) if course.user_id else None,
+            'description': course.description,
+            'publish': course.publish,
+            'start_at': course.start_at,
+            'term_id': str(course.term_id) if course.term_id else None,
+            'create_at': course.create_at,
+            'update_at': course.update_at
+        } for course in courses]
+        
+        return jsonify(courses_list), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # Update a course (PUT)
 @course_bp.route('/courses/<uuid:course_id>', methods=['PUT'])
 @professor_required
 def update_course(course_id):
-    course = db.session.get(Course, course_id)
+    user = db.session.get(User, current_user.user_id)
+
+    # Fetch the course with access control policies
+    course = get_filtered_entity(
+        user=user,
+        entity_cls=Course,
+        entity_id=str(course_id),
+        filter_func=filter_courses,
+        pk_attr='course_id'
+    )
     if course is None:
-        return jsonify({'error': 'Course not found'}), 404
+        return jsonify({'error': 'Access denied or course not found'}), 403
+
 
     data = request.get_json()
     course.name = data.get('name', course.name)
@@ -95,14 +145,24 @@ def update_course(course_id):
 @course_bp.route('/courses/<uuid:course_id>', methods=['DELETE'])
 @professor_required
 def delete_course(course_id):
-    course = db.session.get(Course, course_id)
+    user = db.session.get(User, current_user.user_id)
+
+    # Fetch the course with access control policies
+    course = get_filtered_entity(
+        user=user,
+        entity_cls=Course,
+        entity_id=str(course_id),
+        filter_func=filter_courses,
+        pk_attr='course_id'
+    )
     if course is None:
-        return jsonify({'error': 'Course not found'}), 404
+        return jsonify({'error': 'Access denied or course not found'}), 403
 
     try:
         db.session.delete(course)
         db.session.commit()
-        return jsonify({'message': 'Course deleted successfully'}), 200
+        return jsonify({'message': 'Course and related enrollments deleted successfully'}), 200
     except Exception as e:
         db.session.rollback()
+        print(f"Error deleting course {course_id}: {str(e)}") 
         return jsonify({'error': str(e)}), 500

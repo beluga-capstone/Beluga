@@ -73,7 +73,7 @@ function NewImageForm() {
       if (description !== "") {
         altDesc = description
       }
-      const response = await fetch(`${process.env.backend}/images`, {
+      const response = await fetch(`${process.env.backend}/images/search`, {
         credentials: 'include',
         method: "POST",
         headers: {

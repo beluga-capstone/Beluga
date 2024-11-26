@@ -31,16 +31,7 @@ def create_ssh_key_pair(user_id):
         print(f"Error generating SSH keys: {e}")
         return None
 
-def create_user_helper(username, email, first_name=None, middle_name=None, last_name=None, role_id=None):
-    new_user = User(
-        username=username,
-        email=email,
-        first_name=first_name,
-        middle_name=middle_name,
-        last_name=last_name,
-        role_id=role_id
-    )
-    
+def create_user_helper(new_user):
     try:
         db.session.add(new_user)
         db.session.commit()

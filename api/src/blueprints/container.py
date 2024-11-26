@@ -2,7 +2,6 @@ from src import socketio
 from src.util.db import db, Container, Image
 from datetime import datetime
 from src import socketio
-from src.util.query_utils import apply_filters
 from flask_socketio import emit
 from flask import Blueprint, current_app, request, jsonify
 from flask_login import current_user
@@ -16,7 +15,9 @@ import subprocess
 import requests
 import random
 
-from src.util.permissions import apply_user_filters
+from src.util.query_utils import apply_filters
+from src.util.policies import *
+from src.util.permissions import *
 
 
 container_bp = Blueprint('container', __name__)
@@ -160,6 +161,14 @@ def create_container():
         if image_tag != "":
             alt_desc = f"Container running with image {image_tag}"
 
+        container_id = container.id
+        ssh_keys = get_keys_path(data['user_id'])
+        public_key_path = ssh_keys["public_key_path"]
+
+
+        # Copy the key into Docker's authorized key file
+        subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
+
         # Save container information to the database
         new_container = Container(
             docker_container_id=container_id,
@@ -284,10 +293,18 @@ def delete_container(container_id):
     try:
         docker_client = docker.DockerClient(base_url="ssh://beluga-containers")
         # Retrieve the container record from the database
-        container = db.session.get(Container, container_id)
-        if not container:
-            return jsonify({'error': 'Container not found in the database'}), 404
+        user = db.session.get(User, current_user.user_id)
 
+        # Fetch the container with access control policies
+        container = get_filtered_entity(
+            user=user,
+            entity_cls=Container,
+            entity_id=container_id,
+            filter_func=filter_containers,
+            pk_attr='container_id'  # Specify primary key attribute if different
+        )
+        if container is None:
+            return jsonify({'error': 'Access denied or container not found'}), 403
         # Retrieve the Docker container using its ID
         try:
             docker_container = docker_client.containers.get(container.docker_container_id)

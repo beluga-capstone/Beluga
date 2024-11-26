@@ -10,27 +10,103 @@ from src.util.util import create_user_helper
 from src.util.db import db, User
 from src.util.auth import *
 
+from src.util.query_utils import apply_filters
+from src.util.policies import *
+from src.util.permissions import *
 
 users_bp = Blueprint('users', __name__)
 
 # Create User (POST)
 @users_bp.route('/users', methods=['POST'])
 @login_required
-def create_user():
-    data = request.get_json()
-    if not data or not data.get('username') or not data.get('email'):
-        return jsonify({'error': 'Username and email are required'}), 400
+def create_user_or_users():
+    try:
+        # Parse incoming JSON data
+        data = request.get_json()
+        
+        # Log incoming data for debugging
+        print("Received data for user creation:", data)
+
+        # Check if the input is a list (bulk creation)
+        if isinstance(data, list):
+            new_users = []
+            for user_data in data:
+                # Validate required fields for each user
+                if not user_data.get('email') or not user_data.get('firstName'):
+                    raise ValueError(f"Missing required fields for user: {user_data}")
+
+                # Handle role_id correctly
+                role = user_data.get('role', "student")  # Default to "student"
+                if role == "admin":
+                    role_id = 1  # Adjust this mapping based on your database schema
+                elif role == "professor":
+                    role_id = 2
+                elif role == "ta":
+                    role_id = 4
+                elif role == "student":
+                    role_id = 8
+                else:
+                    raise ValueError(f"Invalid role: {role}")
+
+                new_user = User(
+                    username=user_data.get('email').split("@")[0],  # Generate username
+                    email=user_data.get('email'),
+                    first_name=user_data.get('firstName'),
+                    middle_name=user_data.get('middleName', ""),
+                    last_name=user_data.get('lastName', ""),
+                    role_id=role_id  # Use mapped integer role_id
+                )
+
+                result, status_code = create_user_helper(new_user)
+                # TODO: double check this works
+                new_users.append(new_user)
     
-    result, status_code = create_user_helper(
-        username=data['username'],
-        email=data['email'],
-        first_name=data.get('first_name'),
-        middle_name=data.get('middle_name'),
-        last_name=data.get('last_name'),
-        role_id=data.get('role_id')
-    )
-    
-    return jsonify(result), status_code
+                # return jsonify(result), status_code
+                
+            # Return created users' details
+            response_data = [{"user_id": str(user.user_id), "email": user.email} for user in new_users]
+            return jsonify(response_data), 201
+
+        # Single user creation if input is not a list
+        elif isinstance(data, dict):
+            # Validate required fields
+            if not data.get('email'):
+                return jsonify({'error': 'Username and email are required'}), 400
+
+            # Handle role_id correctly
+            role = data.get('role', "student")  # Default to "student"
+            if role == "admin":
+                role_id = 1  # Adjust this mapping based on your database schema
+            elif role == "professor":
+                role_id = 2
+            elif role == "ta":
+                role_id = 4
+            elif role == "student":
+                role_id = 8
+            else:
+                raise ValueError(f"Invalid role: {role}")
+
+            # Create a single user object
+            new_user = User(
+                username=data.get('email').split("@")[0],  # Generate username
+                email=data.get('email'),
+                first_name=data.get('firstName'),
+                middle_name=data.get('middleName', ""),
+                last_name=data.get('lastName', ""),
+                role_id=role_id  # Use mapped integer role_id
+            )
+
+            result, status_code = create_user_helper(new_user)
+
+            return jsonify(result), status_code
+
+        else:
+            return jsonify({'error': 'Invalid input format. Expected an object or an array of objects.'}), 400
+
+    except Exception as e:
+        print("Error during user creation:", str(e))
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 # Read All Users (GET)
 @users_bp.route('/users', methods=['GET'])
@@ -73,13 +149,58 @@ def get_user(user_id):
     }
     return jsonify(user_data), 200
 
+# Search Users (GET)
+@users_bp.route('/users/search', methods=['GET'])
+@login_required
+def search_users():
+    """
+    Search for users based on query parameters.
+    Applies dynamic filters and enforces access control policies.
+    """
+    user = db.session.get(User, current_user.user_id)
+    filters = request.args.to_dict()
+    
+    try:
+        query = apply_filters(User, filters)
+        
+        # Apply ABAC filters based on user permissions
+        filtered_query = apply_user_filters(user, 'users', query)
+        
+        users = filtered_query.all()
+        
+        # Format the response
+        users_list = [{
+            'user_id': str(user.user_id),
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'middle_name': user.middle_name,
+            'last_name': user.last_name,
+            'role_id': str(user.role_id) if user.role_id else None,
+            'created_at': user.created_at,
+            'updated_at': user.update_at
+        } for user in users]
+        
+        return jsonify(users_list), 200
+    except Exception as e:
+        current_app.logger.error(f"Error searching users: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 # Update User (PUT)
 @users_bp.route('/users/<uuid:user_id>', methods=['PUT'])
 @login_required
 def update_user(user_id):
-    user = db.session.get(User, user_id)
+    curUser = db.session.get(User, current_user.user_id)
+    # Fetch the target user with access control policies
+    user = get_filtered_entity(
+        user=curUser,
+        entity_cls=User,
+        entity_id=str(user_id),
+        filter_func=filter_users,
+        pk_attr='user_id'
+    )
     if user is None:
-        return jsonify({'error': 'User not found'}), 404
+        return jsonify({'error': 'Access denied or user not found'}), 403
 
     data = request.get_json()
     # Update user fields
@@ -102,18 +223,42 @@ def update_user(user_id):
 @users_bp.route('/users/<uuid:user_id>', methods=['DELETE'])
 @professor_required
 def delete_user(user_id):
-    user = db.session.get(User, user_id)
+    curUser = db.session.get(User, current_user.user_id)
+    # Fetch the target user with access control policies
+    user = get_filtered_entity(
+        user=curUser,
+        entity_cls=User,
+        entity_id=str(user_id),
+        filter_func=filter_users,
+        pk_attr='user_id'
+    )
     if user is None:
-        return jsonify({'error': 'User not found'}), 404
+        return jsonify({'error': 'Access denied or user not found'}), 403
+
     
     try:
+        # Delete related records in course_enrollment
+        print(f"Deleting related enrollments for user {user_id}")
+        db.session.execute(
+            db.text("DELETE FROM course_enrollment WHERE user_id = :user_id"),
+            {"user_id": str(user_id)}
+        )
+
+        # Delete the user
+        print(f"Deleting user {user_id}")
         db.session.delete(user)
         db.session.commit()
 
-        shutil.rmtree(os.path.join(BASE_KEY_PATH, str(user_id)))
+        # Remove associated SSH keys
+        try:
+            shutil.rmtree(os.path.join(current_app.config["BASE_KEY_PATH"], str(user_id)), ignore_errors=True)
+            print(f"Deleted SSH keys for user {user_id}.")
+        except Exception as e:
+            print(f"Error deleting SSH keys: {e}")
 
         return jsonify({'message': 'User deleted successfully'}), 200
     except Exception as e:
+        print(f"Error deleting user: {e}")
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 

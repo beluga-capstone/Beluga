@@ -9,8 +9,6 @@ interface StudentFormProps {
   setLastName: (value: string) => void;
   email: string;
   setEmail: (value: string) => void;
-  role: number;
-  setRole: (value: number) => void;
 }
 
 const StudentForm: React.FC<StudentFormProps> = ({
@@ -22,8 +20,6 @@ const StudentForm: React.FC<StudentFormProps> = ({
   setLastName,
   email,
   setEmail,
-  role,
-  setRole,
 }) => {
   return (
     <>
@@ -81,18 +77,6 @@ const StudentForm: React.FC<StudentFormProps> = ({
           placeholder="Email"
           aria-label="Email"
         />
-      </div>
-
-      <h2>Role</h2>
-      <div className="pt-2 pb-8">
-        <select
-          title="Role"
-          value={role}
-          className="border rounded p-1 bg-surface"
-        >
-          <option value={ROLES.STUDENT}>{ROLES.STUDENT}</option>
-          <option value={ROLES.TA}>{ROLES.TA}</option>
-        </select>
       </div>
     </>
   );

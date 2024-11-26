@@ -1,10 +1,11 @@
 from flask import Blueprint, request, jsonify
 from src.util.db import db, Submission
-from src.util.query_utils import apply_filters
 from datetime import datetime
 import uuid
 from src.util.auth import *
-from src.util.policies import filter_submissions
+from src.util.query_utils import apply_filters
+from src.util.policies import *
+from src.util.permissions import *
 
 submission_bp = Blueprint('submission', __name__)
 
@@ -100,10 +101,18 @@ def get_submission(submission_id):
 @submission_bp.route('/submissions/<uuid:submission_id>', methods=['PUT'])
 @student_required
 def update_submission(submission_id):
-    submission = db.session.get(Submission, submission_id)
-    if submission is None:
-        return jsonify({'error': 'Submission not found'}), 404
+    user = db.session.get(User, current_user.user_id)
 
+    # Fetch the submission with access control policies
+    submission = get_filtered_entity(
+        user=user,
+        entity_cls=Submission,
+        entity_id=str(submission_id),
+        filter_func=filter_submissions,
+        pk_attr='submission_id'
+    )
+    if submission is None:
+        return jsonify({'error': 'Access denied or submission not found'}), 403
     data = request.get_json()
     submission.user_id = data.get('user_id', submission.user_id)
     submission.assignment_id = data.get('assignment_id', submission.assignment_id)
@@ -121,11 +130,20 @@ def update_submission(submission_id):
 
 # Delete a submission (DELETE)
 @submission_bp.route('/submissions/<uuid:submission_id>', methods=['DELETE'])
-@student_required
+@professor_required
 def delete_submission(submission_id):
-    submission = db.session.get(Submission, submission_id)
+    user = db.session.get(User, current_user.user_id)
+
+    # Fetch the submission with access control policies
+    submission = get_filtered_entity(
+        user=user,
+        entity_cls=Submission,
+        entity_id=str(submission_id),
+        filter_func=filter_submissions,
+        pk_attr='submission_id'
+    )
     if submission is None:
-        return jsonify({'error': 'Submission not found'}), 404
+        return jsonify({'error': 'Access denied or submission not found'}), 403
 
     try:
         db.session.delete(submission)

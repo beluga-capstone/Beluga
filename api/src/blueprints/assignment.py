@@ -2,9 +2,12 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 import uuid
 from src.util.db import db, Assignment, User
-from src.util.query_utils import apply_filters
+
 from src.util.auth import *
-from src.util.policies import filter_assignments
+
+from src.util.query_utils import apply_filters
+from src.util.policies import *
+from src.util.permissions import *
 
 assignment_bp = Blueprint('assignment', __name__)
 
@@ -59,7 +62,8 @@ def create_assignment():
             lock_at=lock_at,
             unlock_at=unlock_at,
             user_id=data.get('user_id'),
-            docker_image_id=data.get('docker_image_id')
+            docker_image_id=data.get('docker_image_id'),
+            is_published=data.get('is_published')
         )
 
         db.session.add(new_assignment)
@@ -93,7 +97,8 @@ def search_assignments():
             'lock_at': assignment.lock_at.isoformat() if assignment.lock_at else None,
             'unlock_at': assignment.unlock_at.isoformat() if assignment.unlock_at else None,
             'user_id': str(assignment.user_id) if assignment.user_id else None,
-            'docker_image_id': assignment.docker_image_id
+            'docker_image_id': assignment.docker_image_id,
+            'is_published': assignment.is_published
         } for assignment in assignments]
 
         return jsonify(assignments_list), 200
@@ -116,7 +121,8 @@ def get_assignments():
         'lock_at': assignment.lock_at.isoformat() if assignment.lock_at else None,
         'unlock_at': assignment.unlock_at.isoformat() if assignment.unlock_at else None,
         'user_id': str(assignment.user_id) if assignment.user_id else None,
-        'docker_image_id': assignment.docker_image_id
+        'docker_image_id': assignment.docker_image_id,
+        'is_published': assignment.is_published
     } for assignment in assignments]
 
     return jsonify(assignments_list), 200
@@ -138,37 +144,51 @@ def get_assignment(assignment_id):
         'lock_at': assignment.lock_at.isoformat() if assignment.lock_at else None,
         'unlock_at': assignment.unlock_at.isoformat() if assignment.unlock_at else None,
         'user_id': str(assignment.user_id) if assignment.user_id else None,
-        'docker_image_id': assignment.docker_image_id
+        'docker_image_id': assignment.docker_image_id,
+        'is_published': assignment.is_published
     }), 200
 
 @assignment_bp.route('/assignments/<uuid:assignment_id>', methods=['PUT'])
 @professor_required
 def update_assignment(assignment_id):
-    assignment = db.session.get(Assignment, assignment_id)
+    user = db.session.get(User, current_user.user_id)
+    # Fetch the assignment with access control policies
+    assignment = get_filtered_entity(
+        user=user,
+        entity_cls=Assignment,
+        entity_id=str(assignment_id),
+        filter_func=filter_assignments,
+        pk_attr='assignment_id'  # Specify primary key attribute
+    )
     if assignment is None:
-        return jsonify({'error': 'Assignment not found'}), 404
+        return jsonify({'error': 'Access denied or assignment not found'}), 403
 
     data = request.get_json()
 
-    try:
-        # Update assignment fields
-        assignment.title = data.get('title')
-        assignment.description = data.get('description')
+    # Update assignment fields with default to existing values
+    assignment.title = data.get('title', assignment.title)
+    assignment.description = data.get('description', assignment.description)
+    assignment.docker_image_id = data.get('docker_image_id', assignment.docker_image_id)
+    assignment.is_published = data.get('is_published', assignment.is_published)
 
-        # Update date fields
+    # Update date fields with validation
+    try:
         if 'due_at' in data:
             assignment.due_at = parse_date(data.get('due_at'))
         if 'lock_at' in data:
             assignment.lock_at = parse_date(data.get('lock_at'))
         if 'unlock_at' in data:
             assignment.unlock_at = parse_date(data.get('unlock_at'))
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
 
-        if 'user_id' in data:
-            assignment.user_id = data.get('userId')
+    # Validate and update user_id if provided
+    if 'user_id' in data:
+        if not validate_uuid(data.get('user_id')):
+            return jsonify({'error': 'Invalid UUID format for user_id'}), 400
+        assignment.user_id = data.get('user_id')
 
-        assignment.docker_image_id = data.get('docker_image_id')
-
-        # Commit changes to the database
+    try:
         db.session.commit()
 
         # Prepare updated assignment data to return
@@ -180,29 +200,64 @@ def update_assignment(assignment_id):
             'due_at': assignment.due_at.isoformat() if assignment.due_at else None,
             'lock_at': assignment.lock_at.isoformat() if assignment.lock_at else None,
             'unlock_at': assignment.unlock_at.isoformat() if assignment.unlock_at else None,
-            'user_id': assignment.user_id,
+            'user_id': str(assignment.user_id) if assignment.user_id else None,
             'docker_image_id': assignment.docker_image_id,
-            'isUnlocked': datetime.now() >= assignment.unlock_at if assignment.unlock_at else False,
-            'isPublished': datetime.now() >= assignment.due_at if assignment.due_at else False,
-            'publishAt': assignment.due_at.isoformat() if assignment.lock_at else None,
+            'is_published': assignment.is_published
         }
 
         return jsonify({
             'message': 'Assignment updated successfully',
-            'updatedAssignment': updated_assignment
+            'updated_assignment': updated_assignment
         }), 200
 
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+# Get assignments for specific course (GET)
+@assignment_bp.route('/assignments/course/<uuid:course_id>', methods=['GET'])
+@login_required
+def get_assignments_by_course(course_id):
+    try:
+        # Query assignments by course_id
+        assignments = db.session.query(Assignment).filter_by(course_id=course_id).all()
+        
+        if not assignments:
+            return jsonify({'error': 'No assignments found for this course'}), 404
+        
+        # Convert assignments to JSON-compatible format
+        assignments_list = [{
+            'assignment_id': str(assignment.assignment_id),
+            'course_id': str(assignment.course_id),
+            'title': assignment.title,
+            'description': assignment.description,
+            'due_at': assignment.due_at.isoformat() if assignment.due_at else None,
+            'lock_at': assignment.lock_at.isoformat() if assignment.lock_at else None,
+            'unlock_at': assignment.unlock_at.isoformat() if assignment.unlock_at else None,
+            'user_id': str(assignment.user_id) if assignment.user_id else None,
+            'docker_image_id': assignment.docker_image_id
+        } for assignment in assignments]
+        
+        return jsonify(assignments_list), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # Delete an assignment (DELETE)
 @professor_required
 @assignment_bp.route('/assignments/<uuid:assignment_id>', methods=['DELETE'])
 def delete_assignment(assignment_id):
-    assignment = db.session.get(Assignment, assignment_id)
+    user = db.session.get(User, current_user.user_id)
+    # Fetch the assignment with access control policies
+    assignment = get_filtered_entity(
+        user=user,
+        entity_cls=Assignment,
+        entity_id=str(assignment_id),
+        filter_func=filter_assignments,
+        pk_attr='assignment_id'  # Specify primary key attribute
+    )
     if assignment is None:
-        return jsonify({'error': 'Assignment not found'}), 404
+        return jsonify({'error': 'Access denied or assignment not found'}), 403
 
     try:
         db.session.delete(assignment)
