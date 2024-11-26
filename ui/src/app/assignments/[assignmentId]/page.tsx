@@ -86,7 +86,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
       try {
         const fetchedAssignment = await fetchAssignmentsById(params.assignmentId);
         setAssignment(fetchedAssignment);
-        const name = normalizeDockerName(`${fetchedAssignment.title}_con`);
+        const name = normalizeDockerName(`${fetchedAssignment}_${profile?.user_id}`);
         setContainerName(name);
       } catch (error) {
         console.error("Failed to fetch assignment by ID:", error);
