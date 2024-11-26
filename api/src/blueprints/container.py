@@ -161,14 +161,7 @@ def create_container():
         if image_tag != "":
             alt_desc = f"Container running with image {image_tag}"
 
-        container_id = container.id
-        ssh_keys = get_keys_path(data['user_id'])
-        public_key_path = ssh_keys["public_key_path"]
-
-
-        # Copy the key into Docker's authorized key file
-        subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
-
+        
         # Save container information to the database
         new_container = Container(
             docker_container_id=container_id,
@@ -301,7 +294,7 @@ def delete_container(container_id):
             entity_cls=Container,
             entity_id=container_id,
             filter_func=filter_containers,
-            pk_attr='container_id'  # Specify primary key attribute if different
+            pk_attr='docker_container_id'  # Specify primary key attribute if different
         )
         if container is None:
             return jsonify({'error': 'Access denied or container not found'}), 403
