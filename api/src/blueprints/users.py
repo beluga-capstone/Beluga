@@ -10,6 +10,9 @@ from src.util.util import create_user_helper
 from src.util.db import db, User
 from src.util.auth import *
 
+from src.util.query_utils import apply_filters
+from src.util.policies import *
+from src.util.permissions import *
 
 users_bp = Blueprint('users', __name__)
 
@@ -73,13 +76,58 @@ def get_user(user_id):
     }
     return jsonify(user_data), 200
 
+# Search Users (GET)
+@users_bp.route('/users/search', methods=['GET'])
+@login_required
+def search_users():
+    """
+    Search for users based on query parameters.
+    Applies dynamic filters and enforces access control policies.
+    """
+    user = db.session.get(User, current_user.user_id)
+    filters = request.args.to_dict()
+    
+    try:
+        query = apply_filters(User, filters)
+        
+        # Apply ABAC filters based on user permissions
+        filtered_query = apply_user_filters(user, 'users', query)
+        
+        users = filtered_query.all()
+        
+        # Format the response
+        users_list = [{
+            'user_id': str(user.user_id),
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'middle_name': user.middle_name,
+            'last_name': user.last_name,
+            'role_id': str(user.role_id) if user.role_id else None,
+            'created_at': user.created_at,
+            'updated_at': user.update_at
+        } for user in users]
+        
+        return jsonify(users_list), 200
+    except Exception as e:
+        current_app.logger.error(f"Error searching users: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 # Update User (PUT)
 @users_bp.route('/users/<uuid:user_id>', methods=['PUT'])
 @login_required
 def update_user(user_id):
-    user = db.session.get(User, user_id)
+    curUser = db.session.get(User, current_user.user_id)
+    # Fetch the target user with access control policies
+    user = get_filtered_entity(
+        user=curUser,
+        entity_cls=User,
+        entity_id=str(user_id),
+        filter_func=filter_users,
+        pk_attr='user_id'
+    )
     if user is None:
-        return jsonify({'error': 'User not found'}), 404
+        return jsonify({'error': 'Access denied or user not found'}), 403
 
     data = request.get_json()
     # Update user fields
@@ -102,9 +150,18 @@ def update_user(user_id):
 @users_bp.route('/users/<uuid:user_id>', methods=['DELETE'])
 @professor_required
 def delete_user(user_id):
-    user = db.session.get(User, user_id)
+    curUser = db.session.get(User, current_user.user_id)
+    # Fetch the target user with access control policies
+    user = get_filtered_entity(
+        user=curUser,
+        entity_cls=User,
+        entity_id=str(user_id),
+        filter_func=filter_users,
+        pk_attr='user_id'
+    )
     if user is None:
-        return jsonify({'error': 'User not found'}), 404
+        return jsonify({'error': 'Access denied or user not found'}), 403
+
     
     try:
         db.session.delete(user)

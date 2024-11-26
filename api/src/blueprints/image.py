@@ -1,12 +1,14 @@
 from flask import Blueprint, request, jsonify
 from src import socketio
 from src.util.db import db, Image
-from src.util.query_utils import apply_filters
 from flask_socketio import emit
 from datetime import datetime
-from src.util.policies import filter_images
 import docker
 import io
+
+from src.util.query_utils import apply_filters
+from src.util.policies import *
+from src.util.permissions import *
 
 from src.util.auth import *
 
@@ -156,9 +158,21 @@ def get_image(docker_image_id):
 @image_bp.route('/images/<string:docker_image_id>', methods=['PUT'])
 @professor_required
 def update_image(docker_image_id):
-    image = db.session.get(Image, docker_image_id)
+    user = db.session.get(User, current_user.user_id)
+    if not user:
+        return jsonify({'error': 'User not authenticated'}), 401
+
+    # Fetch the image with access control policies
+    image = get_filtered_entity(
+        user=user,
+        entity_cls=Image,
+        entity_id=docker_image_id,
+        filter_func=filter_images,
+        pk_attr='docker_image_id'  # Specify primary key attribute if different
+    )
     if image is None:
-        return jsonify({'error': 'Image not found'}), 404
+        return jsonify({'error': 'Access denied or image not found'}), 403
+
 
     data = request.get_json()
     image.description = data.get('description', image.description)
@@ -176,9 +190,21 @@ def update_image(docker_image_id):
 @professor_required
 def delete_image(docker_image_id):
     # Check if the image exists in the database
-    image = db.session.get(Image, docker_image_id)
+    user = db.session.get(User, current_user.user_id)
+    if not user:
+        return jsonify({'error': 'User not authenticated'}), 401
+
+    # Fetch the image with access control policies
+    image = get_filtered_entity(
+        user=user,
+        entity_cls=Image,
+        entity_id=docker_image_id,
+        filter_func=filter_images,
+        pk_attr='docker_image_id'
+    )
     if image is None:
-        return jsonify({'error': 'Image not found'}), 404
+        return jsonify({'error': 'Access denied or image not found'}), 403
+
 
     try:
         # Remove the image from Docker

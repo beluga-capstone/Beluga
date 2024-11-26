@@ -97,6 +97,7 @@ class Assignment(db.Model):
     due_at = db.Column(db.DateTime)
     lock_at = db.Column(db.DateTime)
     unlock_at = db.Column(db.DateTime)
+    is_published = db.Column(db.Boolean, default=False)
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
     docker_image_id = db.Column(db.String(80), db.ForeignKey('image.docker_image_id'), nullable=True)
 
