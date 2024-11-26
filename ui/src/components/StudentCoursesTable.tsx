@@ -5,8 +5,7 @@ const StudentCoursesTable: React.FC = () => {
   const { courses, searchCourses } = useDashboard();
 
   useEffect(() => {
-    // Fetch courses when the component mounts
-    const filters = {}; // Add filters here if needed, e.g., { term: "Spring 2024" }
+    const filters = {};
     searchCourses(filters);
   }, [searchCourses]);
 
@@ -16,7 +15,6 @@ const StudentCoursesTable: React.FC = () => {
         <tr>
           <th>Course</th>
           <th>Term</th>
-          {/* <th>Term</th> */}
         </tr>
       </thead>
       <tbody>
@@ -36,8 +34,7 @@ const StudentCoursesTable: React.FC = () => {
             {courses.map((course) => (
               <tr key={course.id}>
                 <td className="text-center py-2">{course.name}</td>
-                <td className="text-center py-2">{course.term || "N/A"}</td>
-                {/* <td className="text-center py-2">{course.term_id || "N/A"}</td> */}
+                <td className="text-center py-2">{course.term || "Fall 2024"}</td>
               </tr>
             ))}
           </>
