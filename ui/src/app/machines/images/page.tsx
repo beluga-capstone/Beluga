@@ -38,6 +38,7 @@ export default function Images() {
         )}
       </div>
 
+      <br/>
       {images.length > 0 && (
         <div className="flex items-center mb-4">
           <button
