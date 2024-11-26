@@ -1,14 +1,10 @@
 "use client";
 
-import { ROLES } from "@/constants";
 import { useState } from "react";
 import { User, Student } from "@/types";
 import { getRoleName } from "@/lib/utils";
 
-const fetchUsers = async() => {
-}
-
-const fetchUserById = async (userId: string): Promise<{ firstName: string; lastName: string } | null> => {
+const fetchUserById = async (userId: string): Promise<User | null> => {
   try {
     const response = await fetch(`http://localhost:5000/users/${userId}`, {
       credentials: "include",
@@ -23,8 +19,13 @@ const fetchUserById = async (userId: string): Promise<{ firstName: string; lastN
 
     const data = await response.json();
     return {
+      id: data.user_id,
       firstName: data.first_name,
       lastName: data.last_name,
+      middleName: data.middle_name || "",
+      email: data.email,
+      role: getRoleName(data.role_id),
+      courseId: data.course_id,
     };
   } catch (error) {
     console.error(`Error fetching user with ID ${userId}:`, error);
@@ -34,7 +35,9 @@ const fetchUserById = async (userId: string): Promise<{ firstName: string; lastN
 
 const fetchCourseStudents = async (courseId: string): Promise<Student[]> => {
   try {
-    const response = await fetch(`http://localhost:5000/courses/${courseId}/users`);
+    const response = await fetch(
+      `http://localhost:5000/courses/${courseId}/users`
+    );
 
     if (!response.ok) {
       throw new Error("Failed to fetch course-specific students.");
@@ -70,7 +73,7 @@ export const useUsers = () => {
     setUsers(updatedUsers);
   };
 
-  const addUser = async(
+  const addUser = async (
     email: string,
     firstName: string,
     lastName: string,
@@ -91,9 +94,9 @@ export const useUsers = () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email:email,
-        firstName:firstName,
-        lastName:lastName,
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
         middleName: middleName === "" ? undefined : middleName,
         role: role,
       }),
@@ -106,19 +109,26 @@ export const useUsers = () => {
     }
   };
 
-  const addUsers = async (users: User[]): Promise<{ user_id: string; email: string }[]> => { // Fix: Return user_id and email
+  const addUsers = async (
+    users: User[]
+  ): Promise<{ user_id: string; email: string }[]> => {
+    // Fix: Return user_id and email
     try {
       const response = await fetch("http://localhost:5000/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(users),
       });
-  
+
       if (!response.ok) {
-        console.error("Failed to add users. Status:", response.status, response.statusText);
+        console.error(
+          "Failed to add users. Status:",
+          response.status,
+          response.statusText
+        );
         throw new Error(`Error adding users: ${response.statusText}`);
       }
-  
+
       const addedUsers = await response.json();
       console.log("Users added successfully:", addedUsers);
       return addedUsers; // Ensure it returns user_id and email
@@ -126,9 +136,8 @@ export const useUsers = () => {
       console.error("Error adding users:", error);
       return [];
     }
-  };  
-  
-  
+  };
+
   const updateUser = (
     id: string,
     firstName: string,
