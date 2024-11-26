@@ -140,11 +140,14 @@ def create_container():
 
         # Copy the public key into the container's authorized_keys
         subprocess.run(["docker", "--context", "beluga-containers", "cp", root_key_path, f"{container_id}:{root_ssh_dir}/authorized_keys"], check=True)
-        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chown", "root:root", f"{root_ssh_dir}/authorized_keys"])
+        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chown", "-R" "root:root", f"{root_ssh_dir}"])
         subprocess.run(["docker", "--context", "beluga-containers", "cp", user_key_path, f"{container_id}:{user_ssh_dir}/authorized_keys"], check=True)
-        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chown", "student:sudent", f"{user_ssh_dir}/authorized_keys"])
-        #subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chmod", "700", container_ssh_dir], check=True)
-        #subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chmod", "600", container_authorized_keys], check=True)
+        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chown", "-R", "student:sudent", f"{user_ssh_dir}"])
+
+        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chmod", "700", root_ssh_dir], check=True)
+        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chmod", "600", f'{root_ssh_dir}/authorized_keys'], check=True)
+        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chmod", "700", user_ssh_dir], check=True)
+        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chmod", "600", f'{user_ssh_dir}/authorized_keys'], check=True)
 
         # # Set the permissions of .ssh directory and authorized_keys file
         # subprocess.run(["docker", "exec", container_id, "chmod", "700", container_ssh_dir], check=True)
