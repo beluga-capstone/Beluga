@@ -14,8 +14,10 @@ const ImportStudentsPage: React.FC = () => {
   const searchParams = useSearchParams();
   const courseId = searchParams.get("courseId");
   const [users, setUsers] = useState<User[]>([]);
+  const [dropAreaActive, setDropAreaActive] = useState(true);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    setDropAreaActive(false);
     const file = acceptedFiles[0];
     Papa.parse(file, {
       header: true,
@@ -65,14 +67,17 @@ const ImportStudentsPage: React.FC = () => {
       }
 
       for (const user of addedUsers) {
-        const enrollmentResponse = await fetch("http://localhost:5000/enrollments", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            course_id: courseId,
-            user_id: user.user_id,
-          }),
-        });
+        const enrollmentResponse = await fetch(
+          "http://localhost:5000/enrollments",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              course_id: courseId,
+              user_id: user.user_id,
+            }),
+          }
+        );
 
         if (!enrollmentResponse.ok) {
           console.error(
@@ -103,17 +108,17 @@ const ImportStudentsPage: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="font-bold text-4xl mb-6">Import Students</h1>
-
-      <div
-        {...getRootProps()}
-        className="border-dashed border-2 border-gray-400 p-16 text-center mb-4"
-      >
-        <input {...getInputProps()} />
-        <p>Drag and drop a CSV file here, or click to select one</p>
-      </div>
-
-      {students.length > 0 && <StudentsTable students={students} />} {/* Pass transformed students */}
-
+      {dropAreaActive && (
+        <div
+          {...getRootProps()}
+          className="border-dashed border-2 border-gray-400 p-16 text-center mb-4"
+        >
+          <input {...getInputProps()} />
+          <p>Drag and drop a CSV file here, or click to select one</p>
+        </div>
+      )}
+      {students.length > 0 && <StudentsTable students={students} />}{" "}
+      {/* Pass transformed students */}
       <div className="flex flex-column justify-end pt-4">
         <div className="p-2">
           <Button
