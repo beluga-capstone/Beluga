@@ -8,7 +8,7 @@ import { useSearchParams } from "next/navigation";
 
 const EditStudent = ({ params }: { params: { id: string } }) => {
   console.log("Params:", params);
-  const userId = params.id; 
+  const userId = params.id;
   const searchParams = useSearchParams();
   const courseId = searchParams.get("courseId");
   const [firstName, setFirstName] = useState("");
@@ -34,13 +34,7 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
         setMiddleName(data.middle_name || "");
         setLastName(data.last_name || "");
         setEmail(data.email || "");
-        setRole(
-          data.role_id === 8
-            ? ROLES.STUDENT
-            : data.role_id === 4
-            ? ROLES.TA
-            : ROLES.ADMIN
-        );
+        setRole(ROLES.STUDENT);
         setLoading(false);
       } catch (err: any) {
         console.error("Error fetching user data:", err.message);
@@ -63,7 +57,8 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
           middle_name: middleName || null,
           last_name: lastName,
           email,
-          role_id: role === ROLES.STUDENT ? 8 : role === ROLES.TA ? 4 : ROLES.ADMIN,
+          role_id:
+            role === ROLES.STUDENT ? 8 : role === ROLES.TA ? 4 : ROLES.ADMIN,
         }),
       });
 
@@ -84,17 +79,19 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
         method: "DELETE",
         credentials: "include",
       });
-  
+
       if (!response.ok) {
         const errorMessage = await response.text();
         throw new Error(`Failed to delete user: ${errorMessage}`);
       }
-  
+
       console.log("User deleted successfully");
-  
+
       // Redirect to the course page or fallback
       if (!courseId) {
-        console.warn("Redirecting to default student list due to missing courseId.");
+        console.warn(
+          "Redirecting to default student list due to missing courseId."
+        );
         window.location.href = `/students`;
       } else {
         window.location.href = `/students/courses/${courseId}`;
@@ -102,8 +99,8 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
     } catch (err: any) {
       console.error("Error deleting user:", err.message);
     }
-  }; 
-  
+  };
+
   if (loading) return <p>Loading user data...</p>;
   if (error) return <p>Error: {error}</p>;
 

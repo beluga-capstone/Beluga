@@ -6,9 +6,22 @@ import { Course } from "@/types";
 import Link from "next/link";
 
 const AdminCoursesTable: React.FC = () => {
-  const { courses, fetchCourses, setPublished, deleteCourse } = useDashboard();
+  const { courses, fetchCourses, setPublished, deleteCourse,fetchStudentCounts } = useDashboard();
   const { fetchUserById } = useUsers();
   const [usernames, setUsernames] = useState<{ [key: string]: string }>({});
+  const [courseStudentCounts, setCourseStudentCounts] = useState<{[key:string]:number}>({});
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      if (courses.length > 0) {
+        const studentCounts = await fetchStudentCounts();
+        console.log("Student counts after fetching:", studentCounts);
+        setCourseStudentCounts(studentCounts);
+      }
+    };
+  
+    fetchCounts();
+  }, [courses]);
 
   // Fetch instructor names for courses
   useEffect(() => {
@@ -59,7 +72,6 @@ const AdminCoursesTable: React.FC = () => {
             <th>Instructor</th>
             <th>Term</th>
             <th>Students Enrolled</th>
-            <th>Published</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -91,24 +103,7 @@ const AdminCoursesTable: React.FC = () => {
                   {usernames[course.user_id || ""] || "Loading..."}
                 </td>
                 <td className="text-center py-2">{course.term}</td>
-                <td className="text-center py-2">{course.studentsEnrolled}</td>
-                <td className="text-center py-2">
-                  <div className="flex justify-center items-center cursor-pointer">
-                    {course.isPublished ? (
-                      <ToggleRight
-                        size={32}
-                        className="text-green-500"
-                        onClick={() => setPublished(course.id, false)}
-                      />
-                    ) : (
-                      <ToggleLeft
-                        size={32}
-                        className="text-red-500"
-                        onClick={() => setPublished(course.id, true)}
-                      />
-                    )}
-                  </div>
-                </td>
+                <td className="text-center py-2">{courseStudentCounts[course.id]}</td>
                 <td className="text-center py-2 flex space-x-4 justify-center">
                   <Link href={`/course/edit/${course.id}`}>
                     <button className="py-2 text-blue-500">
