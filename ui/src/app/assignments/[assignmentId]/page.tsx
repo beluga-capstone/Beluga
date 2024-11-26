@@ -74,15 +74,19 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
     return () => clearInterval(intervalId);
   }, [router]);
 
+  useEffect(()=>{
+    const name = normalizeDockerName(`${assignment?.title}_${profile?.user_id}`);
+    setContainerName(name);
+  },[assignment,profile]);
   useEffect(() => {
+    console.log("LOADING");
     const loadAssignment = async () => {
       try {
         const fetchedAssignment = await fetchAssignmentsById(
           params.assignmentId
         );
+        console.log("ASSIGN",fetchedAssignment,profile);
         setAssignment(fetchedAssignment);
-        const name = normalizeDockerName(`${fetchedAssignment}_${profile?.user_id}`);
-        setContainerName(name);
       } catch (error) {
         console.error("Failed to fetch assignment by ID:", error);
         //toast.error("Could not load assignment.");
@@ -92,27 +96,6 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
     loadAssignment();
   }, [params.assignmentId, router]);
-
-  // Initialize assignment and container name
-  useEffect(() => {
-    const initializeAssignment = async () => {
-      const foundAssignment = assignments.find(
-        (a) => a.assignment_id === params.assignmentId
-      );
-
-      if (foundAssignment) {
-        setAssignment(foundAssignment);
-        if (foundAssignment?.docker_image_id) {
-          const name = normalizeDockerName(
-            `${foundAssignment.assignment_id}_${profile?.user_id}_container`
-          );
-          setContainerName(name);
-        }
-      }
-    };
-
-    initializeAssignment();
-  }, [assignments, params.assignmentId]);
 
   return (
     <div className="container mx-auto p-4">
