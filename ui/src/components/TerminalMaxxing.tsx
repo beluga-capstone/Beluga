@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2,Play,Plus, StopCircle} from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
@@ -177,18 +177,21 @@ const TerminalMaxxing = ({
           text: "Start Container",
           bgColor: "bg-green-500 rounded",
           loadingText: "Starting...",
+          icon: <Play className="h-4 w-4" /> 
         };
       case "running":
         return {
           text: "Stop Container",
           bgColor: "bg-red-500 rounded",
           loadingText: "Stopping...",
+          icon: <StopCircle className="" />
         };
       default:
         return {
           text: "Create Container",
           bgColor: "bg-blue-500 rounded",
           loadingText: "Creating...",
+          icon: <Plus className="" /> 
         };
     }
   };
@@ -232,7 +235,10 @@ const TerminalMaxxing = ({
                 {buttonConfig.loadingText}
               </div>
             ) : (
-              buttonConfig.text
+              <div className="flex items-center">
+                {buttonConfig.icon && <span className="mr-2">{buttonConfig.icon}</span>}
+                {buttonConfig.text}
+              </div>
             )}
           </Button>
         </div>

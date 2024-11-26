@@ -160,7 +160,7 @@ const Containers: React.FC = () => {
         <div className="flex space-x-2">
           <Link href="containers/new">
             <Button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center">
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2" />
               Create container
             </Button>
           </Link>
@@ -171,7 +171,7 @@ const Containers: React.FC = () => {
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center"
                 onClick={() => handleStartStopSelected("start")}
               >
-                <Play className="h-4 w-4 mr-2" />
+                <Play className="mr-2" />
                 Start Selected ({selectedContainers.length})
               </Button>
               
@@ -179,7 +179,7 @@ const Containers: React.FC = () => {
                 className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center"
                 onClick={() => handleStartStopSelected("stop")}
               >
-                <StopCircle className="h-4 w-4 mr-2" />
+                <StopCircle className="mr-2" />
                 Stop Selected ({selectedContainers.length})
               </Button>
               
@@ -191,7 +191,7 @@ const Containers: React.FC = () => {
                 }}
                 disabled={isDeletingContainer}
               >
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="mr-2" />
                 {isDeletingContainer ? "Deleting..." : `Delete Selected (${selectedContainers.length})`}
               </Button>
             </div>
