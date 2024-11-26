@@ -28,8 +28,6 @@ const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({
             <th>Released</th>
             <th>Due</th>
             <th>Submissions</th>
-            <th>Published</th>
-            <th>Late Submissions</th>
           </tr>
         </thead>
         <tbody>
@@ -63,48 +61,6 @@ const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({
               </td>
               <td className="text-center py-2">
                 {getSubmissionCountForAssignment(assignment.assignment_id)}
-              </td>
-              <td className="py-2">
-                <div className="flex justify-center items-center">
-                  {assignment.is_published ? (
-                    <ToggleRight
-                      size={32}
-                      className="text-green-500"
-                      onClick={() =>
-                        setPublished(assignment.assignment_id, false)
-                      }
-                    />
-                  ) : (
-                    <ToggleLeft
-                      size={32}
-                      className="text-red-500"
-                      onClick={() =>
-                        setPublished(assignment.assignment_id, true)
-                      }
-                    />
-                  )}
-                </div>
-              </td>
-              <td className="py-2">
-                <div className="flex justify-center items-center">
-                  {assignment.allows_late_submissions ? (
-                    <ToggleRight
-                      size={32}
-                      className="text-green-500"
-                      onClick={() =>
-                        setLateSubmissions(assignment.assignment_id, false)
-                      }
-                    />
-                  ) : (
-                    <ToggleLeft
-                      size={32}
-                      className="text-red-500"
-                      onClick={() =>
-                        setLateSubmissions(assignment.assignment_id, true)
-                      }
-                    />
-                  )}
-                </div>
               </td>
             </tr>
           ))}
