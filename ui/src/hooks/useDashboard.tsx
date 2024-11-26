@@ -250,6 +250,7 @@ export const useDashboard = () => {
   return {
     courses,
     fetchCourses,
+    fetchStudentCounts,
     searchCourses,
     addCourse,
     updateCourse,

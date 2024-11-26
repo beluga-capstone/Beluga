@@ -6,9 +6,18 @@ import { Course } from "@/types";
 import Link from "next/link";
 
 const AdminCoursesTable: React.FC = () => {
-  const { courses, fetchCourses, setPublished, deleteCourse } = useDashboard();
+  const {
+    courses,
+    fetchCourses,
+    setPublished,
+    deleteCourse,
+    fetchStudentCounts,
+  } = useDashboard();
   const { fetchUserById } = useUsers();
   const [usernames, setUsernames] = useState<{ [key: string]: string }>({});
+  const [courseStudentCounts, setCourseStudentCounts] = useState<{
+    [key: string]: number;
+  }>({});
 
   // Fetch instructor names for courses
   useEffect(() => {
@@ -19,7 +28,9 @@ const AdminCoursesTable: React.FC = () => {
         if (course.user_id && !usernameMap[course.user_id]) {
           const user = await fetchUserById(course.user_id);
           if (user) {
-            usernameMap[course.user_id] = `${user.firstName} ${user.lastName || ""}`.trim();
+            usernameMap[course.user_id] = `${user.firstName} ${
+              user.lastName || ""
+            }`.trim();
           } else {
             usernameMap[course.user_id] = "Unknown User";
           }
@@ -32,6 +43,17 @@ const AdminCoursesTable: React.FC = () => {
       loadUsernames();
     }
   }, [courses, fetchUserById]);
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      if (courses.length > 0) {
+        const studentCounts = await fetchStudentCounts();
+        setCourseStudentCounts(studentCounts);
+      }
+    };
+
+    fetchCounts();
+  }, [courses]);
 
   useEffect(() => {
     const loadCourses = async () => {
@@ -51,8 +73,8 @@ const AdminCoursesTable: React.FC = () => {
           </button>
         </Link>
       </div>
-  
-      <br/>
+
+      <br />
       <table className="table w-full">
         <thead>
           <tr>
@@ -92,7 +114,9 @@ const AdminCoursesTable: React.FC = () => {
                   {usernames[course.user_id || ""] || "Loading..."}
                 </td>
                 <td className="text-center py-2">{course.term}</td>
-                <td className="text-center py-2">{course.studentsEnrolled}</td>
+                <td className="text-center py-2">
+                  {courseStudentCounts[course.id]}
+                </td>
                 <td className="text-center py-2">
                   <div className="flex justify-center items-center cursor-pointer">
                     {course.isPublished ? (
@@ -129,7 +153,7 @@ const AdminCoursesTable: React.FC = () => {
         </tbody>
       </table>
     </div>
-  );  
+  );
 };
 
 export default AdminCoursesTable;
