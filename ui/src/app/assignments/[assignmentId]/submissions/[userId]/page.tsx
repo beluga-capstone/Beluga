@@ -3,7 +3,7 @@ import FilesPreview from "@/components/FilesPreview";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useProfile } from "@/hooks/useProfile";
 import { useSubmissions } from "@/hooks/useSubmissions";
-import { Submission, User } from "@/types";
+import { Assignment, Student, Submission, User } from "@/types";
 import { useEffect, useState } from "react";
 import JSZip from "jszip";
 import { ROLES } from "@/constants";
@@ -11,6 +11,11 @@ import { useUsers } from "@/hooks/useUsers";
 import Button from "@/components/Button";
 import { shortDate, shortTime } from "@/lib/utils";
 import GradeEntry from "@/components/GradeEntry";
+
+interface SubmissionPageProps {
+  params: { assignmentId: string; userId: string };
+}
+
 const SubmissionPage = ({
   params,
 }: {
@@ -23,42 +28,80 @@ const SubmissionPage = ({
     getLatestSubmissionForUser,
     getAllSubmissionsForAssignmentAndUser,
   } = useSubmissions();
-  const { getUser } = useUsers();
-  const student = getUser(params.userId);
-  const assignment = assignments.find(
-    (assignment) => assignment.assignment_id === params.assignmentId
-  );
+  const { fetchUserById } = useUsers();
+  const { fetchAssignmentsById } = useAssignments();
   const [latestSubmission, setLatestSubmission] = useState<Submission | null>(
     null
   );
   const [allSubmissions, setAllSubmissions] = useState<Submission[]>([]);
   const [zipFile, setZipfile] = useState<JSZip | null>(null);
   const [files, setFiles] = useState<File[]>([]);
-  useEffect(() => {
-    const fetchSubmissions = async () => {
+  const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [student, setStudent] = useState<Student | null>(null);
 
-    if (profile && profile.role_id === ROLES.STUDENT) {
-      setLatestSubmission(
-        await getLatestSubmission(params.assignmentId, profile.user_id)
-      );
-      setAllSubmissions(
-        await getAllSubmissionsForAssignmentAndUser(
-            params.assignmentId,
-            profile.user_id
-        )
-      );
-    } else if (profile) {
-      setLatestSubmission(await getLatestSubmissionForUser(params.userId));
-      setAllSubmissions(
-        await getAllSubmissionsForAssignmentAndUser(
-            params.assignmentId,
-            params.userId
-        )
-      );
-    }
-  }
+  useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        const data = await fetchUserById(params.userId);
+        if (data) {
+          const studentData: Student = {
+            id: data.id || "",
+            firstName: data.firstName,
+            lastName: data.lastName,
+            middleName: data.middleName,
+            email: data.email,
+            role: data.role,
+          };
+          setStudent(studentData);
+        }
+      } catch (err) {
+        console.error("Error fetching student:", err);
+      }
+      setLoading(false);
+    };
+    fetchStudent();
+  }, [params.userId, fetchUserById]);
+
+  useEffect(() => {
+    const loadAssignment = async () => {
+      try {
+        const data = await fetchAssignmentsById(params.assignmentId);
+        setAssignment(data);
+      } catch (err) {
+        console.error("Error fetching assignment:", err);
+      }
+    };
+
+    loadAssignment();
+  }, [params.assignmentId, fetchAssignmentsById]);
+
+  useEffect(() => {
+      const fetchSubmissions = async () => {
+
+          if (profile && profile.role_id === ROLES.STUDENT) {
+              setLatestSubmission(
+                  await getLatestSubmission(params.assignmentId, profile.user_id)
+              );
+              setAllSubmissions(
+                  await getAllSubmissionsForAssignmentAndUser(
+                      params.assignmentId,
+                      profile.user_id
+                  )
+              );
+          } else if (profile) {
+              setLatestSubmission(await getLatestSubmissionForUser(params.userId));
+              setAllSubmissions(
+                  await getAllSubmissionsForAssignmentAndUser(
+                      params.assignmentId,
+                      params.userId
+                  )
+              );
+          }
+      }
   fetchSubmissions()
-  }, [assignments, params.assignmentId]);
+  }, [params.assignmentId]);
+
   useEffect(() => {
     const fetchSubmissions = async () => {
       console.log('latestSubmissionfads', latestSubmission)
@@ -85,6 +128,7 @@ const SubmissionPage = ({
     }
     fetchSubmissions()
   }, [latestSubmission]);
+
   return (
     <div className="container mx-auto p-4">
       <div className="mb-4 flex justify-between items-center">

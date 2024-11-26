@@ -1,33 +1,75 @@
-import { useAssignments } from "@/hooks/useAssignments";
-import ListingForSubmission from "./ListingForSubmission";
+import Link from "next/link";
+import { Assignment } from "@/types";
 
-const StudentAssignmentsTable = () => {
-  const { assignments } = useAssignments();
+interface StudentsAssignmentsTableProps {
+  assignments: Assignment[]; // Array of assignments to display
+}
 
+const format_date = (date: Date | null | undefined) =>
+  date
+    ? new Date(date).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "Not Found";
+
+const StudentsAssignmentsTable: React.FC<StudentsAssignmentsTableProps> = ({
+  assignments,
+}) => {
   return (
-    <table className="table w-full">
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Released</th>
-          <th>Due</th>
-          <th>Submitted?</th>
-          <th>Score/100</th>
-          <th>Graded?</th>
-          <th>Submission Time</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colSpan={7}>
-            <hr />
-          </td>
-        </tr>
-        {assignments.map((assignment) => (
-          <ListingForSubmission key={assignment.assignment_id} assignment={assignment} />
-        ))}
-      </tbody>
-    </table>
+    <div>
+      <table className="table w-full">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Released</th>
+            <th>Due</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {assignments.length === 0 ? (
+            <tr>
+              <td colSpan={4} className="text-center py-4">
+                No assignments found.
+              </td>
+            </tr>
+          ) : (
+            <>
+              <tr>
+                <td colSpan={4}>
+                  <hr />
+                </td>
+              </tr>
+              {assignments.map((assignment) => (
+                <tr key={assignment.assignment_id}>
+                  <td className="text-center py-2">
+                    <Link href={`/assignments/${assignment.assignment_id}`}>
+                      {assignment.title}
+                    </Link>
+                  </td>
+                  <td className="text-center py-2">
+                    {format_date(assignment.publish_at)}
+                  </td>
+                  <td className="text-center py-2">
+                    {format_date(assignment.due_at)}
+                  </td>
+                  <td className="text-center py-2">
+                    <Link
+                      href={`/assignments/${assignment.assignment_id}`}
+                      className="text-blue-500 underline"
+                    >
+                      View Details
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </>
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 };
 

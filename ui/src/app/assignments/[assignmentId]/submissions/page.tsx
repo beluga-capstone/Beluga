@@ -4,18 +4,53 @@ import StudentListingForSubmission from "@/components/StudentListingForSubmissio
 import { useAssignments } from "@/hooks/useAssignments";
 import { useUsers } from "@/hooks/useUsers";
 import { shortDate, shortTime } from "@/lib/utils";
+import { Assignment, Student } from "@/types";
+import { useEffect, useState } from "react";
 
 const AssignmentSubmissionsPage = ({
   params,
 }: {
   params: { assignmentId: string; submissionId: string };
 }) => {
-  const { assignments } = useAssignments();
-  const assignment = assignments.find(
-    (assignment) => assignment.assignment_id === params.assignmentId
-  );
-  const { users } = useUsers();
-  console.log(users);
+  const { fetchAssignmentsById } = useAssignments();
+  const [students, setStudents] = useState<Student[]>([]);
+  const { fetchCourseStudents } = useUsers();
+  const [loading, setLoading] = useState(true);
+  const [assignment, setAssignment] = useState<Assignment | null>(null);
+
+  useEffect(() => {
+    const loadAssignment = async () => {
+      try {
+        const data = await fetchAssignmentsById(params.assignmentId);
+        setAssignment(data);
+      } catch (err) {
+        console.error("Error fetching assignment:", err);
+      }
+    };
+
+    loadAssignment();
+  }, [params.assignmentId, fetchAssignmentsById]);
+
+  useEffect(() => {
+    if (!assignment) {
+      console.error("Assignment not found");
+      setLoading(false);
+      return;
+    }
+
+    const getStudents = async () => {
+      try {
+        const data = await fetchCourseStudents(assignment.course_id);
+        setStudents(data);
+      } catch (err) {
+        console.error("Error fetching students:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getStudents();
+  }, [assignment]);
 
   return (
     <div className="container mx-auto p-4">
@@ -47,11 +82,11 @@ const AssignmentSubmissionsPage = ({
               <hr />
             </td>
           </tr>
-          {users.map((user) => {
+          {students.map((student) => {
             return (
               <StudentListingForSubmission
-                key={user.id}
-                student={user}
+                key={student.id}
+                student={student}
                 assignment={assignment}
               />
             );

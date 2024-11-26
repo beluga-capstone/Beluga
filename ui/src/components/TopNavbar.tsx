@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSelectedLayoutSegment } from "next/navigation";
 import { Icon } from "@iconify/react";
 import useScroll from "@/hooks/useScroll";
 import { useProfile } from "@/hooks/useProfile";
@@ -13,25 +12,39 @@ const TopNavbar = () => {
   const [menuIsOpen, setMenuIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const scrolled = useScroll(5);
-  const selectedLayout = useSelectedLayoutSegment();
   const { profile } = useProfile();
 
-  const toggleMenu = () => {
-    setMenuIsOpen(!menuIsOpen);
-  };
-
-  const handleClickOutside = (event: MouseEvent) => {
-    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-      setMenuIsOpen(false);
-    }
-  };
-
+  // Fetch courses when the component mounts
   useEffect(() => {
+    const fetchCourses = async () => {
+      const response = await fetch("http://localhost:5000/courses/search", {
+        method: "GET",
+        credentials: "include",
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCourses(data);
+        console.log("courses", data);
+      } else {
+        console.error("Failed to fetch courses");
+      }
+    };
+    fetchCourses();
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuIsOpen(false);
+      }
+    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const toggleMenu = () => {
+    setMenuIsOpen(!menuIsOpen);
+  };
 
   return (
     <div
@@ -39,21 +52,25 @@ const TopNavbar = () => {
         `sticky inset-x-0 top-0 z-30 w-full transition-all border-b border-foreground`,
         {
           "backdrop-blur-lg": scrolled,
-          "": selectedLayout,
         }
       )}
     >
-      <div className="flex h-[47px] items-center justify-between px-4">
+      <div className="flex h-[47px] items-center px-4">
+        {/* Left-aligned Dropdown */}
         <div className="flex items-center space-x-4">
+        </div>
+
+        {/* Center-aligned Logo */}
+        <div className="flex-grow flex justify-center">
           <Link
             href="/"
-            className="flex flex-row space-x-3 items-center justify-center md:hidden"
+            className="md:hidden flex flex-row space-x-3 items-center justify-center"
           >
-            <span className="h-7 w-7 rounded-lg" />
-            <span className="font-bold text-xl flex ">Logo</span>
+            <span className="font-bold text-xl">Logo</span>
           </Link>
         </div>
 
+        {/* Right-aligned Profile Button */}
         <div className="hidden md:flex space-x-2 items-center relative">
           <button onClick={toggleMenu} title="Profile Button" className="flex items-center space-x-2">
             <Icon icon="lucide:user" width="24" height="24" />

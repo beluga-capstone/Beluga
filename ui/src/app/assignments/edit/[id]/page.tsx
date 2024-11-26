@@ -3,24 +3,27 @@ import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
 import React, { useEffect, useState } from "react";
 import AssignmentForm from "../../../../components/AssignmentsForm";
+import { useRouter } from "next/navigation";
+import { toLocalISOString } from "@/lib/utils";
+import { useSearchParams } from "next/navigation";
 
 const EditAssignment = ({ params }: { params: { id: string } }) => {
   const { assignments } = useAssignments();
-  const assignment = assignments.find(
-    (assignment) => assignment.assignment_id === params.id
-  );
-  const { updateAssignment, deleteAssignment } = useAssignments();
-
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [dueAt, setDueAt] = useState("");
-  const [lockAt, setLockAt] = useState("");
-  const [unlockAt, setUnlockAt] = useState("");
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [isPublished, setIsPublished] = useState(false);
-  const [publishAt, setPublishAt] = useState("");
-  const [allowsLateSubmissions, setAllowsLateSubmissions] = useState(false);
-  const [imageId, setImageId] = useState(assignment?.docker_image_id || "");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { fetchAssignmentsById, updateAssignment, deleteAssignment } = useAssignments();
+  const [assignment, setAssignment] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [title, setTitle] = React.useState("");
+  const [description, setDescription] = React.useState("");
+  const [dueAt, setDueAt] = React.useState("");
+  const [lockAt, setLockAt] = React.useState("");
+  const [unlockAt, setUnlockAt] = React.useState("");
+  const [isUnlocked, setIsUnlocked] = React.useState(false);
+  const [isPublished, setIsPublished] = React.useState(false);
+  const [publishAt, setPublishAt] = React.useState("");
+  const [allowsLateSubmissions, setAllowsLateSubmissions] = React.useState(false);
+  const [imageId, setImageId] = React.useState(assignment?.docker_image_id || "");
 
   const formatDate = (dateString: string | Date | null | undefined): string => {
     if (!dateString) return "";
@@ -35,34 +38,31 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
   };
 
   useEffect(() => {
-    if (assignment) {
-      setTitle(assignment.title || "");
-      setDescription(assignment.description || "");
-      setDueAt(formatDate(assignment.due_at));
-      setLockAt(formatDate(assignment.lock_at));
-      setUnlockAt(formatDate(assignment.unlock_at));
-      setIsUnlocked(!!assignment.is_unlocked);
-      setIsPublished(!!assignment.is_published);
-      setPublishAt(formatDate(assignment.publish_at));
-      setAllowsLateSubmissions(!!assignment.allows_late_submissions);
-      setImageId(assignment.docker_image_id || "");
-    }
-  }, [assignment]);
+    const loadAssignment = async () => {
+      setLoading(true);
+      try {
+        const fetchedAssignment = await fetchAssignmentsById(params.id);
+        if (fetchedAssignment) {
+          setAssignment(fetchedAssignment);
+          setTitle(fetchedAssignment.title || "");
+          setDescription(fetchedAssignment.description || "");
+          setDueAt(formatDate(fetchedAssignment.due_at));
+          setLockAt(formatDate(fetchedAssignment.lock_at));
+          setUnlockAt(formatDate(fetchedAssignment.unlock_at));
+          setPublishAt(formatDate(fetchedAssignment.publish_at));
+          setAllowsLateSubmissions(!!fetchedAssignment.allows_late_submissions);
+          setImageId(fetchedAssignment.docker_image_id || "");
+        }
+      } catch (error) {
+        console.error("Error fetching assignment:", error);
+        router.push("/assignments");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Helper function to safely create Date object
-  const createSafeDate = (dateString: string): Date => {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-      throw new Error(`Invalid date: ${dateString}`);
-    }
-    return date;
-  };
-
-  const prettyDateToIso = (formattedDate: string): Date => {
-    return new Date(formattedDate);
-    //const date = new Date(formattedDate);
-    //return date.toISOString().split('T')[0];
-  };
+    loadAssignment();
+  }, [params.id, fetchAssignmentsById, router]);
 
   const handleUpdate = () => {
     try {
@@ -76,39 +76,48 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         return;
       }
 
-      //console.log("update due with ",prettyDateToIso(dueAt));
       updateAssignment(
         assignment.assignment_id,
         assignment.course_id,
         title.trim(),
         description.trim(),
-        prettyDateToIso(dueAt),
+        new Date(toLocalISOString(dueAt)),
         allowsLateSubmissions
-          ? prettyDateToIso(lockAt)
-          : prettyDateToIso(dueAt),
-        prettyDateToIso(unlockAt),
-        prettyDateToIso(publishAt),
+          ? new Date(toLocalISOString(lockAt))
+          : new Date(toLocalISOString(dueAt)),
+        new Date(toLocalISOString(unlockAt)),
+        new Date(toLocalISOString(publishAt)),
         allowsLateSubmissions,
         imageId
       );
-      window.history.back();
+      router.push(`/assignments/courses/${assignment.course_id}`);
     } catch (error) {
       console.error("Error updating assignment:", error);
     }
   };
 
-  const handleDelete = () => {
-    if (!assignment?.assignment_id) {
-      console.error("No assignment ID found");
+  const handleDelete = async () => {
+    const courseId = assignment?.course_id || searchParams.get("courseId");
+  
+    if (!assignment?.assignment_id || !courseId) {
+      console.error("Assignment ID or Course ID is missing");
       return;
     }
-    deleteAssignment(assignment.assignment_id);
+  
+    try {
+      console.log("Course ID fetched for deletion:", courseId);
+      // Pass both assignmentId and courseId to the deleteAssignment function
+      await deleteAssignment(assignment.assignment_id, courseId);
+    } catch (error: any) {
+      console.error("Error deleting assignment:", error);
+      if (error?.response?.data?.error) {
+        console.error("API Error:", error.response.data.error);
+      } else {
+        console.error("An unexpected error occurred");
+      }
+    }
   };
-
-  if (!assignment) {
-    return <div>Loading...</div>;
-  }
-
+  
   return (
     <div className="container mx-auto p-4">
       <h1 className="font-bold text-4xl mb-6">Edit Assignment</h1>
@@ -135,13 +144,22 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
           <Button
             className="bg-red-500 text-white px-4 py-2 rounded flex items-center"
             onClick={handleDelete}
-            href="/assignments"
+            // href="/assignments"
           >
             Delete
           </Button>
         </div>
         <div className="flex">
-          <div className="p-2">
+          <div className="mr-3">
+            <Button
+              className="bg-red-500 text-white px-4 py-2 rounded flex items-center"
+              onClick={handleDelete}
+              href="/assignments"
+            >
+              Delete
+            </Button>
+          </div>
+          <div className="mr-3">
             <Button
               className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
               onClick={() => window.history.back()}
@@ -149,10 +167,11 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
               Cancel
             </Button>
           </div>
-          <div className="p-2">
+          <div className="">
             <Button
               className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
               onClick={handleUpdate}
+              // href="/assignments"
               disabled={!title.trim()}
             >
               Save

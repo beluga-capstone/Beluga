@@ -8,6 +8,7 @@ from src.util.db import db, User
 from config import config_options
 from flask_socketio import SocketIO
 from flask_cors import CORS 
+from src.util.constants import default_image_ids
 import logging
 socketio = SocketIO()
 
@@ -54,10 +55,13 @@ def create_app(config_name="default"):
         db.create_all()
     
         # init the database
+        print("initializing")
         init_roles()
         init_admin_user()
+        print("building")
         init_default_images()
         create_example_course()
+        print("done")
         
         return app
 
@@ -207,6 +211,7 @@ def init_default_images():
                 dockerfile=image_info['dockerfile'],
                 tag=image_info['image_tag']
             )
+            default_image_ids.append(image.id)
 
             # Save image to database
             new_image = Image(
@@ -216,7 +221,7 @@ def init_default_images():
                 packages=image_info['packages'],
             )
             db.session.add(new_image)
-            db.session.commit()
+            db.session.commit()            
             print(f"Initialized default image: {image_info['image_tag']}")
 
         except Exception as e:

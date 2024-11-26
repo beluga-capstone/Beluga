@@ -36,7 +36,7 @@ interface AssignmentPageProps {
 const AssignmentPage = ({ params }: AssignmentPageProps) => {
   const router = useRouter();
   const { profile } = useProfile();
-  const { assignments } = useAssignments();
+  const { assignments,fetchAssignmentsById,fetchAssignmentsByCourseId } = useAssignments();
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const { getLatestSubmission, submit } = useSubmissions();
@@ -88,6 +88,23 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
     return () => clearInterval(intervalId);
   }, [router]);
+  
+  useEffect(() => {
+    const loadAssignment = async () => {
+      try {
+        const fetchedAssignment = await fetchAssignmentsById(params.assignmentId);
+        setAssignment(fetchedAssignment);
+        const name = normalizeDockerName(`${fetchedAssignment.title}_con`);
+        setContainerName(name);
+      } catch (error) {
+        console.error("Failed to fetch assignment by ID:", error);
+        //toast.error("Could not load assignment.");
+        router.push("/assignments");
+      }
+    };
+
+    loadAssignment();
+  }, [params.assignmentId, fetchAssignmentsById, router]);
 
   // Initialize assignment and container name
   useEffect(() => {
@@ -98,8 +115,10 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
       if (foundAssignment) {
         setAssignment(foundAssignment);
-        const name = normalizeDockerName(`${foundAssignment.title}_con`);
-        setContainerName(name);
+        if (foundAssignment?.docker_image_id){
+          const name = normalizeDockerName(`${foundAssignment.assignment_id}_${profile?.user_id}_container`);
+          setContainerName(name);
+        }
       }
     };
 
@@ -110,7 +129,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex items-center">
         <h1 className="font-bold text-4xl">{assignment?.title}</h1>
         {profile?.role_id !== ROLES.STUDENT ? (
           <Link
@@ -224,7 +243,7 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
         <TerminalMaxxing
           containerName={containerName}
           dockerImageId={assignment?.docker_image_id ?? null}
-          description={assignment?.description ?? null}
+          description={`Container for Assignment ${assignment?.title}`}
         />
       )}
 

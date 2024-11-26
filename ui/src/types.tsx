@@ -4,6 +4,7 @@ export type SideNavItem = {
   icon?: JSX.Element;
   submenu?: boolean;
   subMenuItems?: SideNavItem[];
+  dynamic?: boolean;
 };
 
 export interface Profile {
@@ -20,20 +21,24 @@ export interface Profile {
 }
 
 export interface Course {
-  id: number;
+  id: string;
   name: string;
-  section: number;
-  term: string;
+  term?: string; 
+  term_id?: string;
+  user_id?: string;
   studentsEnrolled: number;
   isPublished: boolean;
+  professor?: string;
 }
 
 export interface Student {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   middleName?: string;
   email: string;
+  role?: string; 
+  courseId?: string;
 }
 
 export interface Assignment {
@@ -41,10 +46,10 @@ export interface Assignment {
   course_id: string;
   title: string;
   description: string;
-  due_at?: Date;
-  lock_at?: Date;
-  unlock_at?: Date;
-  publish_at?: Date;
+  due_at?: Date | null;
+  lock_at?: Date | null;
+  unlock_at?: Date | null;
+  publish_at?: Date | null;
   is_unlocked?: boolean;
   is_published?: boolean;
   allows_late_submissions: boolean;
@@ -77,10 +82,11 @@ export interface Image {
 }
 
 export interface User {
-  id: string;
+  id?: string;
   firstName: string;
   lastName: string;
   middleName?: string;
   email: string;
-  role_id: number;
+  role: string;
+  courseId?: number;
 }

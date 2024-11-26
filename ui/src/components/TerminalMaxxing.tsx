@@ -204,7 +204,7 @@ const TerminalMaxxing = ({
     <div className="">
       <h2 className="font-bold pb-4">
       <ul className="pb-4 flex space-x-1">
-        <li key={dockerImageId}>
+        <li key={dockerImageId} className="mr-4">
           <span>Using Image: </span>
           <Link href={`/machines/images/${dockerImageId}`}>
             <NoCopyTextBox overlayText={imageName??""} />
@@ -212,7 +212,7 @@ const TerminalMaxxing = ({
         </li>
       </ul>
       </h2>
-      {dockerImageId && description && containerStatus === "running" && socketPort && (
+      {dockerImageId && containerStatus === "running" && socketPort && (
         <ContainerPageTerminal 
           isRunning={containerStatus === "running"} 
           containerPort={socketPort} 
@@ -245,6 +245,10 @@ const TerminalMaxxing = ({
 
         <h2 onClick={() => handleDownloadPrivateKey()} className="font-bold pb-4 flex items-center">
           <NoCopyTextBox overlayText={`Download Private Key`} />
+        </h2>
+
+        <h2 className="font-bold pb-4 flex items-center">
+          <span>{description}</span>
         </h2>
       </div>
     </div>

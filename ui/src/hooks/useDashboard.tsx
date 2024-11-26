@@ -1,29 +1,211 @@
 import { useState } from "react";
-import { DEFAULT_COURSES } from "@/constants";
-
 
 interface Course {
-  id: number;
+  user_id?: string;
+  id: string;
   name: string;
-  section: number;
-  term: string;
   studentsEnrolled: number;
   isPublished: boolean;
+  term?: string;
+  professor?: string;
 }
 
 export const useDashboard = () => {
-  const [courses, setCourses] = useState<Course[]>(DEFAULT_COURSES);
+  const [courses, setCourses] = useState<Course[]>([]);
 
-  const setPublished = (id: number, status: boolean) => {
-    setCourses((prevCourses) =>
-      prevCourses.map((course) =>
-        course.id === id ? { ...course, isPublished: status } : course
-      )
-    );
+  const searchCourses = async (filters: Record<string, string> = {}) => {
+    try {
+      const queryParams = new URLSearchParams(filters).toString();
+      const response = await fetch(`http://localhost:5000/courses/search?${queryParams}`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch courses: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("Fetched courses:", data); // Debugging log
+      setCourses(data);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
+  };
+
+  const fetchStudentCounts = async (): Promise<{ [courseId: string]: number }> => {
+    try {
+      const counts: { [courseId: string]: number } = {};
+  
+      for (const course of courses) {
+        const response = await fetch(`http://localhost:5000/courses/${course.id}/students/count`, {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!response.ok) {
+          console.error(`Failed to fetch student count for course ${course.id}`);
+          continue;
+        }
+  
+        const data = await response.json();
+        counts[course.id] = data.students_count || 0;
+      }
+  
+      return counts;
+    } catch (error) {
+      console.error("Error fetching student counts:", error);
+      return {};
+    }
+  };
+
+  const fetchCourses = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/courses/search", {
+        method: "GET",
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch courses");
+      }
+      const data: Array<any> = await response.json();
+      const transformedCourses = data.map((course: any) => ({
+        id: course.course_id,
+        name: course.name,
+        user_id: course.user_id,
+        studentsEnrolled: 0, // Temporary value; updated below
+        isPublished: course.publish || false,
+        term: course.term || "Fall 2024",
+        professor: course.professor || "Unknown",
+      }));
+  
+      const counts = await fetchStudentCounts(); // Fetch student counts
+      transformedCourses.forEach((course) => {
+        course.studentsEnrolled = counts[course.id] || 0;
+      });
+
+      setCourses(transformedCourses);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
+  };  
+
+  const addCourse = async (
+    title: string,
+    studentsEnrolled: number,
+    userId: string,
+    publish: boolean = false
+  ): Promise<{ course_id: string } | null> => { // Fix: Expect course_id
+    const newCourse = {
+      name: title,
+      studentsEnrolled,
+      user_id: userId,
+      publish,
+    };
+  
+    try {
+      const response = await fetch("http://localhost:5000/courses", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newCourse),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to add course");
+      }
+  
+      const data = await response.json();
+      fetchCourses();
+      return data; // Ensure course_id is returned
+    } catch (error) {
+      console.error("Error adding course:", error);
+      return null;
+    }
+  };
+  
+  const updateCourse = async (id: string, updatedData: { name: string }) => {
+    try {
+      const response = await fetch(`http://localhost:5000/courses/${id}`, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedData),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to update course");
+      }
+  
+      const updatedCourse = await response.json();
+  
+      setCourses((prevCourses) =>
+        prevCourses.map((course) =>
+          course.id === id ? { ...course, name: updatedData.name } : course
+        )
+      );
+    } catch (error) {
+      console.error("Error updating course:", error);
+    }
+  };
+  
+  const setPublished = async (id: string, status: boolean) => {
+    try {
+      const response = await fetch(`http://localhost:5000/courses/${id}/publish`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isPublished: status }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update publish status");
+      }
+
+      setCourses((prevCourses) =>
+        prevCourses.map((course) =>
+          course.id === id ? { ...course, isPublished: status } : course
+        )
+      );
+    } catch (error) {
+      console.error("Error updating publish status:", error);
+    }
+  };
+
+  const deleteCourse = async (id: string) => {
+    try {
+      const response = await fetch(`http://localhost:5000/courses/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete course");
+      }
+
+      setCourses((prevCourses) =>
+        prevCourses.filter((course) => course.id !== id)
+      );
+    } catch (error) {
+      console.error("Error deleting course:", error);
+    }
   };
 
   return {
     courses,
+    fetchCourses,
+    searchCourses,
+    addCourse,
+    updateCourse,
     setPublished,
+    deleteCourse,
   };
 };
