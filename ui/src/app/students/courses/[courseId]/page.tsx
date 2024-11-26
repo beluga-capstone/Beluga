@@ -40,7 +40,7 @@ const CourseStudents = ({ params }: CourseStudentsProps) => {
     };
 
     getStudents();
-  }, [params.courseId, fetchCourseStudents]);
+  }, [params.courseId]);
 
   if (loading) {
     return <p>Loading...</p>;

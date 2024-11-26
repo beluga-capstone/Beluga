@@ -26,7 +26,7 @@ const SideNavbar = () => {
     } else {
       setCourseId(params.courseId || null); // Directly use the string if it's not an array
     }
-  }, [params.courseId,courses]);
+  }, [params.courseId]);
 
   const getSideNavItems = (): SideNavItem[] => {
     const defaultItems: SideNavItem[] = [

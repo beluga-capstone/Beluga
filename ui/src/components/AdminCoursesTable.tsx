@@ -38,7 +38,7 @@ const AdminCoursesTable: React.FC = () => {
       await fetchCourses();
     };
     loadCourses();
-  }, [fetchCourses]);
+  }, []);
 
   return (
     <div>
