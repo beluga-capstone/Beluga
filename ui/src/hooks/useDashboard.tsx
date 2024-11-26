@@ -29,8 +29,19 @@ export const useDashboard = () => {
       }
 
       const data = await response.json();
+
+      const changedCourse = data.map((course: any) => ({
+        id: course.course_id,
+        name: course.name,
+        term: course.term || "Fall 2024", // Provide default term if not available
+        user_id: course.user_id,
+        studentsEnrolled: course.studentsEnrolled || 0,
+        isPublished: course.publish || false,
+        professor: course.professor || "Unknown", // Adjusted to avoid missing fields
+      }));
+
       console.log("Fetched courses:", data); // Debugging log
-      setCourses(data);
+      setCourses(changedCourse);
     } catch (error) {
       console.error("Error fetching courses:", error);
     }
