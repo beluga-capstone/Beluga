@@ -13,6 +13,7 @@ const TopNavbar = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const scrolled = useScroll(5);
   const { profile } = useProfile();
+  const [courses, setCourses] = useState<any[]>([]);
 
   // Fetch courses when the component mounts
   useEffect(() => {
