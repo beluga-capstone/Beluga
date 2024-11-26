@@ -42,7 +42,7 @@ const AdminCoursesTable: React.FC = () => {
 
   return (
     <div>
-      <div className="flex-column items-center mb-4">
+      <div className="mb-4">
         <h1 className="font-bold text-4xl mb-6">Courses</h1>
         <Link href="/course/new">
           <button className="flex items-center bg-blue-500 text-white px-4 py-2 rounded">
@@ -51,7 +51,6 @@ const AdminCoursesTable: React.FC = () => {
           </button>
         </Link>
       </div>
-  
       <br/>
       <table className="table w-full">
         <thead>
