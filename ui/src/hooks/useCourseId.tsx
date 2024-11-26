@@ -10,8 +10,9 @@ export const useCourseId = () => {
   useEffect(() => {
     if (Array.isArray(params.courseId)) {
       setCourseId(params.courseId[0] || null); // Handle array case
+    } else if (params.courseId) {
+      setCourseId(params.courseId); // Handle string case
     } else {
-      setCourseId(params.courseId || null); // Handle string case
     }
   }, [params.courseId]);
 

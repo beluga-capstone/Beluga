@@ -30,8 +30,10 @@ const SideNavbar = () => {
     if (!courseId) return;
 
     const fetchCourseName = async () => {
+      console.log("courseuid",courseId);
       const response = await getCourse(courseId);
       if (response) {
+        setCourseId(courseId);
         setCourseName(response.name);
       }
     };
