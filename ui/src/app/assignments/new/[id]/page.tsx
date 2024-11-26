@@ -98,16 +98,8 @@ const NewAssignment: React.FC = () => {
         setTitle={setTitle}
         description={description}
         setDescription={setDescription}
-        publishAt={publishAt}
-        setPublishAt={setPublishAt}
         dueAt={dueAt}
         setDueAt={setDueAt}
-        lockAt={lockAt}
-        setLockAt={setLockAt}
-        unlockAt={unlockAt}
-        setUnlockAt={setUnlockAt}
-        allowsLateSubmissions={allowsLateSubmissions}
-        setAllowsLateSubmissions={setAllowsLateSubmissions}
         imageId={imageId}
         setImageId={setImageId}
       />

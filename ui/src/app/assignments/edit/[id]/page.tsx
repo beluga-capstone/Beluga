@@ -8,22 +8,20 @@ import { toLocalISOString } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 
 const EditAssignment = ({ params }: { params: { id: string } }) => {
-  const { assignments } = useAssignments();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { fetchAssignmentsById, updateAssignment, deleteAssignment } = useAssignments();
-  const [assignment, setAssignment] = React.useState<any>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [title, setTitle] = React.useState("");
-  const [description, setDescription] = React.useState("");
-  const [dueAt, setDueAt] = React.useState("");
-  const [lockAt, setLockAt] = React.useState("");
-  const [unlockAt, setUnlockAt] = React.useState("");
-  const [isUnlocked, setIsUnlocked] = React.useState(false);
-  const [isPublished, setIsPublished] = React.useState(false);
-  const [publishAt, setPublishAt] = React.useState("");
-  const [allowsLateSubmissions, setAllowsLateSubmissions] = React.useState(false);
-  const [imageId, setImageId] = React.useState(assignment?.docker_image_id || "");
+  const { fetchAssignmentsById, updateAssignment, deleteAssignment } =
+    useAssignments();
+  const [assignment, setAssignment] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [dueAt, setDueAt] = useState("");
+  const [lockAt, setLockAt] = useState("");
+  const [unlockAt, setUnlockAt] = useState("");
+  const [publishAt, setPublishAt] = useState("");
+  const [allowsLateSubmissions, setAllowsLateSubmissions] = useState(false);
+  const [imageId, setImageId] = useState(assignment?.docker_image_id || "");
 
   const formatDate = (dateString: string | Date | null | undefined): string => {
     if (!dateString) return "";
@@ -91,7 +89,6 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         imageId
       );
       window.history.back();
-      //router.push(`/assignments/courses/${assignment.course_id}`);
     } catch (error) {
       console.error("Error updating assignment:", error);
     }
@@ -99,12 +96,12 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
 
   const handleDelete = async () => {
     const courseId = assignment?.course_id || searchParams.get("courseId");
-  
+
     if (!assignment?.assignment_id || !courseId) {
       console.error("Assignment ID or Course ID is missing");
       return;
     }
-  
+
     try {
       console.log("Course ID fetched for deletion:", courseId);
       // Pass both assignmentId and courseId to the deleteAssignment function
@@ -118,7 +115,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
       }
     }
   };
-  
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="font-bold text-4xl mb-6">Edit Assignment</h1>
@@ -127,16 +124,8 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         setTitle={setTitle}
         description={description}
         setDescription={setDescription}
-        publishAt={publishAt}
-        setPublishAt={setPublishAt}
         dueAt={dueAt}
         setDueAt={setDueAt}
-        lockAt={lockAt}
-        setLockAt={setLockAt}
-        unlockAt={unlockAt}
-        setUnlockAt={setUnlockAt}
-        allowsLateSubmissions={allowsLateSubmissions}
-        setAllowsLateSubmissions={setAllowsLateSubmissions}
         imageId={imageId}
         setImageId={setImageId}
       />
@@ -161,7 +150,6 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
             <Button
               className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
               onClick={handleUpdate}
-              // href="/assignments"
               disabled={!title.trim()}
             >
               Save

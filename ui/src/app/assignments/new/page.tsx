@@ -2,7 +2,7 @@
 
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import AssignmentForm from "../../../components/AssignmentsForm";
 import { useRouter } from "next/navigation";
 import { toLocalISOString } from "@/lib/utils";
@@ -97,16 +97,8 @@ const NewAssignment: React.FC = () => {
         setTitle={setTitle}
         description={description}
         setDescription={setDescription}
-        publishAt={publishAt}
-        setPublishAt={setPublishAt}
         dueAt={dueAt}
         setDueAt={setDueAt}
-        lockAt={lockAt}
-        setLockAt={setLockAt}
-        unlockAt={unlockAt}
-        setUnlockAt={setUnlockAt}
-        allowsLateSubmissions={allowsLateSubmissions}
-        setAllowsLateSubmissions={setAllowsLateSubmissions}
         imageId={imageId}
         setImageId={setImageId}
       />
