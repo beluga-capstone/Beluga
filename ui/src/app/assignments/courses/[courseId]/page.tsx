@@ -36,8 +36,15 @@ const CourseAssignments: React.FC = () => {
         const fetchedAssignments = await fetchAssignmentsByCourseId(
           resolvedCourseId
         );
-        console.log("Fetched assignments:", fetchedAssignments);
-        setAssignments(fetchedAssignments);
+
+        // Filter assignments to only include published ones for students
+        const filteredAssignments =
+          role === "student"
+            ? fetchedAssignments.filter((assignment) => assignment.is_published)
+            : fetchedAssignments;
+
+        console.log("Filtered assignments:", filteredAssignments);
+        setAssignments(filteredAssignments);
       } catch (err) {
         console.error("Failed to fetch assignments:", err);
       }
