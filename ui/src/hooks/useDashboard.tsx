@@ -64,14 +64,10 @@ export const useDashboard = () => {
 
   const getCourse = async (id: string): Promise<Course | null> => {
     try {
-<<<<<<< HEAD
-      const response = await fetch(`${process.env.backend}/courses/${id}`);
-=======
-      const response = await fetch(`http://localhost:5000/courses/${id}`,{
+      const response = await fetch(`${process.env.backend}/courses/${id}`,{
         method:"GET",
         credentials:"include"
       });
->>>>>>> origin/api-ui-integration
       if (!response.ok) {
         throw new Error("Failed to fetch course details");
       }
