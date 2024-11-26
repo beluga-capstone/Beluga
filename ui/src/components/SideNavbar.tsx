@@ -10,15 +10,19 @@ import { useDashboard } from '@/hooks/useDashboard';
 const SideNavbar = () => {
   const params = useParams();
   const pathname = usePathname();
-  const {courses,fetchCourses} = useDashboard(); 
-
+  const {fetchCourses,getCourse} = useDashboard(); 
   const [courseId, setCourseId] = useState<string | null>(null);
+  const [courseName,setCourseName] = useState<string|null>(null);
 
   useEffect(() => {
-    const getCourses=async()=>{
+    const getCourses = async () => {
       await fetchCourses();
     };
-    getCourses();
+
+    // Set an interval to fetch courses every 5 seconds
+    const intervalId = setInterval(() => {
+      getCourses();
+    }, 5000);
 
     // Ensure we handle both string and string[] cases for courseId
     if (Array.isArray(params.courseId)) {
@@ -26,37 +30,46 @@ const SideNavbar = () => {
     } else {
       setCourseId(params.courseId || null); // Directly use the string if it's not an array
     }
+
+    // Cleanup the interval on component unmount or dependency change
+    return () => clearInterval(intervalId);
   }, [params.courseId]);
+
+  useEffect(()=>{
+    if (!courseId) return;
+    const getIt=async()=>{
+  
+      const response = await getCourse(courseId);
+      if (response){
+        setCourseName(response.name);
+      }
+    };
+    getIt();
+
+  },[courseId])
 
   const getSideNavItems = (): SideNavItem[] => {
     const defaultItems: SideNavItem[] = [
       {
-        title: 'Courses',
-        path: '/',
+        title: 'Home',
+        path: `/`,
         icon: <Icon icon="lucide:home" width="24" height="24" />,
-        subMenuItems: courses.map(course => ({
-          title: course.name, 
-          path: `/assignments/courses/${course.id}`
-        }))
       },
+      ...(courseId
+        ? [
+            {
+              title: `${courseName}`,
+              path: '/',
+              icon: <Icon icon="lucide:notebook-pen" width="24" height="24" />,
+              dynamic: true,
+              subMenuItems: [
+                { title: 'Students', path: `/students/courses/${courseId}` },
+                { title: 'Assignments', path: `/assignments/courses/${courseId}` },
+              ],
+            },
+          ]
+        : []),
     ];
-
-    const courseItems: SideNavItem[] = courseId
-      ? [
-          {
-            title: 'Students',
-            path: `/students/courses/${courseId}`,
-            icon: <Icon icon="lucide:users" width="24" height="24" />,
-            dynamic: true,
-          },
-          {
-            title: 'Assignments',
-            path: `/assignments/courses/${courseId}`,
-            icon: <Icon icon="lucide:folder" width="24" height="24" />,
-            dynamic: true,
-          },
-        ]
-      : [];
 
     const machinesItem: SideNavItem = {
       title: 'Machines',
@@ -68,7 +81,7 @@ const SideNavbar = () => {
       ],
     };
 
-    return [...defaultItems, ...courseItems, machinesItem];
+    return [...defaultItems, machinesItem];
   };
 
   const sideNavItems = getSideNavItems();
