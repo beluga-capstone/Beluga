@@ -2,7 +2,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSubmissions } from "@/hooks/useSubmissions";
 import { shortDate, shortTime } from "@/lib/utils";
 import { Assignment } from "@/types";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Submission } from "@/types";
 
 interface ListingForSubmissionProps {
   assignment: Assignment;
@@ -13,9 +14,7 @@ const ListingForSubmission: React.FC<ListingForSubmissionProps> = ({
 }) => {
   const { profile } = useProfile();
   const { assignmentIsSubmitted, getLatestSubmission } = useSubmissions();
-  const latestSubmission = profile
-    ? getLatestSubmission(assignment.assignment_id, profile.user_id)
-    : null;
+  const [latestSubmission, setLatestSubmission] = useState<Submission | null>(null);
 
   useEffect(() => {
     if (profile) {
@@ -23,6 +22,20 @@ const ListingForSubmission: React.FC<ListingForSubmissionProps> = ({
       console.log("latestSubmission",latestSubmission)
     }
   }, [profile]);
+
+    useEffect(() => {
+    const fetchLatestSubmission = async () => {
+      if (profile) {
+        const submission = await getLatestSubmission(
+          assignment.assignment_id,
+          profile.user_id
+        );
+        setLatestSubmission(submission);
+      }
+    };
+
+    fetchLatestSubmission();
+  }, [profile, assignment.assignment_id, getLatestSubmission]);
 
   return (
     <tr

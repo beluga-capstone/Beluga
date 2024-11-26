@@ -31,17 +31,18 @@ const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({
 
   // const { assignments, setPublished, setLateSubmissions } = useAssignments();
   const { getSubmissionCountForAssignment } = useSubmissions();
-  const [submissionCounts, setSubmissionCounts] = useState({});
+  const [submissionCounts, setSubmissionCounts] = useState<Record<string, number>>({});
+
   useEffect(() => {
-    const fetchSubmissionCounts = async () => {
-      const counts = {};
-      for (const assignment of assignments) {
-        counts[assignment.assignment_id] = await getSubmissionCountForAssignment(assignment.assignment_id);
-      }
-      setSubmissionCounts(counts);
-    };
-    fetchSubmissionCounts();
-  }, [assignments, getSubmissionCountForAssignment]);
+  const fetchSubmissionCounts = async () => {
+    const counts: Record<string, number> = {}; // Explicitly define the type
+    for (const assignment of assignments) {
+      counts[assignment.assignment_id] = await getSubmissionCountForAssignment(assignment.assignment_id);
+    }
+    setSubmissionCounts(counts);
+  };
+  fetchSubmissionCounts();
+}, [assignments, getSubmissionCountForAssignment]);
 
   return (
     <div>
