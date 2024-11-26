@@ -17,9 +17,31 @@ class Users(Beluga):
         "--email", "-e", help="Make user with email a professor"
     )
     @cli_group.command()
+    def make_student(self, email: str, **_):
+        conn = psycopg2.connect(self._constr)
+        cursor = conn.cursor()
+        cursor.execute(f'UPDATE "user" SET role_id = 8 WHERE email = \'{email}\'')
+        conn.commit()
+        cursor.close()
+
+    @cli_group.option(
+        "--email", "-e", help="Make user with email a professor"
+    )
+    @cli_group.command()
     def make_prof(self, email: str, **_):
         conn = psycopg2.connect(self._constr)
         cursor = conn.cursor()
         cursor.execute(f'UPDATE "user" SET role_id = 2 WHERE email = \'{email}\'')
+        conn.commit()
+        cursor.close()
+
+    @cli_group.option(
+        "--email", "-e", help="Make user with email a professor"
+    )
+    @cli_group.command()
+    def make_admin(self, email: str, **_):
+        conn = psycopg2.connect(self._constr)
+        cursor = conn.cursor()
+        cursor.execute(f'UPDATE "user" SET role_id = 1 WHERE email = \'{email}\'')
         conn.commit()
         cursor.close()
