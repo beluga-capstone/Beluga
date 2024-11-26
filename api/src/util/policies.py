@@ -1,5 +1,6 @@
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from src.util.db import *
+from src.util.constants import default_image_ids
 
 def filter_assignments(user, query):
     """
@@ -52,33 +53,39 @@ def filter_images(user, query):
     - Students can see images for assignments in courses they are enrolled in.
     - Other roles can have restricted access as defined.
     """
+    print(default_image_ids)
     if user.is_admin():
         return query
 
     elif user.is_prof():
-        return query.filter(Image.user_id == user.user_id)
+        # Professors can see their own images or default images
+        return query.filter(
+            or_(
+                Image.user_id == user.user_id,
+                Image.docker_image_id.in_(default_image_ids)
+            )
+        )
 
     elif user.is_student():
-        # Step 1: Fetch courses the student is enrolled in
-        student_enrolled_courses_subq = db.session.query(CourseEnrollment.course_id).filter(
+        # Students can see images related to their courses or default images
+        enrolled_courses_subq = db.session.query(CourseEnrollment.course_id).filter(
             CourseEnrollment.user_id == user.user_id
         ).subquery()
-        student_enrolled_courses_select = select(student_enrolled_courses_subq.c.course_id)
-        
-        # Step 2: Fetch relevant assignments' docker_image_id for those courses, excluding NULLs
         student_relevant_assignments_subq = db.session.query(Assignment.docker_image_id).filter(
-            Assignment.course_id.in_(student_enrolled_courses_select),
-            Assignment.docker_image_id.isnot(None)  # Exclude NULL values
+            Assignment.course_id.in_(enrolled_courses_subq),
+            Assignment.docker_image_id.isnot(None)
         ).subquery()
-        student_relevant_assignments_select = select(student_relevant_assignments_subq.c.docker_image_id)
-        
-        # Step 3: Filter images based on docker_image_id from the relevant assignments
+
         return query.filter(
-            Image.docker_image_id.in_(student_relevant_assignments_select)
+            or_(
+                Image.docker_image_id.in_(student_relevant_assignments_subq),
+                Image.docker_image_id.in_(default_image_ids)
+            )
         )
+
     else:
-        # No access by default
-        return query.filter(False)
+        # Default access: only include default images
+        return query.filter(Image.docker_image_id.in_(default_image_ids))
 
 
 def filter_submissions(user, query):
