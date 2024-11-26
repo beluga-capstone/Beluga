@@ -137,7 +137,7 @@ const NewCourse: React.FC = () => {
       )}
 
       {/* Action Buttons */}
-      <div className="flex flex-row justify-end pt-4 space-x-2">
+      <div className="flex flex-row pt-4 space-x-2">
         <Button className="bg-gray-500 text-white px-4 py-2 rounded" href="/">
           Cancel
         </Button>
