@@ -102,8 +102,6 @@ def get_submission(submission_id):
 @student_required
 def update_submission(submission_id):
     user = db.session.get(User, current_user.user_id)
-    if not user:
-        return jsonify({'error': 'User not authenticated'}), 401
 
     # Fetch the submission with access control policies
     submission = get_filtered_entity(
@@ -135,8 +133,6 @@ def update_submission(submission_id):
 @professor_required
 def delete_submission(submission_id):
     user = db.session.get(User, current_user.user_id)
-    if not user:
-        return jsonify({'error': 'User not authenticated'}), 401
 
     # Fetch the submission with access control policies
     submission = get_filtered_entity(

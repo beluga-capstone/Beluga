@@ -159,8 +159,6 @@ def get_image(docker_image_id):
 @professor_required
 def update_image(docker_image_id):
     user = db.session.get(User, current_user.user_id)
-    if not user:
-        return jsonify({'error': 'User not authenticated'}), 401
 
     # Fetch the image with access control policies
     image = get_filtered_entity(
@@ -191,9 +189,6 @@ def update_image(docker_image_id):
 def delete_image(docker_image_id):
     # Check if the image exists in the database
     user = db.session.get(User, current_user.user_id)
-    if not user:
-        return jsonify({'error': 'User not authenticated'}), 401
-
     # Fetch the image with access control policies
     image = get_filtered_entity(
         user=user,

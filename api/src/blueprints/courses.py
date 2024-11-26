@@ -112,8 +112,6 @@ def search_courses():
 @professor_required
 def update_course(course_id):
     user = db.session.get(User, current_user.user_id)
-    if not user:
-        return jsonify({'error': 'User not authenticated'}), 401
 
     # Fetch the course with access control policies
     course = get_filtered_entity(
@@ -148,8 +146,6 @@ def update_course(course_id):
 @professor_required
 def delete_course(course_id):
     user = db.session.get(User, current_user.user_id)
-    if not user:
-        return jsonify({'error': 'User not authenticated'}), 401
 
     # Fetch the course with access control policies
     course = get_filtered_entity(
