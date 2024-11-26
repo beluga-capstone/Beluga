@@ -76,7 +76,6 @@ const ProfessorCoursesTable: React.FC = () => {
             <th>Instructor</th>
             <th>Term</th>
             <th>Students Enrolled</th>
-            <th>Published</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -106,23 +105,6 @@ const ProfessorCoursesTable: React.FC = () => {
                   </td>
                   <td className="text-center py-2">{course.term_id || "Fall 2024"}</td>
                   <td className="text-center py-2">{course.students_count || 0}</td>
-                  <td className="text-center py-2">
-                    <div className="flex justify-center items-center cursor-pointer">
-                      {course.publish ? (
-                        <ToggleRight
-                          size={32}
-                          className="text-green-500"
-                          onClick={() => setPublished(course.course_id, false)}
-                        />
-                      ) : (
-                        <ToggleLeft
-                          size={32}
-                          className="text-red-500"
-                          onClick={() => setPublished(course.course_id, true)}
-                        />
-                      )}
-                    </div>
-                  </td>
                   <td className="text-center py-2 flex space-x-4 justify-center">
                     <Link href={`/course/edit/${course.course_id}`}>
                       <button className="py-2 text-blue-500">
