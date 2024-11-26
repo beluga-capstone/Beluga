@@ -71,6 +71,7 @@ const ImportStudentsPage: React.FC = () => {
           "http://localhost:5000/enrollments",
           {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               course_id: courseId,

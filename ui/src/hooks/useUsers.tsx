@@ -35,9 +35,10 @@ const fetchUserById = async (userId: string): Promise<User | null> => {
 
 const fetchCourseStudents = async (courseId: string): Promise<Student[]> => {
   try {
-    const response = await fetch(
-      `http://localhost:5000/courses/${courseId}/users`
-    );
+    const response = await fetch(`http://localhost:5000/courses/${courseId}/users`, {
+      method: "GET",
+      credentials: "include",
+    });
 
     if (!response.ok) {
       throw new Error("Failed to fetch course-specific students.");
@@ -92,6 +93,7 @@ export const useUsers = () => {
 
     const response = await fetch("http://localhost:5000/users", {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email: email,
@@ -116,6 +118,7 @@ export const useUsers = () => {
     try {
       const response = await fetch("http://localhost:5000/users", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(users),
       });

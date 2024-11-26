@@ -23,7 +23,10 @@ const TopNavbar = () => {
   // Fetch courses when the component mounts
   useEffect(() => {
     const fetchCourses = async () => {
-      const response = await fetch("http://localhost:5000/courses");
+      const response = await fetch("http://localhost:5000/courses/search", {
+        method: "GET",
+        credentials: "include",
+      });
       if (response.ok) {
         const data = await response.json();
         setCourses(data);

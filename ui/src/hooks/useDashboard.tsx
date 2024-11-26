@@ -40,7 +40,10 @@ export const useDashboard = () => {
       const counts: { [courseId: string]: number } = {};
   
       for (const course of courses) {
-        const response = await fetch(`http://localhost:5000/courses/${course.id}/students/count`);
+        const response = await fetch(`http://localhost:5000/courses/${course.id}/students/count`, {
+          method: "GET",
+          credentials: "include",
+        });
         if (!response.ok) {
           console.error(`Failed to fetch student count for course ${course.id}`);
           continue;
@@ -59,7 +62,10 @@ export const useDashboard = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch("http://localhost:5000/courses");
+      const response = await fetch("http://localhost:5000/courses/search", {
+        method: "GET",
+        credentials: "include",
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch courses");
       }
@@ -101,6 +107,7 @@ export const useDashboard = () => {
     try {
       const response = await fetch("http://localhost:5000/courses", {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -123,6 +130,7 @@ export const useDashboard = () => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}`, {
         method: "PUT",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -149,6 +157,7 @@ export const useDashboard = () => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}/publish`, {
         method: "PATCH",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -173,6 +182,7 @@ export const useDashboard = () => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}`, {
         method: "DELETE",
+        credentials: "include",
       });
 
       if (!response.ok) {
