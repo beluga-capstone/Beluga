@@ -112,7 +112,6 @@ const SubmissionPage = ({
     }
   }, [latestSubmission]);
 
-  console.log(latestSubmission);
   return (
     <div className="container mx-auto p-4">
       <div className="mb-4 flex justify-between items-center">
