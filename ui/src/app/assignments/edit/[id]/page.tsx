@@ -8,7 +8,6 @@ import { toLocalISOString } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 
 const EditAssignment = ({ params }: { params: { id: string } }) => {
-  const { assignments } = useAssignments();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { fetchAssignmentsById, updateAssignment, deleteAssignment } = useAssignments();
@@ -62,7 +61,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
     };
 
     loadAssignment();
-  }, [params.id, fetchAssignmentsById, router]);
+  }, [params.id]);
 
   const handleUpdate = () => {
     try {
