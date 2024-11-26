@@ -20,7 +20,7 @@ ADMIN_ID='dd85014a-edad-4298-b9c6-808268b3d15e'
 def load_user(user_id):
     return User.query.get(user_id)
 
-##@login_manager.request_loader
+#@login_manager.request_loader
 #def load_user_from_request(request): return User.query.get(ADMIN_ID)
 
 
