@@ -56,6 +56,7 @@ export const useAssignments = () => {
       }
 
       const data = await response.json();
+      return data;
       setAssignments((prev) => [...prev, data]);
       fetchAssignments();
     } catch (err) {
@@ -90,7 +91,8 @@ export const useAssignments = () => {
     };
 
     fetchAssignments();
-    await saveAssignment(newAssignment);
+    const data = await saveAssignment(newAssignment);
+    return data;
   };
 
   const updateAssignment = async (
@@ -119,7 +121,7 @@ export const useAssignments = () => {
       allows_late_submissions:allows_late_submissions,
       docker_image_id:docker_image_id,  
     };
-    console.log("updating with",assignment_id,course_id,title,description,due_at,lock_at,unlock_at,docker_image_id)
+    //console.log("updating with",assignment_id,course_id,title,description,due_at,lock_at,unlock_at,docker_image_id)
 
     try {
       const response = await fetch(`${process.env.backend}/assignments/${assignment_id}`, {
@@ -211,7 +213,7 @@ export const useAssignments = () => {
       if (!response.ok) {
         throw new Error('Failed to update late submissions setting');
       }
-
+      fetchAssignments();
       setAssignments((prev) =>
         prev.map((assignment) =>
           assignment.assignment_id === assignmentId ? { ...assignment, allowsLateSubmissions } : assignment

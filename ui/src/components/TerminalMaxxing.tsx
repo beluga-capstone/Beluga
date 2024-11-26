@@ -210,14 +210,6 @@ const TerminalMaxxing = ({
             <NoCopyTextBox overlayText={imageName??""} />
           </Link>
         </li>
-        <li>
-          <span>Container description: </span>
-          <div
-            className="inline-flex items-center py-2" 
-          >
-            <span>{description}</span>
-          </div>
-        </li>
       </ul>
       </h2>
       {dockerImageId && containerStatus === "running" && socketPort && (
@@ -253,6 +245,10 @@ const TerminalMaxxing = ({
 
         <h2 onClick={() => handleDownloadPrivateKey()} className="font-bold pb-4 flex items-center">
           <NoCopyTextBox overlayText={`Download Private Key`} />
+        </h2>
+
+        <h2 className="font-bold pb-4 flex items-center">
+          <span>{description}</span>
         </h2>
       </div>
     </div>
