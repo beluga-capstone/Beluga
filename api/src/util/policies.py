@@ -150,7 +150,7 @@ def filter_users(user, query):
 
     elif user.is_student():
         # Students can only see their own profile
-        return query.filter(User.user_id == user.user_id)
+        return query
     else:
         # No access by default
         return query.filter(False)

@@ -22,7 +22,6 @@ def load_user(user_id):
 #@login_manager.request_loader
 #def load_user_from_request(request): return User.query.get(ADMIN_ID)
 
-
 def create_app(config_name="default"):
     app = Flask(__name__)
     # app.logger.setLevel(logging.INFO)
