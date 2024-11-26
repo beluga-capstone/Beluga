@@ -4,6 +4,7 @@ import { useAssignments } from "@/hooks/useAssignments";
 import React, { useEffect, useState } from "react";
 import AssignmentForm from "../../../../components/AssignmentsForm";
 import { useRouter } from "next/navigation";
+import { toLocalISOString } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 
 const EditAssignment = ({ params }: { params: { id: string } }) => {
@@ -63,21 +64,6 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
     loadAssignment();
   }, [params.id, fetchAssignmentsById, router]);
 
-  // Helper function to safely create Date object
-  const createSafeDate = (dateString: string): Date => {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-      throw new Error(`Invalid date: ${dateString}`);
-    }
-    return date;
-  };
-
-  const prettyDateToIso = (formattedDate: string): Date => {
-    return new Date(formattedDate);
-    //const date = new Date(formattedDate);
-    //return date.toISOString().split('T')[0];
-  };
-
   const handleUpdate = () => {
     try {
       if (!assignment?.assignment_id) {
@@ -90,18 +76,17 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         return;
       }
 
-      //console.log("update due with ",prettyDateToIso(dueAt));
       updateAssignment(
         assignment.assignment_id,
         assignment.course_id,
         title.trim(),
         description.trim(),
-        prettyDateToIso(dueAt),
+        new Date(toLocalISOString(dueAt)),
         allowsLateSubmissions
-          ? prettyDateToIso(lockAt)
-          : prettyDateToIso(dueAt),
-        prettyDateToIso(unlockAt),
-        prettyDateToIso(publishAt),
+          ? new Date(toLocalISOString(lockAt))
+          : new Date(toLocalISOString(dueAt)),
+        new Date(toLocalISOString(unlockAt)),
+        new Date(toLocalISOString(publishAt)),
         allowsLateSubmissions,
         imageId
       );
@@ -165,7 +150,16 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
           </Button>
         </div>
         <div className="flex">
-          <div className="p-2">
+          <div className="mr-3">
+            <Button
+              className="bg-red-500 text-white px-4 py-2 rounded flex items-center"
+              onClick={handleDelete}
+              href="/assignments"
+            >
+              Delete
+            </Button>
+          </div>
+          <div className="mr-3">
             <Button
               className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
               onClick={() => window.history.back()}
@@ -173,7 +167,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
               Cancel
             </Button>
           </div>
-          <div className="p-2">
+          <div className="">
             <Button
               className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
               onClick={handleUpdate}
