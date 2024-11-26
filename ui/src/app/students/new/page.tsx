@@ -86,8 +86,6 @@ const NewUser: React.FC = () => {
         setLastName={setLastName}
         email={email}
         setEmail={setEmail}
-        role={role}
-        setRole={setRole}
       />
 
       <div className="flex flex-column justify-end">

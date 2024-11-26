@@ -21,7 +21,6 @@ const StudentCoursesTable: React.FC = () => {
         {courses.map((course) => (
           <tr key={course.id}>
             <td className="text-center py-2">{course.name}</td>
-            <td className="text-center py-2">{course.section}</td>
             <td className="text-center py-2">{course.term}</td>
           </tr>
         ))}
