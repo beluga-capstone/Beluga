@@ -99,7 +99,7 @@ def oauth_callback(provider):
     fname = provider_config['userinfo']['given_name'](res.json())
     lname = provider_config['userinfo']['family_name'](res.json())
     username = provider_config['userinfo']['username'](res.json())
-    role = 2
+    role = 8
 
     user = User.query.filter_by(email=email).first()
 
