@@ -14,6 +14,7 @@ def main():
     from beluga.plugins.network.cli import Nginx, Ssh
     from beluga.plugins.docker.cli import Docker
     from beluga.plugins.services.cli import Services
+    from beluga.plugins.users.cli import Users
     
     # initialize cli
     args = beluga_cli.parser.parse_args()
