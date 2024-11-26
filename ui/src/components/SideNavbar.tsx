@@ -40,7 +40,7 @@ const SideNavbar = () => {
       {
         title: 'Courses',
         path: '/',
-        icon: <Icon icon="lucide:home" width="24" height="24" />,
+        icon: <Icon icon="lucide:notebook-pen" width="24" height="24" />,
         ...(courses.length > 0 && {
           subMenuItems: courses.map(course => ({
             title: course.name,
@@ -62,7 +62,7 @@ const SideNavbar = () => {
           {
             title: 'Assignments',
             path: `/assignments/courses/${courseId}`,
-            icon: <Icon icon="lucide:folder" width="24" height="24" />,
+            icon: <Icon icon="lucide:sticky-note" width="24" height="24" />,
             dynamic: true,
           },
         ]
