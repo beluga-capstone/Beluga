@@ -1,12 +1,7 @@
-import { useAssignments } from "@/hooks/useAssignments";
-import { useSubmissions } from "@/hooks/useSubmissions";
-import { shortDate, shortTime } from "@/lib/utils";
-import { ToggleLeft, ToggleRight } from "lucide-react";
-import { useState, useEffect} from "react";
-import Link from "next/link";
 import { Assignment } from "@/types";
 import { shortDate, shortTime } from "@/lib/utils";
 import { useSubmissions } from "@/hooks/useSubmissions";
+import { useEffect, useState } from "react";
 
 interface ProfessorAssignmentsTableProps {
   assignments: Assignment[];
