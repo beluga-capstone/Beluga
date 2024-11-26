@@ -33,7 +33,7 @@ const StudentPage = ({ params }: { params: { id: string } }) => {
         const userData = await userResponse.json();
 
         // Fetch enrollment details to get course_id
-        const enrollmentResponse = await fetch(`http://localhost:5000/enrollments/search`, {
+        const enrollmentResponse = await fetch(`http://localhost:5000/enrollments`, {
           method: "GET",
           credentials: "include",
         });

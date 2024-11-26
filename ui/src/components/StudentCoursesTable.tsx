@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useDashboard } from "@/hooks/useDashboard";
+import Link from "next/link";
 
 const StudentCoursesTable: React.FC = () => {
   const { courses, searchCourses } = useDashboard();
@@ -33,7 +34,11 @@ const StudentCoursesTable: React.FC = () => {
             </tr>
             {courses.map((course) => (
               <tr key={course.id}>
-                <td className="text-center py-2">{course.name}</td>
+                 <td className="text-center py-2">
+                    <Link href={`/assignments/courses/${course.id}`}>
+                      {course.name}
+                    </Link>
+                  </td>
                 <td className="text-center py-2">{course.term || "Fall 2024"}</td>
               </tr>
             ))}
