@@ -1,45 +1,35 @@
 'use client';
 
-import { SideNavItem } from '@/types';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Icon } from '@iconify/react';
+import { SideNavItem } from '@/types';
 import { useDashboard } from '@/hooks/useDashboard';
+import { useCourseId } from '@/hooks/useCourseId';
 
 const SideNavbar = () => {
-  const params = useParams();
   const pathname = usePathname();
-  const {fetchCourses,getCourse} = useDashboard(); 
-  const [courseId, setCourseId] = useState<string | null>(null);
-  const [courseName,setCourseName] = useState<string|null>(null);
+  const { fetchCourses, getCourse } = useDashboard();
+  const { courseId, setCourseId } = useCourseId();
+  const [courseName, setCourseName] = useState<string | null>(null);
 
   useEffect(() => {
     const getCourses = async () => {
       await fetchCourses();
     };
 
-    // Set an interval to fetch courses every 5 seconds
     const intervalId = setInterval(() => {
       getCourses();
     }, 5000);
 
-    // Ensure we handle both string and string[] cases for courseId
-    if (Array.isArray(params.courseId)) {
-      setCourseId(params.courseId[0] || null); // Take the first element if it's an array
-    } else {
-      setCourseId(params.courseId || null); // Directly use the string if it's not an array
-    }
-
-    // Cleanup the interval on component unmount or dependency change
     return () => clearInterval(intervalId);
-  }, [params.courseId]);
+  }, []);
 
   useEffect(()=>{
     if (!courseId) return;
     const getIt=async()=>{
   
-      console.log("awaitttttttttttttt",courseId);
       const response = await getCourse(courseId);
       if (response){
         console.log("got coursename with id",response.name,courseId);
@@ -49,6 +39,7 @@ const SideNavbar = () => {
     getIt();
 
   },[courseId])
+
 
   const getSideNavItems = (): SideNavItem[] => {
     const defaultItems: SideNavItem[] = [
@@ -169,3 +160,4 @@ const MenuItem = ({ item, pathname }: { item: SideNavItem; pathname: string }) =
     </div>
   );
 };
+
