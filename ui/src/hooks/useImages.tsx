@@ -144,6 +144,7 @@ export const useImages = () => {
         selectedImageIds.map(docker_image_id =>
           fetch(`http://localhost:5000/images/${docker_image_id}`, {
             method: 'DELETE',
+            credentials:"include",
           })
         )
       );
