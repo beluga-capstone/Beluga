@@ -32,7 +32,7 @@ export interface Course {
 }
 
 export interface Student {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
   middleName?: string;
