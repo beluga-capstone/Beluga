@@ -166,7 +166,8 @@ def update_assignment(assignment_id):
         if 'user_id' in data:
             assignment.user_id = data.get('userId')
 
-        assignment.docker_image_id = data.get('docker_image_id')
+        if 'docker_image_id' in data:
+            assignment.docker_image_id = data.get('docker_image_id')
 
         # Commit changes to the database
         db.session.commit()

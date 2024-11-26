@@ -3,6 +3,7 @@ import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
 import React, { useEffect, useState } from "react";
 import AssignmentForm from "../../../../components/AssignmentsForm";
+import { toLocalISOString } from "@/lib/utils";
 
 const EditAssignment = ({ params }: { params: { id: string } }) => {
   const { assignments } = useAssignments();
@@ -10,17 +11,14 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
     (assignment) => assignment.assignment_id === params.id
   );
   const { updateAssignment, deleteAssignment } = useAssignments();
-
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueAt, setDueAt] = useState("");
   const [lockAt, setLockAt] = useState("");
   const [unlockAt, setUnlockAt] = useState("");
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [isPublished, setIsPublished] = useState(false);
   const [publishAt, setPublishAt] = useState("");
   const [allowsLateSubmissions, setAllowsLateSubmissions] = useState(false);
-  const [imageId, setImageId] = useState(assignment?.docker_image_id || "");
+  const [imageId, setImageId] = useState(assignment?.docker_image_id || null);
 
   const formatDate = (dateString: string | Date | null | undefined): string => {
     if (!dateString) return "";
@@ -41,28 +39,11 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
       setDueAt(formatDate(assignment.due_at));
       setLockAt(formatDate(assignment.lock_at));
       setUnlockAt(formatDate(assignment.unlock_at));
-      setIsUnlocked(!!assignment.is_unlocked);
-      setIsPublished(!!assignment.is_published);
       setPublishAt(formatDate(assignment.publish_at));
       setAllowsLateSubmissions(!!assignment.allows_late_submissions);
-      setImageId(assignment.docker_image_id || "");
+      setImageId(assignment.docker_image_id || null);
     }
   }, [assignment]);
-
-  // Helper function to safely create Date object
-  const createSafeDate = (dateString: string): Date => {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-      throw new Error(`Invalid date: ${dateString}`);
-    }
-    return date;
-  };
-
-  const prettyDateToIso = (formattedDate: string): Date => {
-    return new Date(formattedDate);
-    //const date = new Date(formattedDate);
-    //return date.toISOString().split('T')[0];
-  };
 
   const handleUpdate = () => {
     try {
@@ -76,18 +57,17 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         return;
       }
 
-      //console.log("update due with ",prettyDateToIso(dueAt));
       updateAssignment(
         assignment.assignment_id,
         assignment.course_id,
         title.trim(),
         description.trim(),
-        prettyDateToIso(dueAt),
+        new Date(toLocalISOString(dueAt)),
         allowsLateSubmissions
-          ? prettyDateToIso(lockAt)
-          : prettyDateToIso(dueAt),
-        prettyDateToIso(unlockAt),
-        prettyDateToIso(publishAt),
+          ? new Date(toLocalISOString(lockAt))
+          : new Date(toLocalISOString(dueAt)),
+        new Date(toLocalISOString(unlockAt)),
+        new Date(toLocalISOString(publishAt)),
         allowsLateSubmissions,
         imageId
       );
@@ -131,17 +111,17 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         setImageId={setImageId}
       />
       <div className="flex flex-column justify-between">
-        <div className="p-2">
-          <Button
-            className="bg-red-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={handleDelete}
-            href="/assignments"
-          >
-            Delete
-          </Button>
-        </div>
         <div className="flex">
-          <div className="p-2">
+          <div className="mr-3">
+            <Button
+              className="bg-red-500 text-white px-4 py-2 rounded flex items-center"
+              onClick={handleDelete}
+              href="/assignments"
+            >
+              Delete
+            </Button>
+          </div>
+          <div className="mr-3">
             <Button
               className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
               onClick={() => window.history.back()}
@@ -149,7 +129,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
               Cancel
             </Button>
           </div>
-          <div className="p-2">
+          <div className="">
             <Button
               className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
               onClick={handleUpdate}
