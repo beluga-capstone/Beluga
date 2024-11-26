@@ -1,12 +1,12 @@
 import { useSubmissions } from "@/hooks/useSubmissions";
 import { shortDate, shortTime } from "@/lib/utils";
-import { Assignment, User } from "@/types";
+import { Assignment, Student, User } from "@/types";
 import Link from "next/link";
 import { useState } from "react";
 
 interface StudentListingForSubmissionProps {
-  student: User;
-  assignment: Assignment | undefined;
+  student: Student;
+  assignment: Assignment | null;
 }
 
 const StudentListingForSubmission: React.FC<
