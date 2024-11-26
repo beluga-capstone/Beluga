@@ -13,7 +13,7 @@ const ImportStudentsPage: React.FC = () => {
   const { addUsers } = useUsers();
   const searchParams = useSearchParams();
   const courseId = searchParams.get("courseId");
-  const [students, setStudents] = useState<User[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -21,18 +21,18 @@ const ImportStudentsPage: React.FC = () => {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
-        const parsedStudents: User[] = results.data
-          .filter((student: any) => student["First Name"] && student["Email"])
-          .map((student: any, index: number) => ({
-            id: Date.now() + index, 
-            firstName: student["First Name"] || "",
-            lastName: student["Last Name"] || "", 
-            middleName: student["Middle Name"] || "", 
-            email: student["Email"],
-            role: "student", 
+        const parsedUsers: User[] = results.data
+          .filter((user: any) => user["First Name"] && user["Email"])
+          .map((user: any, index: number) => ({
+            id: `${Date.now() + index}`, // Ensure IDs are strings initially
+            firstName: user["First Name"] || "",
+            lastName: user["Last Name"] || "",
+            middleName: user["Middle Name"] || "",
+            email: user["Email"],
+            role: "student",
           }));
 
-        setStudents(parsedStudents);
+        setUsers(parsedUsers); // Replace users state to avoid duplication
       },
       error: (error) => {
         console.error("Error parsing CSV file:", error);
@@ -45,27 +45,26 @@ const ImportStudentsPage: React.FC = () => {
     accept: { "text/csv": [".csv"] },
   });
 
-  const handleSaveStudents = async () => {
+  const handleSaveStudents = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default form submission behavior
+
     try {
-      if (students.length === 0) {
+      if (users.length === 0) {
         alert("No students to save. Please upload a valid CSV file.");
         return;
       }
-      const addedUsers = await addUsers(students);
-  
+
+      const addedUsers = await addUsers(users);
+
       if (addedUsers.length === 0) {
         throw new Error("Failed to add students. Please check your data.");
       }
-  
-      console.log("Students added successfully:", addedUsers);
-  
+
       if (!courseId) {
         throw new Error("Missing course ID. Cannot enroll students.");
       }
-  
+
       for (const user of addedUsers) {
-        console.log("Enrolling user:", { course_id: courseId, user_id: user.user_id });
-  
         const enrollmentResponse = await fetch("http://localhost:5000/enrollments", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -74,7 +73,7 @@ const ImportStudentsPage: React.FC = () => {
             user_id: user.user_id,
           }),
         });
-  
+
         if (!enrollmentResponse.ok) {
           console.error(
             `Failed to enroll user ${user.user_id} in course ${courseId}:`,
@@ -82,15 +81,24 @@ const ImportStudentsPage: React.FC = () => {
           );
           throw new Error("Enrollment failed for some students.");
         }
-  
-        console.log("User enrolled successfully:", user.user_id);
       }
+
+      setUsers([]); // Clear users after successful save
       window.location.href = `/students/courses/${courseId}`;
     } catch (error) {
       console.error("Error saving students and enrolling them:", error);
     }
   };
-  
+
+  // Transform users to students with proper type
+  const students = users.map((user, index) => ({
+    id: parseInt(user.id || `${Date.now() + index}`, 10), // Ensure id is a number
+    firstName: user.firstName,
+    lastName: user.lastName,
+    middleName: user.middleName || "",
+    email: user.email,
+    role_id: 8, // Default role_id for students
+  }));
 
   return (
     <div className="container mx-auto p-4">
@@ -104,9 +112,8 @@ const ImportStudentsPage: React.FC = () => {
         <p>Drag and drop a CSV file here, or click to select one</p>
       </div>
 
-      {students.length > 0 && <StudentsTable students={students} />}
+      {students.length > 0 && <StudentsTable students={students} />} {/* Pass transformed students */}
 
-      {/* Buttons are always visible */}
       <div className="flex flex-column justify-end pt-4">
         <div className="p-2">
           <Button
@@ -119,8 +126,8 @@ const ImportStudentsPage: React.FC = () => {
         <div className="p-2">
           <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-            onClick={students.length > 0 ? handleSaveStudents : undefined}
-            disabled={students.length === 0}
+            onClick={handleSaveStudents}
+            disabled={users.length === 0}
           >
             Save
           </Button>

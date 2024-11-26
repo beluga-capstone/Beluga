@@ -10,10 +10,11 @@ import ProfessorAssignmentsTable from "@/components/ProfessorAssignmentsTable";
 import { Assignment } from "@/types";
 
 const CourseAssignments: React.FC = () => {
-  const [assignments, setAssignments] = useState<Assignment[]|null>(null);
-  const { courseId } = useParams(); 
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const { courseId } = useParams();
   const router = useRouter();
-  const {fetchAssignmentsByCourseId} = useAssignments();
+  const { fetchAssignmentsByCourseId, setPublished, setLateSubmissions } =
+    useAssignments();
 
   const resolvedCourseId = Array.isArray(courseId) ? courseId[0] : courseId;
 
@@ -26,14 +27,12 @@ const CourseAssignments: React.FC = () => {
 
     const loadAssignments = async () => {
       try {
-        const fetchedAssignments = await fetchAssignmentsByCourseId(resolvedCourseId);
-
-        // Filter assignments by courseId
-        const filteredAssignments = fetchedAssignments.filter(
-          (assignment) => assignment.course_id === resolvedCourseId
+        console.log(`Loading assignments for courseId: ${resolvedCourseId}`);
+        const fetchedAssignments = await fetchAssignmentsByCourseId(
+          resolvedCourseId
         );
-
-        setAssignments(filteredAssignments);
+        console.log("Fetched assignments:", fetchedAssignments);
+        setAssignments(fetchedAssignments);
       } catch (err) {
         console.error("Failed to fetch assignments:", err);
       }
@@ -41,7 +40,7 @@ const CourseAssignments: React.FC = () => {
 
     loadAssignments();
   }, [resolvedCourseId, router]);
-  
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -52,8 +51,11 @@ const CourseAssignments: React.FC = () => {
           </Button>
         </Link>
       </div>
-
-      <ProfessorAssignmentsTable courseId={courseId[0]}/>
+      <ProfessorAssignmentsTable
+        assignments={assignments}
+        setPublished={setPublished}
+        setLateSubmissions={setLateSubmissions}
+      />
     </div>
   );
 };

@@ -44,13 +44,23 @@ export const useAssignments = () => {
 
   const fetchAssignmentsByCourseId = async (courseId: string): Promise<Assignment[]> => {
     try {
-      console.log("Fetching assignments for courseId:", courseId);
-      const response = await fetch(`http://localhost:5000/assignments?course_id=${courseId}`);
+      console.log(`Fetching assignments for courseId: ${courseId}`);
+      const response = await fetch(`http://localhost:5000/assignments/course/${courseId}`, {
+        method: "GET",
+        credentials: "include",
+      });
+  
       if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.error === "No assignments found for this course") {
+          console.log("No assignments found for this course. Returning empty array.");
+          return [];
+        }
         throw new Error(`Failed to fetch assignments for course ${courseId}`);
       }
+  
       const data = await response.json();
-      console.log("Response from backend for courseId:", courseId, data);
+      console.log(`Response from backend for courseId: ${courseId}`, data);
   
       return data.map((assignment: any) => ({
         assignment_id: assignment.assignment_id,
@@ -66,16 +76,20 @@ export const useAssignments = () => {
         docker_image_id: assignment.docker_image_id || null,
       }));
     } catch (err) {
-      console.error("Error in fetchAssignmentsByCourseId:", err);
+      console.error(`Error in fetchAssignmentsByCourseId:`, err);
       return [];
     }
   };
-
+  
+  
   const fetchAssignmentsById = async (assignmentId: string): Promise<Assignment> => {
     try {
-      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`);
+      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
       if (!response.ok) {
-        throw new Error("Failed to fetch assignment details");
+        throw new Error('Failed to fetch assignment details');
       }
       const data = await response.json();
       return {
@@ -92,10 +106,10 @@ export const useAssignments = () => {
         docker_image_id: data.docker_image_id || null,
       };
     } catch (err) {
-      console.error("Error fetching assignment by ID:", err);
+      console.error(`Error fetching assignment by ID:`, err);
       throw err;
     }
-  };  
+  };
   
   const saveAssignment = async (newAssignment: Assignment) => {
     try {

@@ -58,7 +58,7 @@ def create_user_or_users():
                 # TODO: double check this works
                 new_users.append(new_user)
     
-                return jsonify(result), status_code
+                # return jsonify(result), status_code
                 
             # Return created users' details
             response_data = [{"user_id": str(user.user_id), "email": user.email} for user in new_users]

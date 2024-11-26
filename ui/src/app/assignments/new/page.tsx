@@ -4,42 +4,50 @@ import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
 import React, { useState, useEffect } from "react";
 import AssignmentForm from "../../../components/AssignmentsForm";
-import { toLocalISOString } from "@/lib/utils";
-import { useRouter,useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const NewAssignment: React.FC = () => {
-  const { assignments, addAssignment } = useAssignments();
+  const { addAssignment } = useAssignments();
   const searchParams = useSearchParams();
   const courseId = searchParams.get("courseId");
-  const [title, setTitle] = React.useState("");
-  const [description, setDescription] = React.useState("");
-  const [publishAt, setPublishAt] = React.useState("");
-  const [dueAt, setDueAt] = React.useState("");
-  const [lockAt, setLockAt] = React.useState("");
-  const [unlockAt, setUnlockAt] = React.useState("");
-  const [allowsLateSubmissions, setAllowsLateSubmissions] =
-    React.useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [publishAt, setPublishAt] = useState("");
+  const [dueAt, setDueAt] = useState("");
+  const [lockAt, setLockAt] = useState("");
+  const [unlockAt, setUnlockAt] = useState("");
+  const [allowsLateSubmissions, setAllowsLateSubmissions] = useState(false);
   const [imageId, setImageId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const router = useRouter();
 
-  // if select image, then unselect,imageid will be -1, fix it
-  useEffect(() => {
-    if (imageId === "-1") setImageId(null);
-  }, [imageId]);
-
+  // Reset imageId if it's set to "-1"
   const handleAddAssignment = async () => {
     if (!courseId) {
-      console.log("Course ID is missing!");
+      setError("Course ID is missing!");
       return;
     }
   
     try {
-      const response = await fetch(`http://localhost:5000/assignments/course/${courseId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch assignments for the course.");
+      // Fetch assignments for the course
+      const response = await fetch(`http://localhost:5000/assignments/course/${courseId}`, {
+        method: "GET",
+        credentials: "include",
+      });
+  
+      let courseAssignments = [];
+      if (response.ok) {
+        courseAssignments = await response.json();
+      } else {
+        const errorData = await response.json();
+        if (errorData.error === "No assignments found for this course") {
+          console.log("No assignments found for this course. Proceeding to add a new assignment.");
+          courseAssignments = []; // Treat as empty array
+        } else {
+          throw new Error("Failed to fetch assignments for this course.");
+        }
       }
-      const courseAssignments = await response.json();
+  
       const isDuplicate = courseAssignments.some(
         (assignment: any) => assignment.title.toLowerCase() === title.toLowerCase()
       );
@@ -48,14 +56,15 @@ const NewAssignment: React.FC = () => {
         setError("An assignment with this title already exists in the course.");
         return;
       }
-      
+  
       setError("");
+  
       await addAssignment(
         courseId,
         title,
         description,
         new Date(dueAt),
-        allowsLateSubmissions ? new Date(lockAt) : new Date(dueAt),
+        allowsLateSubmissions && lockAt ? new Date(lockAt) : new Date(dueAt),
         new Date(unlockAt),
         new Date(publishAt),
         allowsLateSubmissions,
@@ -63,11 +72,13 @@ const NewAssignment: React.FC = () => {
       );
   
       router.push(`/assignments/courses/${courseId}`);
-    } catch (error) {
-      console.error("Error checking for duplicates or adding assignment:", error);
+    } catch (err) {
+      console.error("Error adding assignment:", err);
       setError("An error occurred while adding the assignment. Please try again.");
     }
   };
+  
+  
 
   return (
     <div className="container mx-auto p-4">
@@ -103,7 +114,7 @@ const NewAssignment: React.FC = () => {
             Cancel
           </Button>
         </div>
-        <div className="">
+        <div>
           <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
             onClick={handleAddAssignment}
