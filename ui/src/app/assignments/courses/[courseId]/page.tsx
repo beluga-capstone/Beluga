@@ -9,19 +9,18 @@ import Link from "next/link";
 import ProfessorAssignmentsTable from "@/components/ProfessorAssignmentsTable";
 import StudentAssignmentsTable from "@/components/StudentAssignmentsTable";
 import { Assignment } from "@/types";
+import { useProfile } from "@/hooks/useProfile";
+import { ROLES } from "@/constants";
 
 const CourseAssignments: React.FC = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const { courseId } = useParams();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const { fetchAssignmentsByCourseId, setPublished, setLateSubmissions } =
     useAssignments();
+  const { profile } = useProfile();
 
   const resolvedCourseId = Array.isArray(courseId) ? courseId[0] : courseId;
-
-  // Determine role from query parameters
-  const role = searchParams.get("role") || "professor";
 
   useEffect(() => {
     if (!resolvedCourseId) {
@@ -39,7 +38,7 @@ const CourseAssignments: React.FC = () => {
 
         // Filter assignments to only include published ones for students
         const filteredAssignments =
-          role === "student"
+          profile?.role_id === ROLES.STUDENT
             ? fetchedAssignments.filter((assignment) => assignment.is_published)
             : fetchedAssignments;
 
@@ -51,13 +50,13 @@ const CourseAssignments: React.FC = () => {
     };
 
     loadAssignments();
-  }, [resolvedCourseId, role, router]);
+  }, [resolvedCourseId, profile, router]);
 
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="font-bold text-4xl">Assignments</h1>
-        {role === "professor" && (
+        {profile?.role_id === ROLES.PROFESSOR && (
           <Link href={`/assignments/new?courseId=${resolvedCourseId}`}>
             <Button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center">
               <Plus className="mr-2" /> Add Assignment
@@ -65,7 +64,7 @@ const CourseAssignments: React.FC = () => {
           </Link>
         )}
       </div>
-      {role === "student" ? (
+      {profile?.role_id === ROLES.STUDENT ? (
         <StudentAssignmentsTable assignments={assignments} />
       ) : (
         <ProfessorAssignmentsTable

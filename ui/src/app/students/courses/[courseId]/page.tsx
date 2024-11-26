@@ -7,20 +7,20 @@ import Button from "@/components/Button";
 import StudentsTable from "../../StudentsTable";
 import { useUsers } from "@/hooks/useUsers";
 import { Student } from "@/types";
+import { useProfile } from "@/hooks/useProfile";
+import { ROLES } from "@/constants";
 
 interface CourseStudentsProps {
   params: { courseId: string };
 }
 
 const CourseStudents = ({ params }: CourseStudentsProps) => {
-  const { fetchCourseStudents } = useUsers(); 
-  const searchParams = useSearchParams();
+  const { fetchCourseStudents } = useUsers();
 
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const role = searchParams.get("role") || "professor";
+  const { profile } = useProfile();
 
   useEffect(() => {
     if (!params.courseId) {
@@ -32,7 +32,7 @@ const CourseStudents = ({ params }: CourseStudentsProps) => {
 
     const getStudents = async () => {
       try {
-        const data: Student[] = await fetchCourseStudents(params.courseId); 
+        const data: Student[] = await fetchCourseStudents(params.courseId);
         setStudents(data);
       } catch (err) {
         console.error("Error fetching students:", err);
@@ -57,7 +57,7 @@ const CourseStudents = ({ params }: CourseStudentsProps) => {
     <div className="container mx-auto p-4">
       <div className="mb-4 flex justify-between items-center">
         <h1 className="font-bold text-4xl mb-6">Students in Course</h1>
-        {role !== "student" && (
+        {profile?.role_id !== ROLES.STUDENT && (
           <div className="flex">
             <div className="pr-8">
               <Button
