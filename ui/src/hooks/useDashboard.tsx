@@ -235,6 +235,7 @@ export const useDashboard = () => {
     addCourse,
     updateCourse,
     setPublished,
+    fetchStudentCounts,
     deleteCourse,
     getCourse
   };
