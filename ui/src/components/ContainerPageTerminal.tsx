@@ -1,4 +1,3 @@
-"use client";
 import React, { useState, useEffect, useRef } from "react";
 import { Terminal, ITerminalOptions, ITerminalInitOnlyOptions } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
@@ -32,18 +31,31 @@ const ContainerPageTerminal: React.FC<ContainerPageTerminalProps> = ({
   const xtermRef = useRef<Terminal | null>(null);
   const socketRef = useRef<WebSocket | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
 
-  const initializeTerminal = () => {
-    if (!terminalRef.current || !containerPort) return;
+  // Helper function to calculate cols and rows
+  const calculateTerminalSize = () => {
+    const terminalElement = terminalRef.current;
+    if (!terminalElement) return { cols: 80, rows: 24 }; // Default size
 
-    // Initialize terminal
+    const width = terminalElement.clientWidth;
+    const height = terminalElement.clientHeight;
+    const fontSize = terminalOptions.fontSize || 22;
+
+    // Calculate columns and rows based on the terminal's container size
+    const cols = Math.floor(width / (fontSize * 0.6)); // Approximate width per column
+    const rows = Math.floor(height / (fontSize * 1.2)); // Approximate height per row
+
+    return { cols, rows };
+  };
+
+  useEffect(() => {
+    if (!terminalRef.current || !isRunning) return;
+
+    // Init terminal
     const term = new Terminal(terminalOptions);
     xtermRef.current = term;
-
     const fitAddon = new FitAddon();
     fitAddonRef.current = fitAddon;
-
     const webLinksAddon = new WebLinksAddon();
     term.loadAddon(fitAddon);
     term.loadAddon(webLinksAddon);
@@ -57,21 +69,23 @@ const ContainerPageTerminal: React.FC<ContainerPageTerminalProps> = ({
     setTimeout(() => fitAddon.fit(), 0);
 
     ws.onopen = () => {
-      setIsConnected(true);
-      term.writeln('\x1b[32mConnected to your virtual environment.\x1b[0m');
-      
       // Handle terminal input
       term.onData((data: string) => {
         if (ws.readyState === WebSocket.OPEN) {
-          ws.send(data);
+          ws.send(JSON.stringify({ type: 'input', data }));
         }
       });
 
       // Handle terminal resize
-      term.onResize(({ cols, rows }) => {
+      const resizeTerminal = () => {
         if (ws.readyState === WebSocket.OPEN) {
+          const { cols, rows } = calculateTerminalSize();
           ws.send(JSON.stringify({ type: 'resize', cols, rows }));
         }
+      };
+
+      term.onResize(() => {
+        resizeTerminal();
       });
     };
 
@@ -84,59 +98,39 @@ const ContainerPageTerminal: React.FC<ContainerPageTerminalProps> = ({
     };
 
     ws.onclose = (event: CloseEvent) => {
-      setIsConnected(false);
-      term.writeln(`\x1b[31mDisconnected from terminal server (${event.code})\x1b[0m`);
+      // Handle disconnection
     };
 
     // Handle window resize
     const handleResize = (): void => {
       fitAddonRef.current?.fit();
+      const resizeTerminal = () => {
+        if (ws.readyState === WebSocket.OPEN) {
+          const { cols, rows } = calculateTerminalSize();
+          ws.send(JSON.stringify({ type: 'resize', cols, rows }));
+        }
+      };
+      resizeTerminal(); // Recalculate and resize terminal
     };
+
     window.addEventListener('resize', handleResize);
 
+    // Cleanup
     return () => {
+      if (socketRef.current?.readyState === WebSocket.OPEN) {
+        socketRef.current.close();
+      }
+      term.dispose();
       window.removeEventListener('resize', handleResize);
     };
-  };
-
-  const disconnectTerminal = () => {
-    // Close WebSocket
-    if (socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.close();
-    }
-
-    // Dispose of terminal
-    if (xtermRef.current) {
-      xtermRef.current.dispose();
-      xtermRef.current = null;
-    }
-
-    // Reset state
-    setIsConnected(false);
-  };
-
-  useEffect(() => {
-    console.log(isRunning, containerPort, isConnected);
-    
-    if (isRunning && containerPort && !isConnected) {
-      const cleanup = initializeTerminal();
-      
-      return () => {
-        disconnectTerminal();
-        cleanup?.();
-      };
-    }
   }, [isRunning, containerPort]);
 
   return (
     <>
-      <div 
-        ref={terminalRef} 
-        className="w-full"
-        role="terminal textbox" 
-      />
+      <div ref={terminalRef} role="terminal textbox" style={{ width: '100%', height: '100%' }} />
     </>
   );
 };
 
 export default ContainerPageTerminal;
+

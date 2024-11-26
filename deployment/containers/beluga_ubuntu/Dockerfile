@@ -3,7 +3,7 @@ FROM ubuntu:latest
 
 # Install Python, pip, and SSH server
 RUN apt-get update && \
-    apt-get install -y nodejs apt-utils openssh-server sudo && \
+    apt-get install -y nodejs npm apt-utils openssh-server sudo && \
     apt-get clean
 
 # Configure SSH server
@@ -20,10 +20,7 @@ WORKDIR /app
 # Copy the application files
 COPY websocket-pty.js requirements.txt fullchain.pem privkey.pem /app/
 
-# Create and activate a virtual environment, then install dependencies
-RUN python3 -m venv /app/venv && \
-    . /app/venv/bin/activate && \
-    pip install -r requirements.txt
+RUN npm install ws node-pty
 
 # Expose the port for SSH (22) and the application (5000)
 EXPOSE 22 5000
