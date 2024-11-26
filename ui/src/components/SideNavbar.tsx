@@ -5,14 +5,21 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useParams } from 'next/navigation';
 import { Icon } from '@iconify/react';
+import { useDashboard } from '@/hooks/useDashboard';
 
 const SideNavbar = () => {
   const params = useParams();
   const pathname = usePathname();
+  const {courses,fetchCourses} = useDashboard(); 
 
   const [courseId, setCourseId] = useState<string | null>(null);
 
   useEffect(() => {
+    const getCourses=async()=>{
+      await fetchCourses();
+    };
+    getCourses();
+
     // Ensure we handle both string and string[] cases for courseId
     if (Array.isArray(params.courseId)) {
       setCourseId(params.courseId[0] || null); // Take the first element if it's an array
@@ -24,9 +31,13 @@ const SideNavbar = () => {
   const getSideNavItems = (): SideNavItem[] => {
     const defaultItems: SideNavItem[] = [
       {
-        title: 'Dashboard',
+        title: 'Courses',
         path: '/',
         icon: <Icon icon="lucide:home" width="24" height="24" />,
+        subMenuItems: courses.map(course => ({
+          title: course.name, 
+          path: `/assignments/courses/${course.id}`
+        }))
       },
     ];
 
