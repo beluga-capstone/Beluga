@@ -15,8 +15,8 @@ export const useDashboard = () => {
 
   const searchCourses = async (filters: Record<string, string> = {}) => {
     try {
-      const queryParams = new URLSearchParams(filters).toString();
-      const response = await fetch(`http://localhost:5000/courses/search?${queryParams}`, {
+      // const queryParams = new URLSearchParams(filters).toString();
+      const response = await fetch(`http://localhost:5000/courses/search`, {
         method: "GET",
         credentials: "include",
         headers: {
@@ -47,24 +47,32 @@ export const useDashboard = () => {
     }
   };
 
-  const fetchStudentCounts = async (): Promise<{ [courseId: string]: number }> => {
+  const fetchStudentCounts = async (): Promise<{
+    [courseId: string]: number;
+  }> => {
     try {
       const counts: { [courseId: string]: number } = {};
-  
+
       for (const course of courses) {
-        const response = await fetch(`http://localhost:5000/courses/${course.id}/students/count`, {
-          method: "GET",
-          credentials: "include",
-        });
+        const response = await fetch(
+          `http://localhost:5000/courses/${course.id}/students/count`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
         if (!response.ok) {
-          console.error(`Failed to fetch student count for course ${course.id}`);
+          console.error(
+            `Failed to fetch student count for course ${course.id}`
+          );
           continue;
         }
-  
+
         const data = await response.json();
         counts[course.id] = data.students_count || 0;
+        console.log("counts: ", counts);
       }
-  
+
       return counts;
     } catch (error) {
       console.error("Error fetching student counts:", error);
@@ -116,7 +124,7 @@ export const useDashboard = () => {
         term: course.term || "Fall 2024",
         professor: course.professor || "Unknown",
       }));
-  
+
       const counts = await fetchStudentCounts(); // Fetch student counts
       transformedCourses.forEach((course) => {
         course.studentsEnrolled = counts[course.id] || 0;
@@ -126,21 +134,22 @@ export const useDashboard = () => {
     } catch (error) {
       console.error("Error fetching courses:", error);
     }
-  };  
+  };
 
   const addCourse = async (
     title: string,
     studentsEnrolled: number,
     userId: string,
     publish: boolean = false
-  ): Promise<{ course_id: string } | null> => { // Fix: Expect course_id
+  ): Promise<{ course_id: string } | null> => {
+    // Fix: Expect course_id
     const newCourse = {
       name: title,
       studentsEnrolled,
       user_id: userId,
       publish,
     };
-  
+
     try {
       const response = await fetch("http://localhost:5000/courses", {
         method: "POST",
@@ -150,11 +159,11 @@ export const useDashboard = () => {
         },
         body: JSON.stringify(newCourse),
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to add course");
       }
-  
+
       const data = await response.json();
       fetchCourses();
       return data; // Ensure course_id is returned
@@ -163,7 +172,7 @@ export const useDashboard = () => {
       return null;
     }
   };
-  
+
   const updateCourse = async (id: string, updatedData: { name: string }) => {
     try {
       const response = await fetch(`http://localhost:5000/courses/${id}`, {
@@ -174,13 +183,13 @@ export const useDashboard = () => {
         },
         body: JSON.stringify(updatedData),
       });
-  
+
       if (!response.ok) {
         throw new Error("Failed to update course");
       }
-  
+
       const updatedCourse = await response.json();
-  
+
       setCourses((prevCourses) =>
         prevCourses.map((course) =>
           course.id === id ? { ...course, name: updatedData.name } : course
@@ -190,17 +199,20 @@ export const useDashboard = () => {
       console.error("Error updating course:", error);
     }
   };
-  
+
   const setPublished = async (id: string, status: boolean) => {
     try {
-      const response = await fetch(`http://localhost:5000/courses/${id}/publish`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ isPublished: status }),
-      });
+      const response = await fetch(
+        `http://localhost:5000/courses/${id}/publish`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ isPublished: status }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to update publish status");
@@ -243,6 +255,6 @@ export const useDashboard = () => {
     updateCourse,
     setPublished,
     deleteCourse,
-    getCourse
+    getCourse,
   };
 };

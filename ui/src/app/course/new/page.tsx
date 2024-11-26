@@ -55,40 +55,47 @@ const NewCourse: React.FC = () => {
       alert("Course Title or Profile is missing!");
       return;
     }
-  
+
     try {
       // Step 1: Create the course
-      const courseResponse = await addCourse(title, csvRowCount, profile.user_id);
+      const courseResponse = await addCourse(
+        title,
+        csvRowCount,
+        profile.user_id
+      );
       console.log("Course response:", courseResponse);
       if (!courseResponse) throw new Error("Failed to create course");
-  
+
       const courseId = courseResponse.course_id; // Fix: Use course_id
       console.log("Extracted courseId:", courseId);
-  
+
       // Step 2: Add students as users
       const addedUsers = await addUsers(students);
       console.log("Added users:", addedUsers);
-  
-      if (addedUsers.length === 0) {
-        throw new Error("Failed to add users");
-      }
-  
-      // Step 3: Enroll students in the course (individually)
+
+      // if (addedUsers.length === 0) {
+      //   throw new Error("Failed to add users");
+      // }
+
+      // Step 3: Enroll students in the course (individually)   
       for (const user of addedUsers) {
         console.log("Sending enrollment request:", {
           course_id: courseId,
           user_id: user.user_id, // Fix: Use user_id
         });
-        const enrollmentResponse = await fetch("http://localhost:5000/enrollments", {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            course_id: courseId,
-            user_id: user.user_id, // Fix: Match backend field
-          }),
-        });
-  
+        const enrollmentResponse = await fetch(
+          "http://localhost:5000/enrollments",
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              course_id: courseId,
+              user_id: user.user_id, // Fix: Match backend field
+            }),
+          }
+        );
+
         if (!enrollmentResponse.ok) {
           console.error(
             `Failed to enroll user ${user.user_id} in course ${courseId}`,
@@ -97,14 +104,14 @@ const NewCourse: React.FC = () => {
           throw new Error("Failed to enroll students");
         }
       }
-  
+
       console.log("All students enrolled successfully!");
       await fetchCourses();
       router.push("/");
     } catch (error) {
       console.error("Error adding course and enrolling students:", error);
     }
-  };  
+  };
 
   return (
     <div className="container mx-auto p-4">
