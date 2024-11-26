@@ -13,6 +13,28 @@ interface Course {
 export const useDashboard = () => {
   const [courses, setCourses] = useState<Course[]>([]);
 
+  const searchCourses = async (filters: Record<string, string> = {}) => {
+    try {
+      const queryParams = new URLSearchParams(filters).toString();
+      const response = await fetch(`http://localhost:5000/courses/search?${queryParams}`, {
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch courses: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("Fetched courses:", data); // Debugging log
+      setCourses(data);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
+  };
+
   const fetchStudentCounts = async (): Promise<{ [courseId: string]: number }> => {
     try {
       const counts: { [courseId: string]: number } = {};
@@ -168,6 +190,7 @@ export const useDashboard = () => {
   return {
     courses,
     fetchCourses,
+    searchCourses,
     addCourse,
     updateCourse,
     setPublished,
