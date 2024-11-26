@@ -265,7 +265,7 @@ def delete_container(container_id):
             entity_cls=Container,
             entity_id=container_id,
             filter_func=filter_containers,
-            pk_attr='container_id'  # Specify primary key attribute if different
+            pk_attr='docker_container_id'  # Specify primary key attribute if different
         )
         if container is None:
             return jsonify({'error': 'Access denied or container not found'}), 403
