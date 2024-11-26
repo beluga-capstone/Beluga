@@ -8,6 +8,7 @@ import { toLocalISOString } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 
 const EditAssignment = ({ params }: { params: { id: string } }) => {
+  const { assignments } = useAssignments();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { fetchAssignmentsById, updateAssignment, deleteAssignment } = useAssignments();
@@ -61,7 +62,7 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
     };
 
     loadAssignment();
-  }, [params.id]);
+  }, [params.id, router]);
 
   const handleUpdate = () => {
     try {
@@ -89,7 +90,8 @@ const EditAssignment = ({ params }: { params: { id: string } }) => {
         allowsLateSubmissions,
         imageId
       );
-      router.push(`/assignments/courses/${assignment.course_id}`);
+      window.history.back();
+      //router.push(`/assignments/courses/${assignment.course_id}`);
     } catch (error) {
       console.error("Error updating assignment:", error);
     }
