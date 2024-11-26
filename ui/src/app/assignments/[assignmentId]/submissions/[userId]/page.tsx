@@ -3,7 +3,7 @@ import FilesPreview from "@/components/FilesPreview";
 import { useAssignments } from "@/hooks/useAssignments";
 import { useProfile } from "@/hooks/useProfile";
 import { useSubmissions } from "@/hooks/useSubmissions";
-import { Submission, User } from "@/types";
+import { Assignment, Student, Submission, User } from "@/types";
 import { useEffect, useState } from "react";
 import JSZip from "jszip";
 import { ROLES } from "@/constants";
@@ -11,29 +11,70 @@ import { useUsers } from "@/hooks/useUsers";
 import Button from "@/components/Button";
 import { shortDate, shortTime } from "@/lib/utils";
 import GradeEntry from "@/components/GradeEntry";
+
+interface SubmissionPageProps {
+  params: { assignmentId: string; userId: string };
+}
+
 const SubmissionPage = ({
   params,
 }: {
   params: { assignmentId: string; userId: string };
 }) => {
   const { profile } = useProfile();
-  const { assignments } = useAssignments();
   const {
     getLatestSubmission,
     getLatestSubmissionForUser,
     getAllSubmissionsForAssignmentAndUser,
   } = useSubmissions();
-  const { getUser } = useUsers();
-  const student = getUser(params.userId);
-  const assignment = assignments.find(
-    (assignment) => assignment.assignment_id === params.assignmentId
-  );
+  const { fetchUserById } = useUsers();
+  const { fetchAssignmentsById } = useAssignments();
   const [latestSubmission, setLatestSubmission] = useState<Submission | null>(
     null
   );
   const [allSubmissions, setAllSubmissions] = useState<Submission[]>([]);
   const [zipFile, setZipfile] = useState<JSZip | null>(null);
   const [files, setFiles] = useState<File[]>([]);
+  const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [student, setStudent] = useState<Student | null>(null);
+
+  useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        const data = await fetchUserById(params.userId);
+        if (data) {
+          const studentData: Student = {
+            id: data.id || "",
+            firstName: data.firstName,
+            lastName: data.lastName,
+            middleName: data.middleName,
+            email: data.email,
+            role: data.role,
+          };
+          setStudent(studentData);
+        }
+      } catch (err) {
+        console.error("Error fetching student:", err);
+      }
+      setLoading(false);
+    };
+    fetchStudent();
+  }, [params.userId, fetchUserById]);
+
+  useEffect(() => {
+    const loadAssignment = async () => {
+      try {
+        const data = await fetchAssignmentsById(params.assignmentId);
+        setAssignment(data);
+      } catch (err) {
+        console.error("Error fetching assignment:", err);
+      }
+    };
+
+    loadAssignment();
+  }, [params.assignmentId, fetchAssignmentsById]);
+
   useEffect(() => {
     if (profile && profile.role_id === ROLES.STUDENT) {
       setLatestSubmission(
@@ -54,7 +95,8 @@ const SubmissionPage = ({
         )
       );
     }
-  }, [assignments, params.assignmentId]);
+  }, [params.assignmentId]);
+
   useEffect(() => {
     if (latestSubmission) {
       const unzipFiles = async (zipData: ArrayBuffer) => {
@@ -76,6 +118,7 @@ const SubmissionPage = ({
         });
     }
   }, [latestSubmission]);
+
   return (
     <div className="container mx-auto p-4">
       <div className="mb-4 flex justify-between items-center">

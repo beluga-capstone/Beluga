@@ -214,6 +214,34 @@ def update_assignment(assignment_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+# Get assignments for specific course (GET)
+@assignment_bp.route('/assignments/course/<uuid:course_id>', methods=['GET'])
+@login_required
+def get_assignments_by_course(course_id):
+    try:
+        # Query assignments by course_id
+        assignments = db.session.query(Assignment).filter_by(course_id=course_id).all()
+        
+        if not assignments:
+            return jsonify({'error': 'No assignments found for this course'}), 404
+        
+        # Convert assignments to JSON-compatible format
+        assignments_list = [{
+            'assignment_id': str(assignment.assignment_id),
+            'course_id': str(assignment.course_id),
+            'title': assignment.title,
+            'description': assignment.description,
+            'due_at': assignment.due_at.isoformat() if assignment.due_at else None,
+            'lock_at': assignment.lock_at.isoformat() if assignment.lock_at else None,
+            'unlock_at': assignment.unlock_at.isoformat() if assignment.unlock_at else None,
+            'user_id': str(assignment.user_id) if assignment.user_id else None,
+            'docker_image_id': assignment.docker_image_id
+        } for assignment in assignments]
+        
+        return jsonify(assignments_list), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # Delete an assignment (DELETE)
 @professor_required

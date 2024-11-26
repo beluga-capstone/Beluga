@@ -19,21 +19,94 @@ users_bp = Blueprint('users', __name__)
 # Create User (POST)
 @users_bp.route('/users', methods=['POST'])
 @login_required
-def create_user():
-    data = request.get_json()
-    if not data or not data.get('username') or not data.get('email'):
-        return jsonify({'error': 'Username and email are required'}), 400
+def create_user_or_users():
+    try:
+        # Parse incoming JSON data
+        data = request.get_json()
+        
+        # Log incoming data for debugging
+        print("Received data for user creation:", data)
+
+        # Check if the input is a list (bulk creation)
+        if isinstance(data, list):
+            new_users = []
+            for user_data in data:
+                # Validate required fields for each user
+                if not user_data.get('email') or not user_data.get('firstName'):
+                    raise ValueError(f"Missing required fields for user: {user_data}")
+
+                # Handle role_id correctly
+                role = user_data.get('role', "student")  # Default to "student"
+                if role == "admin":
+                    role_id = 1  # Adjust this mapping based on your database schema
+                elif role == "professor":
+                    role_id = 2
+                elif role == "ta":
+                    role_id = 4
+                elif role == "student":
+                    role_id = 8
+                else:
+                    raise ValueError(f"Invalid role: {role}")
+
+                new_user = User(
+                    username=user_data.get('email').split("@")[0],  # Generate username
+                    email=user_data.get('email'),
+                    first_name=user_data.get('firstName'),
+                    middle_name=user_data.get('middleName', ""),
+                    last_name=user_data.get('lastName', ""),
+                    role_id=role_id  # Use mapped integer role_id
+                )
+
+                result, status_code = create_user_helper(new_user)
+                # TODO: double check this works
+                new_users.append(new_user)
     
-    result, status_code = create_user_helper(
-        username=data['username'],
-        email=data['email'],
-        first_name=data.get('first_name'),
-        middle_name=data.get('middle_name'),
-        last_name=data.get('last_name'),
-        role_id=data.get('role_id')
-    )
-    
-    return jsonify(result), status_code
+                # return jsonify(result), status_code
+                
+            # Return created users' details
+            response_data = [{"user_id": str(user.user_id), "email": user.email} for user in new_users]
+            return jsonify(response_data), 201
+
+        # Single user creation if input is not a list
+        elif isinstance(data, dict):
+            # Validate required fields
+            if not data.get('email'):
+                return jsonify({'error': 'Username and email are required'}), 400
+
+            # Handle role_id correctly
+            role = data.get('role', "student")  # Default to "student"
+            if role == "admin":
+                role_id = 1  # Adjust this mapping based on your database schema
+            elif role == "professor":
+                role_id = 2
+            elif role == "ta":
+                role_id = 4
+            elif role == "student":
+                role_id = 8
+            else:
+                raise ValueError(f"Invalid role: {role}")
+
+            # Create a single user object
+            new_user = User(
+                username=data.get('email').split("@")[0],  # Generate username
+                email=data.get('email'),
+                first_name=data.get('firstName'),
+                middle_name=data.get('middleName', ""),
+                last_name=data.get('lastName', ""),
+                role_id=role_id  # Use mapped integer role_id
+            )
+
+            result, status_code = create_user_helper(new_user)
+
+            return jsonify(result), status_code
+
+        else:
+            return jsonify({'error': 'Invalid input format. Expected an object or an array of objects.'}), 400
+
+    except Exception as e:
+        print("Error during user creation:", str(e))
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 # Read All Users (GET)
 @users_bp.route('/users', methods=['GET'])
@@ -164,13 +237,28 @@ def delete_user(user_id):
 
     
     try:
+        # Delete related records in course_enrollment
+        print(f"Deleting related enrollments for user {user_id}")
+        db.session.execute(
+            db.text("DELETE FROM course_enrollment WHERE user_id = :user_id"),
+            {"user_id": str(user_id)}
+        )
+
+        # Delete the user
+        print(f"Deleting user {user_id}")
         db.session.delete(user)
         db.session.commit()
 
-        shutil.rmtree(os.path.join(BASE_KEY_PATH, str(user_id)))
+        # Remove associated SSH keys
+        try:
+            shutil.rmtree(os.path.join(current_app.config["BASE_KEY_PATH"], str(user_id)), ignore_errors=True)
+            print(f"Deleted SSH keys for user {user_id}.")
+        except Exception as e:
+            print(f"Error deleting SSH keys: {e}")
 
         return jsonify({'message': 'User deleted successfully'}), 200
     except Exception as e:
+        print(f"Error deleting user: {e}")
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 

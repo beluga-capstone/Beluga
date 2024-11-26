@@ -1,10 +1,7 @@
-"use client";
-
 import React, { useState, useEffect, useRef } from "react";
 import { Terminal, ITerminalOptions, ITerminalInitOnlyOptions } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { WebLinksAddon } from "@xterm/addon-web-links";
-import { io, Socket } from "socket.io-client";
 import "@xterm/xterm/css/xterm.css";
 
 // Terminal initialization options
@@ -31,89 +28,108 @@ const ContainerPageTerminal: React.FC<ContainerPageTerminalProps> = ({
   containerPort,
 }) => {
   const terminalRef = useRef<HTMLDivElement | null>(null);
-  const terminalInstanceRef = useRef<Terminal | null>(null);
-  const socketRef = useRef<Socket | null>(null);
+  const xtermRef = useRef<Terminal | null>(null);
+  const socketRef = useRef<WebSocket | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
+
+  // Helper function to calculate cols and rows
+  const calculateTerminalSize = () => {
+    const terminalElement = terminalRef.current;
+    if (!terminalElement) return { cols: 80, rows: 24 }; // Default size
+
+    const width = terminalElement.clientWidth;
+    const height = terminalElement.clientHeight;
+    const fontSize = terminalOptions.fontSize || 22;
+
+    // Calculate columns and rows based on the terminal's container size
+    const cols = Math.floor(width / (fontSize * 0.6)); // Approximate width per column
+    const rows = Math.floor(height / (fontSize * 1.2)); // Approximate height per row
+
+    return { cols, rows };
+  };
 
   useEffect(() => {
-    console.log(isRunning,containerPort,isConnected);
-    if (isRunning && containerPort && !isConnected) {
-      initializeTerminal();
-    }
+    if (!terminalRef.current || !isRunning) return;
 
-    return () => {
-      disconnectTerminal();
-    };
-  }, [isRunning, containerPort]);
-
-  const initializeTerminal = () => {
-    if (!terminalRef.current) return;
-
-    // Clear the old terminal instance, if it exists
-    if (terminalInstanceRef.current) {
-      terminalInstanceRef.current.dispose();
-      terminalInstanceRef.current = null;
-    }
-
+    // Init terminal
     const term = new Terminal(terminalOptions);
+    xtermRef.current = term;
     const fitAddon = new FitAddon();
+    fitAddonRef.current = fitAddon;
     const webLinksAddon = new WebLinksAddon();
-
     term.loadAddon(fitAddon);
     term.loadAddon(webLinksAddon);
 
+    // Define websocket
+    const ws = new WebSocket(`ws://localhost:${containerPort}`);
+    socketRef.current = ws;
+
+    // Open terminal
     term.open(terminalRef.current);
-    setTimeout(() => {
-      try {
-        fitAddon.fit();
-      } catch (error) {
-        console.error("Failed to fit terminal:", error);
+    setTimeout(() => fitAddon.fit(), 0);
+
+    ws.onopen = () => {
+      // Handle terminal input
+      term.onData((data: string) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'input', data }));
+        }
+      });
+
+      // Handle terminal resize
+      const resizeTerminal = () => {
+        if (ws.readyState === WebSocket.OPEN) {
+          const { cols, rows } = calculateTerminalSize();
+          ws.send(JSON.stringify({ type: 'resize', cols, rows }));
+        }
+      };
+
+      term.onResize(() => {
+        resizeTerminal();
+      });
+    };
+
+    ws.onmessage = (event: MessageEvent) => {
+      term.write(event.data);
+    };
+
+    ws.onerror = () => {
+      term.writeln('\x1b[31mWebSocket error occurred\x1b[0m');
+    };
+
+    ws.onclose = (event: CloseEvent) => {
+      // Handle disconnection
+    };
+
+    // Handle window resize
+    const handleResize = (): void => {
+      fitAddonRef.current?.fit();
+      const resizeTerminal = () => {
+        if (ws.readyState === WebSocket.OPEN) {
+          const { cols, rows } = calculateTerminalSize();
+          ws.send(JSON.stringify({ type: 'resize', cols, rows }));
+        }
+      };
+      resizeTerminal(); // Recalculate and resize terminal
+    };
+    
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup
+    return () => {
+      if (socketRef.current?.readyState === WebSocket.OPEN) {
+        socketRef.current.close();
       }
-    }, 0);
+      term.dispose();
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isRunning, containerPort]);
 
-    const socket = io(`http://localhost:${containerPort}/pty`);
-    socketRef.current = socket;
-
-    // Set up terminal and socket communication
-    term.onData((data) => {
-      socket.emit("pty-input", { input: data });
-    });
-
-    socket.on("pty-output", (data) => {
-      term.write(data.output);
-    });
-
-    // Connection handlers
-    socket.on("connect", () => {
-      term.clear(); // Clear the terminal upon reconnect
-      term.writeln("\x1b[32mConnected to your virtual environment.\x1b[0m");
-      setIsConnected(true);
-    });
-
-    socket.on("disconnect", () => {
-      term.writeln("\x1b[31mDisconnected from your virtual environment.\x1b[0m");
-      setIsConnected(false);
-    });
-
-    fitAddonRef.current = fitAddon;
-    terminalInstanceRef.current = term;
-  };
-
-  const disconnectTerminal = () => {
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = null;
-    }
-    if (terminalInstanceRef.current) {
-      terminalInstanceRef.current.dispose();
-      terminalInstanceRef.current = null;
-    }
-    setIsConnected(false);
-  };
-
-  return <div ref={terminalRef} className="w-full border-2" role="terminal textbox" />;
+  return (
+    <>
+      <div ref={terminalRef} role="terminal textbox" style={{ width: '100%', height: '100%' }} />
+    </>
+  );
 };
 
 export default ContainerPageTerminal;
-

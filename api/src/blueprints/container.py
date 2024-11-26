@@ -135,9 +135,6 @@ def create_container():
         ssh_keys = get_keys_path(data['user_id'])
         public_key_path = ssh_keys["public_key_path"]
 
-        #Create ssh dir inside container
-        container_ssh_dir = "/root/.ssh" # path inside docker container
-        subprocess.run(["docker", "exec", container_id, "mkdir", "-p", container_ssh_dir], check=True)
 
         # Copy the key into Docker's authorized key file
         subprocess.run(["docker", "cp", public_key_path, f"{container_id}:{container_ssh_dir}/authorized_keys"], check=True)
