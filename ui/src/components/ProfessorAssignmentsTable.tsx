@@ -15,20 +15,6 @@ interface ProfessorAssignmentsTableProps {
   ) => void;
 }
 
-const ProfessorAssignmentsTable = () => {
-  const { assignments, setPublished, setLateSubmissions } = useAssignments();
-  const { getSubmissionCountForAssignment } = useSubmissions();
-  const [submissionCounts, setSubmissionCounts] = useState({});
-  useEffect(() => {
-    const fetchSubmissionCounts = async () => {
-      const counts = {};
-      for (const assignment of assignments) {
-        counts[assignment.assignment_id] = await getSubmissionCountForAssignment(assignment.assignment_id);
-      }
-      setSubmissionCounts(counts);
-    };
-    fetchSubmissionCounts();
-  }, [assignments, getSubmissionCountForAssignment]);
 const format_date = (date: string) =>
   new Date(date).toLocaleDateString("en-US", {
     year: "numeric",
@@ -42,6 +28,20 @@ const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({
   setLateSubmissions,
 }) => {
   console.log("Assignments passed to ProfessorAssignmentsTable:", assignments);
+
+  // const { assignments, setPublished, setLateSubmissions } = useAssignments();
+  const { getSubmissionCountForAssignment } = useSubmissions();
+  const [submissionCounts, setSubmissionCounts] = useState({});
+  useEffect(() => {
+    const fetchSubmissionCounts = async () => {
+      const counts = {};
+      for (const assignment of assignments) {
+        counts[assignment.assignment_id] = await getSubmissionCountForAssignment(assignment.assignment_id);
+      }
+      setSubmissionCounts(counts);
+    };
+    fetchSubmissionCounts();
+  }, [assignments, getSubmissionCountForAssignment]);
 
   return (
     <div>

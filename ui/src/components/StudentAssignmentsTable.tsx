@@ -73,4 +73,4 @@ const StudentsAssignmentsTable: React.FC<StudentsAssignmentsTableProps> = ({
   );
 };
 
-export default StudentAssignmentsTable;
+export default StudentsAssignmentsTable;
