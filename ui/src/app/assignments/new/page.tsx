@@ -5,6 +5,7 @@ import { useAssignments } from "@/hooks/useAssignments";
 import React, { useState, useEffect } from "react";
 import AssignmentForm from "../../../components/AssignmentsForm";
 import { useRouter } from "next/navigation";
+import { toLocalISOString } from "@/lib/utils";
 
 const NewAssignment: React.FC = () => {
   const { addAssignment } = useAssignments();
@@ -26,58 +27,66 @@ const NewAssignment: React.FC = () => {
       setError("Course ID is missing!");
       return;
     }
-  
+
     try {
       // Fetch assignments for the course
-      const response = await fetch(`http://localhost:5000/assignments/search?course_id=${courseId}`, {
-        method: "GET",
-        credentials: "include",
-      });
-  
+      const response = await fetch(
+        `http://localhost:5000/assignments/search?course_id=${courseId}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
       let courseAssignments = [];
       if (response.ok) {
         courseAssignments = await response.json();
       } else {
         const errorData = await response.json();
         if (errorData.error === "No assignments found for this course") {
-          console.log("No assignments found for this course. Proceeding to add a new assignment.");
+          console.log(
+            "No assignments found for this course. Proceeding to add a new assignment."
+          );
           courseAssignments = []; // Treat as empty array
         } else {
           throw new Error("Failed to fetch assignments for this course.");
         }
       }
-  
+
       const isDuplicate = courseAssignments.some(
-        (assignment: any) => assignment.title.toLowerCase() === title.toLowerCase()
+        (assignment: any) =>
+          assignment.title.toLowerCase() === title.toLowerCase()
       );
-  
+
       if (isDuplicate) {
         setError("An assignment with this title already exists in the course.");
         return;
       }
-  
+
       setError("");
-  
+
       await addAssignment(
         courseId,
         title,
         description,
-        new Date(dueAt),
-        allowsLateSubmissions && lockAt ? new Date(lockAt) : new Date(dueAt),
-        new Date(unlockAt),
-        new Date(publishAt),
+        new Date(toLocalISOString(dueAt)),
+        allowsLateSubmissions && lockAt
+          ? new Date(toLocalISOString(lockAt))
+          : new Date(toLocalISOString(dueAt)),
+        new Date(toLocalISOString(unlockAt)),
+        new Date(toLocalISOString(publishAt)),
         allowsLateSubmissions,
         imageId || null
       );
-  
+
       router.push(`/assignments/courses/${courseId}`);
     } catch (err) {
       console.error("Error adding assignment:", err);
-      setError("An error occurred while adding the assignment. Please try again.");
+      setError(
+        "An error occurred while adding the assignment. Please try again."
+      );
     }
   };
-  
-  
 
   return (
     <div className="container mx-auto p-4">

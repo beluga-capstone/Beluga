@@ -1,18 +1,10 @@
 import Link from "next/link";
 import { Assignment } from "@/types";
+import { shortDate, shortTime, toLocalISOString } from "@/lib/utils";
 
 interface StudentsAssignmentsTableProps {
   assignments: Assignment[]; // Array of assignments to display
 }
-
-const format_date = (date: Date | null | undefined) =>
-  date
-    ? new Date(date).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : "Not Found";
 
 const StudentsAssignmentsTable: React.FC<StudentsAssignmentsTableProps> = ({
   assignments,
@@ -49,10 +41,18 @@ const StudentsAssignmentsTable: React.FC<StudentsAssignmentsTableProps> = ({
                     </Link>
                   </td>
                   <td className="text-center py-2">
-                    {format_date(assignment.publish_at)}
+                    {assignment.publish_at
+                      ? `${shortDate(assignment.publish_at)} at ${shortTime(
+                          assignment.publish_at
+                        )}`
+                      : "-"}
                   </td>
                   <td className="text-center py-2">
-                    {format_date(assignment.due_at)}
+                    {assignment.due_at
+                      ? `${shortDate(assignment.due_at)} at ${shortTime(
+                          assignment.due_at
+                        )}`
+                      : "-"}
                   </td>
                 </tr>
               ))}
