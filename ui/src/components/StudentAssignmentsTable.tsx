@@ -25,7 +25,6 @@ const StudentsAssignmentsTable: React.FC<StudentsAssignmentsTableProps> = ({
             <th>Title</th>
             <th>Released</th>
             <th>Due</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -54,14 +53,6 @@ const StudentsAssignmentsTable: React.FC<StudentsAssignmentsTableProps> = ({
                   </td>
                   <td className="text-center py-2">
                     {format_date(assignment.due_at)}
-                  </td>
-                  <td className="text-center py-2">
-                    <Link
-                      href={`/assignments/${assignment.assignment_id}`}
-                      className="text-blue-500 underline"
-                    >
-                      View Details
-                    </Link>
                   </td>
                 </tr>
               ))}

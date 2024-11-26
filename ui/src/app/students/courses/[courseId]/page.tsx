@@ -8,6 +8,8 @@ import StudentsTable from "../../StudentsTable";
 import { useUsers } from "@/hooks/useUsers";
 import Link from "next/link";
 import { Student } from "@/types";
+import { useProfile } from "@/hooks/useProfile";
+import { ROLES } from "@/constants";
 
 interface CourseStudentsProps {
   params: { courseId: string };
@@ -16,12 +18,12 @@ interface CourseStudentsProps {
 const CourseStudents = ({ params }: CourseStudentsProps) => {
   const { fetchCourseStudents } = useUsers(); 
   const searchParams = useSearchParams();
+  const {profile} = useProfile();
 
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const role = searchParams.get("role") || "professor";
 
   useEffect(() => {
     if (!params.courseId) {
@@ -58,7 +60,7 @@ const CourseStudents = ({ params }: CourseStudentsProps) => {
     <div className="container mx-auto p-4">
       <div className="mb-4 flex justify-between items-center">
         <h1 className="font-bold text-4xl mb-6">Students in Course</h1>
-        {role !== "student" && (
+        {profile?.role_id !== ROLES.STUDENT && (
           <div className="flex">
             <div className="pr-8">
             <Link href={`/students/new/import/${params.courseId}`}>
