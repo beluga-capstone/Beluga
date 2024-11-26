@@ -38,7 +38,7 @@ export interface Student {
   middleName?: string;
   email: string;
   role?: string; 
-  courseId?: number;
+  courseId?: string;
 }
 
 export interface Assignment {

@@ -2,7 +2,8 @@
 
 import { ROLES } from "@/constants";
 import { useState } from "react";
-import { User } from "@/types";
+import { User, Student } from "@/types";
+import { getRoleName } from "@/lib/utils";
 
 const fetchUsers = async() => {
 }
@@ -31,6 +32,32 @@ const fetchUserById = async (userId: string): Promise<{ firstName: string; lastN
   }
 };
 
+const fetchCourseStudents = async (courseId: string): Promise<Student[]> => {
+  try {
+    const response = await fetch(`http://localhost:5000/courses/${courseId}/users`);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch course-specific students.");
+    }
+
+    const data = await response.json();
+
+    const mappedStudents = data.map((user: any) => ({
+      id: user.user_id,
+      firstName: user.firstname,
+      lastName: user.lastname,
+      middleName: user.middlename || "",
+      email: user.email,
+      role: getRoleName(user.role_id),
+      courseId,
+    }));
+
+    return mappedStudents;
+  } catch (error) {
+    console.error(`Error fetching students for course ID ${courseId}:`, error);
+    return [];
+  }
+};
 
 export const useUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -60,7 +87,6 @@ export const useUsers = () => {
       courseId,
     };
 
-    // Add the user to the backend
     const response = await fetch("http://localhost:5000/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -140,6 +166,7 @@ export const useUsers = () => {
   return {
     users,
     fetchUserById,
+    fetchCourseStudents,
     addUser,
     addUsers,
     updateUser,

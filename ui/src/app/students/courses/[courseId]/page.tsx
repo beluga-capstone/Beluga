@@ -5,56 +5,50 @@ import { ArrowUpFromLine, Plus } from "lucide-react";
 import { useParams } from "next/navigation";
 import Button from "@/components/Button";
 import StudentsTable from "../../StudentsTable";
+import { useUsers } from "@/hooks/useUsers";
 import { Student } from "@/types";
 
-const CourseStudents: React.FC = () => {
-  const { courseId } = useParams();
-  if (!courseId) {
-    console.error("courseId is undefined");
-    return;
-  }
-  console.log("courseId:", courseId);
+interface CourseStudentsProps {
+  params: { courseId: string };
+}
+
+const CourseStudents = ({ params }: CourseStudentsProps) => {
+  const { fetchCourseStudents } = useUsers(); 
 
   const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("useEffect triggered for courseId:", courseId);
-    const fetchCourseStudents = async () => {
+    if (!params.courseId) {
+      console.error("courseId is undefined");
+      setError("Course ID is undefined.");
+      setLoading(false);
+      return;
+    }
+
+    const getStudents = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:5000/courses/${courseId}/users`
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch course-specific students.");
-        }
-
-        const data = await response.json();
-        console.log("Fetched Data:", data);
-
-        const mappedStudents = data.map((user: any) => ({
-            id: user.user_id,
-            firstName: user.firstname,
-            lastName: user.lastname,
-            middleName: user.middlename || "",
-            email: user.email,
-            role: 
-              Number(user.role_id) === 8 ? "Student" : 
-              Number(user.role_id) === 4 ? "TA" : 
-              "Unknown",
-            courseId,
-        }));
-        setStudents(mappedStudents);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching students:", error);
+        const data: Student[] = await fetchCourseStudents(params.courseId); // Call fetchCourseStudents
+        setStudents(data);
+      } catch (err) {
+        console.error("Error fetching students:", err);
+        setError("Failed to fetch students.");
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchCourseStudents();
-  }, [courseId]);
+    getStudents();
+  }, [params.courseId, fetchCourseStudents]);
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p className="text-red-500">{error}</p>;
+  }
 
   return (
     <div className="container mx-auto p-4">
@@ -64,14 +58,14 @@ const CourseStudents: React.FC = () => {
           <div className="pr-8">
             <Button
               className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-              href={`/students/new/import?courseId=${courseId}`}
+              href={`/students/new/import?courseId=${params.courseId}`}
             >
               <ArrowUpFromLine className="mr-2" /> Import From File
             </Button>
           </div>
           <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-            href={`/students/new?courseId=${courseId}`}
+            href={`/students/new?courseId=${params.courseId}`}
           >
             <Plus className="mr-2" /> Add Student
           </Button>
