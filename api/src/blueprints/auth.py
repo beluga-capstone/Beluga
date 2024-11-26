@@ -108,13 +108,15 @@ def oauth_callback(provider):
         flash('Login successful', 'success')
         return redirect(current_app.config["LOGIN_REDIRECT"])
     else:
-        result, status_code = create_user_helper(
+
+        new_user = User(
             username=username,
             email=email,
             first_name=fname,
             last_name=lname,
             role_id=role
         )
+        result, status_code = create_user_helper(new_user)
 
         if status_code != 201:
             flash('User creation failed. Please contact support.', 'danger')
