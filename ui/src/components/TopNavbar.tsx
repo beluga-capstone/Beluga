@@ -133,11 +133,14 @@ const TopNavbar = () => {
         </div>
 
         {/* Right-aligned Profile Button */}
-        <div className="flex space-x-4 relative">
+        <div className="hidden md:flex space-x-2 items-center relative">
+          <button onClick={toggleMenu} title="Profile Button" className="flex items-center space-x-2">
+            <Icon icon="lucide:user" width="24" height="24" />
+            <span>
+              {profile?.firstName} {profile?.lastName}
+            </span>
+          </button>
           <div className="relative" ref={menuRef}>
-            <button onClick={toggleMenu} title="Profile Button">
-              <Icon icon="lucide:user" width="24" height="24" />
-            </button>
             {menuIsOpen && <UserSettingsPopup setMenuIsOpen={setMenuIsOpen} />}
           </div>
         </div>
