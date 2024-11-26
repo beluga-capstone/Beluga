@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
 from sqlalchemy.dialects.postgresql import UUID
-
+from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
 
@@ -17,6 +17,8 @@ class Role(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now)
 
+    users = relationship('User', backref='role')
+
 class User(db.Model, UserMixin):
     __tablename__ = 'user'
     user_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -25,10 +27,16 @@ class User(db.Model, UserMixin):
     first_name = db.Column(db.String(100))
     middle_name = db.Column(db.String(100))
     last_name = db.Column(db.String(100))
-    role_id = db.Column(db.Integer, db.ForeignKey('role.role_id'))
+    role_id = db.Column(db.Integer, db.ForeignKey('role.role_id', ondelete='SET NULL'))
     created_at = db.Column(db.DateTime, default=datetime.now)
     update_at = db.Column(db.DateTime, default=datetime.now)
 
+    courses = relationship('Course', backref='creator', cascade='all, delete-orphan')
+    enrollments = relationship('CourseEnrollment', backref='user', cascade='all, delete-orphan')
+    submissions = relationship('Submission', backref='user', cascade='all, delete-orphan')
+    containers = relationship('Container', backref='user', cascade='all, delete-orphan')
+    images = relationship('Image', backref='user', cascade='all, delete-orphan')
+    
     def get_id(self):
         return (self.user_id)
 
@@ -69,42 +77,50 @@ class Term(db.Model):
     term_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = db.Column(db.String(100), nullable=False)
 
+    courses = relationship('Course', backref='term', cascade='all, delete-orphan')
+
 class Course(db.Model):
     __tablename__ = 'course'
     course_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = db.Column(db.String(100), nullable=False)
-    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id', ondelete='CASCADE'))
     description = db.Column(db.String(255))
     publish = db.Column(db.Boolean, default=False)
     create_at = db.Column(db.DateTime, default=datetime.now)
     update_at = db.Column(db.DateTime, default=datetime.now)
     start_at = db.Column(db.DateTime)
-    term_id = db.Column(UUID(as_uuid=True), db.ForeignKey('term.term_id'))
+    term_id = db.Column(UUID(as_uuid=True), db.ForeignKey('term.term_id', ondelete='SET NULL'))
+
+    assignments = relationship('Assignment', backref='course', cascade='all, delete-orphan')
+    enrollments = relationship('CourseEnrollment', backref='course', cascade='all, delete-orphan')
 
 class CourseEnrollment(db.Model):
     __tablename__ = 'course_enrollment'
     enrollment_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    course_id = db.Column(UUID(as_uuid=True), db.ForeignKey('course.course_id'))
-    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
+    course_id = db.Column(UUID(as_uuid=True), db.ForeignKey('course.course_id', ondelete='CASCADE'))
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id', ondelete='CASCADE'))
     enrollment_date = db.Column(db.DateTime, default=datetime.now)
 
 class Assignment(db.Model):
     __tablename__ = 'assignment'
     assignment_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    course_id = db.Column(UUID(as_uuid=True), db.ForeignKey('course.course_id'))
+    course_id = db.Column(UUID(as_uuid=True), db.ForeignKey('course.course_id', ondelete='CASCADE'))
     title = db.Column(db.String(200))
     description = db.Column(db.String(255))
     due_at = db.Column(db.DateTime)
     lock_at = db.Column(db.DateTime)
     unlock_at = db.Column(db.DateTime)
-    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
-    docker_image_id = db.Column(db.String(80), db.ForeignKey('image.docker_image_id'), nullable=True)
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id', ondelete='SET NULL'))
+    docker_image_id = db.Column(db.String(80), db.ForeignKey('image.docker_image_id', ondelete='SET NULL'), nullable=True)
+
+    submissions = relationship('Submission', backref='assignment', cascade='all, delete-orphan')
+    image = relationship('Image', back_populates='assignments')
 
 class Submission(db.Model):
     __tablename__ = 'submission'
     submission_id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
-    assignment_id = db.Column(UUID(as_uuid=True), db.ForeignKey('assignment.assignment_id'))
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id', ondelete='CASCADE'))
+    assignment_id = db.Column(UUID(as_uuid=True), db.ForeignKey('assignment.assignment_id', ondelete='CASCADE'))
     submission_date = db.Column(db.DateTime, default=datetime.now)
     grade = db.Column(db.Integer)
     status = db.Column(db.String(50))
@@ -114,12 +130,14 @@ class Container(db.Model):
     __tablename__ = 'container'
     docker_container_id = db.Column(db.String(128), primary_key=True)
     docker_container_name = db.Column(db.String(255))
-    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id', ondelete='CASCADE'))
     description = db.Column(db.String(255))
 
 class Image(db.Model):
     __tablename__ = 'image'
     docker_image_id = db.Column(db.String(128), primary_key=True)
-    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id'))
+    user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.user_id', ondelete='CASCADE'))
     description = db.Column(db.String(255))
     packages = db.Column(db.Text)
+
+    assignments = relationship('Assignment', back_populates='image')
