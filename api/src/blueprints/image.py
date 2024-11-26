@@ -103,7 +103,7 @@ def build_image():
         return jsonify({'error': str(e)}), 500
 
 
-@image_bp.route('/images/search', methods=['GET'])
+@image_bp.route('/images/search', methods=['GET', 'POST'])
 @login_required
 def search_images():
     user = db.session.get(User, current_user.user_id)
