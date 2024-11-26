@@ -34,11 +34,11 @@ const StudentCoursesTable: React.FC = () => {
             </tr>
             {courses.map((course) => (
               <tr key={course.id}>
-                 <td className="text-center py-2">
-                    <Link href={`/assignments/courses/${course.id}`}>
-                      {course.name}
-                    </Link>
-                  </td>
+                <td className="text-center py-2">
+                  <Link href={`/assignments/courses/${course.id}?role=student`}>
+                    {course.name}
+                  </Link>
+                </td>
                 <td className="text-center py-2">{course.term || "Fall 2024"}</td>
               </tr>
             ))}

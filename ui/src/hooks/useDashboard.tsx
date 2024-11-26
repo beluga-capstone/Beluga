@@ -17,6 +17,7 @@ export const useDashboard = () => {
     try {
       const queryParams = new URLSearchParams(filters).toString();
       const response = await fetch(`http://localhost:5000/courses/search?${queryParams}`, {
+        method: "GET",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
