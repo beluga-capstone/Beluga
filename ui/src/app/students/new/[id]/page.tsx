@@ -89,8 +89,8 @@ const NewUser: React.FC = () => {
         setEmail={setEmail}
       />
 
-      <div className="flex flex-column justify-end">
-        <div className="p-2">
+      <div className="flex flex-column ">
+        <div className="mr-2">
           <Button
             className="bg-gray-500 text-white px-4 py-2 rounded flex items-center"
             href={`/students/courses/${courseId}`}
@@ -98,7 +98,7 @@ const NewUser: React.FC = () => {
             Cancel
           </Button>
         </div>
-        <div className="p-2">
+        <div className="">
           <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
             onClick={handleAddUser}
