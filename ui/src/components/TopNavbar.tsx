@@ -7,13 +7,14 @@ import useScroll from "@/hooks/useScroll";
 import { useProfile } from "@/hooks/useProfile";
 import UserSettingsPopup from "./UserSettingsPopup";
 import { cn } from "@/lib/utils";
+import { Course } from "@/types";
 
 const TopNavbar = () => {
   const [menuIsOpen, setMenuIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const scrolled = useScroll(5);
   const { profile } = useProfile();
-  const [courses, setCourses] = useState<any[]>([]);
+  const [course, setCourses] = useState<Course[]>([]);
 
   // Fetch courses when the component mounts
   useEffect(() => {
