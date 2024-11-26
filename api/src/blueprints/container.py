@@ -142,7 +142,9 @@ def create_container():
         subprocess.run(["docker", "--context", "beluga-containers", "cp", root_key_path, f"{container_id}:{root_ssh_dir}/authorized_keys"], check=True)
         subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chown", "root:root", f"{root_ssh_dir}/authorized_keys"])
         subprocess.run(["docker", "--context", "beluga-containers", "cp", user_key_path, f"{container_id}:{user_ssh_dir}/authorized_keys"], check=True)
-        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chown", "root:root", f"{user_ssh_dir}/authorized_keys"])
+        subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chown", "student:sudent", f"{user_ssh_dir}/authorized_keys"])
+        #subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chmod", "700", container_ssh_dir], check=True)
+        #subprocess.run(["docker", "--context", "beluga-containers", "exec", container_id, "chmod", "600", container_authorized_keys], check=True)
 
         # # Set the permissions of .ssh directory and authorized_keys file
         # subprocess.run(["docker", "exec", container_id, "chmod", "700", container_ssh_dir], check=True)
