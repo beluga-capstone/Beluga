@@ -33,3 +33,17 @@ memory = 8192
 disk-size = 20480
 type = "containers"
 ip = "192.168.100.4"
+
+[services]
+
+[services.db]
+name = "beluga-containers"
+pwd = "temppassword"
+db = "beluga"
+port = 5432
+
+[services.api]
+port=8123
+
+[services.ui]
+port=8124

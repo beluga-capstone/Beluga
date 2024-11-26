@@ -3,7 +3,7 @@ FROM ubuntu:latest
 
 # Install Python, pip, and SSH server
 RUN apt-get update && \
-    apt-get install -y nodejs apt-utils openssh-server sudo && \
+    apt-get install -y python3 python3-pip python3-venv openssh-server sudo apt-utils && \
     apt-get clean
 
 # Configure SSH server
