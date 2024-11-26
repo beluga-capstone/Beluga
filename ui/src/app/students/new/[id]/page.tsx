@@ -5,14 +5,13 @@ import { ROLES } from "@/constants";
 import { useRouter } from "next/navigation";
 import { useUsers } from "@/hooks/useUsers";
 import React, { useState } from "react";
-import StudentForm from "../StudentForm";
+import StudentForm from "../../StudentForm";
 import { useParams } from "next/navigation";
 
 const NewUser: React.FC = () => {
   const { addUser } = useUsers();
   const params = useParams();
-  const courseId="";
-  console.log("qoiwbeioqweuqw",params);
+  const courseId=params.id;
   if (!courseId) {
     console.error("courseId is missing from the query params.");
     return;
@@ -114,3 +113,4 @@ const NewUser: React.FC = () => {
 };
 
 export default NewUser;
+
