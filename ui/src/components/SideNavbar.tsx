@@ -15,10 +15,14 @@ const SideNavbar = () => {
   const [courseId, setCourseId] = useState<string | null>(null);
 
   useEffect(() => {
-    const getCourses=async()=>{
+    const getCourses = async () => {
       await fetchCourses();
     };
-    getCourses();
+
+    // Set an interval to fetch courses every 5 seconds
+    const intervalId = setInterval(() => {
+      getCourses();
+    }, 5000);
 
     // Ensure we handle both string and string[] cases for courseId
     if (Array.isArray(params.courseId)) {
@@ -26,6 +30,9 @@ const SideNavbar = () => {
     } else {
       setCourseId(params.courseId || null); // Directly use the string if it's not an array
     }
+
+    // Cleanup the interval on component unmount or dependency change
+    return () => clearInterval(intervalId);
   }, [params.courseId]);
 
   const getSideNavItems = (): SideNavItem[] => {
@@ -34,12 +41,15 @@ const SideNavbar = () => {
         title: 'Courses',
         path: '/',
         icon: <Icon icon="lucide:home" width="24" height="24" />,
-        subMenuItems: courses.map(course => ({
-          title: course.name, 
-          path: `/assignments/courses/${course.id}`
-        }))
+        ...(courses.length > 0 && {
+          subMenuItems: courses.map(course => ({
+            title: course.name,
+            path: `/assignments/courses/${course.id}`
+          }))
+        }),
       },
     ];
+
 
     const courseItems: SideNavItem[] = courseId
       ? [
