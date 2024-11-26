@@ -35,6 +35,31 @@ export const useDashboard = () => {
     }
   };
 
+  const getCourse = async (id: string): Promise<Course | null> => {
+    try {
+      const response = await fetch(`http://localhost:5000/courses/${id}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch course details");
+      }
+
+      const data = await response.json();
+      const course: Course = {
+        id: data.course_id,
+        name: data.name,
+        user_id: data.user_id,
+        studentsEnrolled: 0, // This would need to be fetched separately if needed
+        isPublished: data.publish,
+        term: data.term_id || "Fall 2024",
+        professor: data.description || "Unknown", // Assuming professor info might be in description
+      };
+
+      return course;
+    } catch (error) {
+      console.error(`Error fetching course with ID ${id}:`, error);
+      return null;
+    }
+  };
+
   const fetchCourses = async () => {
     try {
       const response = await fetch("http://localhost:5000/courses");
@@ -173,5 +198,6 @@ export const useDashboard = () => {
     updateCourse,
     setPublished,
     deleteCourse,
+    getCourse
   };
 };
