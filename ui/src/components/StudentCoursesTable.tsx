@@ -1,14 +1,32 @@
-import React, { useEffect } from "react";
+import React, { useEffect,useState } from "react";
 import { useDashboard } from "@/hooks/useDashboard";
 import Link from "next/link";
 
+interface Course {
+  user_id?: string;
+  course_id: string;
+  name: string;
+  studentsEnrolled: number;
+  isPublished: boolean;
+  term?: string;
+  professor?: string;
+}
+
 const StudentCoursesTable: React.FC = () => {
-  const { courses, searchCourses } = useDashboard();
+  const { searchCourses } = useDashboard();
+  const [courses,setCourses] = useState<Course[]|null>(null);
 
   useEffect(() => {
-    const filters = {};
-    searchCourses(filters);
-  }, [searchCourses]);
+    const getCourses =async()=>{
+      const filters = {};
+      const data = await searchCourses(filters);
+
+      setCourses(data);
+    }
+    getCourses();
+    console.log("theeeeee data",courses);
+
+  }, []);
 
   return (
     <table className="table w-full">
@@ -19,7 +37,7 @@ const StudentCoursesTable: React.FC = () => {
         </tr>
       </thead>
       <tbody>
-        {courses.length === 0 ? (
+        {courses?.length === 0 ? (
           <tr>
             <td colSpan={2} className="text-center py-4">
               No courses found.
@@ -32,10 +50,10 @@ const StudentCoursesTable: React.FC = () => {
                 <hr />
               </td>
             </tr>
-            {courses.map((course) => (
-              <tr key={course.id}>
+            {courses?.map((course) => (
+              <tr key={course.course_id}>
                 <td className="text-center py-2">
-                  <Link href={`/assignments/courses/${course.id}?role=student`}>
+                  <Link href={`/assignments/courses/${course.course_id}`}>
                     {course.name}
                   </Link>
                 </td>

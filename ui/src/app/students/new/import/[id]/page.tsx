@@ -6,7 +6,7 @@ import Papa from "papaparse";
 import { User } from "@/types";
 import Button from "@/components/Button";
 import { useUsers } from "@/hooks/useUsers";
-import StudentsTable from "../../StudentsTable";
+import StudentsTable from "../../../StudentsTable";
 import { useParams } from "next/navigation";
 
 const ImportStudentsPage: React.FC = () => {
@@ -68,7 +68,7 @@ const ImportStudentsPage: React.FC = () => {
 
       for (const user of addedUsers) {
         const enrollmentResponse = await fetch(
-          `${process.env.backend}/enrollments`,
+          "http://localhost:5000/enrollments",
           {
             method: "POST",
             credentials: "include",
@@ -144,3 +144,4 @@ const ImportStudentsPage: React.FC = () => {
 };
 
 export default ImportStudentsPage;
+

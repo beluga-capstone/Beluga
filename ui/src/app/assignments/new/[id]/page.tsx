@@ -3,12 +3,13 @@
 import Button from "@/components/Button";
 import { useAssignments } from "@/hooks/useAssignments";
 import React, { useState, useEffect } from "react";
-import AssignmentForm from "../../../components/AssignmentsForm";
-import { useRouter } from "next/navigation";
+import AssignmentForm from "../../../../components/AssignmentsForm";
+import { useRouter, useParams } from "next/navigation";
 
 const NewAssignment: React.FC = () => {
   const { addAssignment } = useAssignments();
-  const courseId = "unused";
+  const params= useParams();
+  const courseId = params.id;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [publishAt, setPublishAt] = useState("");
@@ -29,7 +30,7 @@ const NewAssignment: React.FC = () => {
   
     try {
       // Fetch assignments for the course
-      const response = await fetch(`${process.env.backend}/assignments/search?course_id=${courseId}`, {
+      const response = await fetch(`http://localhost:5000/assignments/search?course_id=${courseId}`, {
         method: "GET",
         credentials: "include",
       });
@@ -59,7 +60,7 @@ const NewAssignment: React.FC = () => {
       setError("");
   
       await addAssignment(
-        courseId,
+        Array.isArray(courseId) ? courseId[0] : courseId,
         title,
         description,
         new Date(dueAt),
@@ -128,3 +129,4 @@ const NewAssignment: React.FC = () => {
 };
 
 export default NewAssignment;
+

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface UserSettingsPopupProps {
   setMenuIsOpen: (value: boolean) => void;
@@ -7,6 +8,8 @@ interface UserSettingsPopupProps {
 export default function UserSettingsPopup({
   setMenuIsOpen,
 }: UserSettingsPopupProps) {
+  const router = useRouter();
+
   const handleLogout = async () => {
     try {
       const response = await fetch(`${process.env.backend}/auth/logout`, {
@@ -15,8 +18,8 @@ export default function UserSettingsPopup({
       });
 
       if (response.ok) {
-        // Redirect to login or home after logout
-        window.location.href = '/';
+        setMenuIsOpen(false);
+        router.replace('/login');
       } else {
         console.error('Failed to log out', response.statusText);
       }

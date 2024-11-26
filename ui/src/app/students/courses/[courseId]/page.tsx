@@ -6,6 +6,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import Button from "@/components/Button";
 import StudentsTable from "../../StudentsTable";
 import { useUsers } from "@/hooks/useUsers";
+import Link from "next/link";
 import { Student } from "@/types";
 
 interface CourseStudentsProps {
@@ -60,19 +61,21 @@ const CourseStudents = ({ params }: CourseStudentsProps) => {
         {role !== "student" && (
           <div className="flex">
             <div className="pr-8">
+            <Link href={`/students/new/import/${params.courseId}`}>
               <Button
                 className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-                href={`/students/new/import?courseId=${params.courseId}`}
               >
                 <ArrowUpFromLine className="mr-2" /> Import From File
               </Button>
+            </Link>
             </div>
+            <Link href={`/students/new/${params.courseId}`}>
             <Button
               className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-              href={`/students/new?courseId=${params.courseId}`}
             >
               <Plus className="mr-2" /> Add Student
             </Button>
+            </Link>
           </div>
         )}
       </div>
