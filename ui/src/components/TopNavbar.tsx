@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSelectedLayoutSegment } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Icon } from "@iconify/react";
 import useScroll from "@/hooks/useScroll";
 import { useProfile } from "@/hooks/useProfile";
@@ -12,11 +12,11 @@ import { cn } from "@/lib/utils";
 const TopNavbar = () => {
   const [menuIsOpen, setMenuIsOpen] = useState(false);
   const [courseDropdownOpen, setCourseDropdownOpen] = useState(false);
-  const [courses, setCourses] = useState<any[]>([]); // State to store courses
-  const [selectedCourse, setSelectedCourse] = useState<string | null>(null); // Track selected course
+  const [courses, setCourses] = useState<any[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const scrolled = useScroll(5);
-  const selectedLayout = useSelectedLayoutSegment();
+  const pathname = usePathname();
   const { profile } = useProfile();
   const router = useRouter();
 
@@ -27,7 +27,7 @@ const TopNavbar = () => {
       if (response.ok) {
         const data = await response.json();
         setCourses(data);
-        console.log("courses", data)
+        console.log("courses", data);
       } else {
         console.error("Failed to fetch courses");
       }
@@ -45,6 +45,14 @@ const TopNavbar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    // Preselect course based on pathname
+    const match = pathname.match(/\/assignments\/courses\/(\w+)/);
+    if (match && match[1]) {
+      setSelectedCourse(match[1]);
+    }
+  }, [pathname]);
 
   const toggleCourseDropdown = () => {
     setCourseDropdownOpen(!courseDropdownOpen);
@@ -69,52 +77,67 @@ const TopNavbar = () => {
         }
       )}
     >
-      <div className="flex h-[47px] items-center justify-between px-4">
+      <div className="flex h-[47px] items-center px-4">
+        {/* Left-aligned Dropdown */}
         <div className="flex items-center space-x-4">
-          <Link
-            href="/"
-            className="flex flex-row space-x-3 items-center justify-center md:hidden"
-          >
-            <span className="h-7 w-7 rounded-lg" />
-            <span className="font-bold text-xl flex">Logo</span>
-          </Link>
-        </div>
-
-        <div className="">
-          <p>{selectedCourse}</p>
+          {pathname.includes("/assignments/courses/") && (
+            <div className="relative">
               <button
                 onClick={toggleCourseDropdown}
-                className="border border-white rounded p-1 bg-surface"
+                className="border border-white rounded p-2 bg-surface flex items-center justify-between text-left"
+                style={{
+                  minHeight: "40px",
+                  alignItems: "center",
+                  width: "200px",
+                }}
               >
-                {selectedCourse ? selectedCourse : ""}
-                <Icon icon="mdi:chevron-down" className="ml-2" width="20" height="20" />
+                {selectedCourse
+                  ? courses.find((course) => course.id === selectedCourse)
+                      ?.name || "Select a Course"
+                  : "Select a Course"}
+                <Icon
+                  icon="mdi:chevron-down"
+                  className="ml-2"
+                  width="20"
+                  height="20"
+                />
               </button>
               {courseDropdownOpen && (
                 <div
-                  className="absolute top-10 left-0 bg-surface"
+                  className="absolute top-full left-0 bg-surface border border-gray-200 shadow-md z-10"
+                  style={{ marginTop: "4px", width: "200px" }}
                 >
                   {courses.map((course) => (
                     <button
                       key={course.id}
-                      className="block w-full px-4 py-2 text-left hover:bg-on-surface"
-                      onClick={() => handleCourseSelect(course.course_id)}
+                      className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+                      onClick={() => handleCourseSelect(course.id)}
                     >
                       {course.name}
                     </button>
                   ))}
                 </div>
+              )}
+            </div>
           )}
         </div>
 
-        {/* Profile button */}
-        <div className="hidden md:flex space-x-2 items-center relative">
-          <button onClick={toggleMenu} title="Profile Button" className="flex items-center space-x-2">
-            <Icon icon="lucide:user" width="24" height="24" />
-            <span>
-              {profile?.firstName} {profile?.lastName}
-            </span>
-          </button>
+        {/* Center-aligned Logo */}
+        <div className="flex-grow flex justify-center">
+          <Link
+            href="/"
+            className="md:hidden flex flex-row space-x-3 items-center justify-center"
+          >
+            <span className="font-bold text-xl">Logo</span>
+          </Link>
+        </div>
+
+        {/* Right-aligned Profile Button */}
+        <div className="flex space-x-4 relative">
           <div className="relative" ref={menuRef}>
+            <button onClick={toggleMenu} title="Profile Button">
+              <Icon icon="lucide:user" width="24" height="24" />
+            </button>
             {menuIsOpen && <UserSettingsPopup setMenuIsOpen={setMenuIsOpen} />}
           </div>
         </div>

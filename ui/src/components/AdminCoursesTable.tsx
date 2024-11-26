@@ -51,7 +51,7 @@ const AdminCoursesTable: React.FC = () => {
           </button>
         </Link>
       </div>
-
+  
       <table className="table w-full">
         <thead>
           <tr>
@@ -63,53 +63,72 @@ const AdminCoursesTable: React.FC = () => {
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
-          {courses.map((course: Course) => (
-            <tr key={course.id}>
-              <td className="text-center py-2">
-                <Link href={`/assignments/courses/${course.id}`}>
-                  {course.name}
-                </Link>
-              </td>
-              <td className="text-center py-2">{usernames[course.user_id || ""] || "Loading..."}</td>
-              <td className="text-center py-2">{course.term}</td>
-              <td className="text-center py-2">{course.studentsEnrolled}</td>
-              <td className="text-center py-2">
-                <div className="flex justify-center items-center cursor-pointer">
-                  {course.isPublished ? (
-                    <ToggleRight
-                      size={32}
-                      className="text-green-500"
-                      onClick={() => setPublished(course.id, false)}
-                    />
-                  ) : (
-                    <ToggleLeft
-                      size={32}
-                      className="text-red-500"
-                      onClick={() => setPublished(course.id, true)}
-                    />
-                  )}
-                </div>
-              </td>
-              <td className="text-center py-2 flex space-x-4 justify-center">
-                <Link href={`/course/edit/${course.id}`}>
-                  <button className="py-2 text-blue-500">
-                    <Edit2 size={20} />
-                  </button>
-                </Link>
-                <button
-                  className="text-red-500"
-                  onClick={() => deleteCourse(course.id)}
-                >
-                  <Trash2 size={20} />
-                </button>
+        {courses.length > 0 && (
+          <tbody>
+            <tr>
+              <td colSpan={6} className="py-2">
+                <hr className="border-gray-300" />
               </td>
             </tr>
-          ))}
+          </tbody>
+        )}
+        <tbody>
+          {courses.length === 0 ? (
+            <tr>
+              <td colSpan={6} className="text-center py-4">
+                No courses found.
+              </td>
+            </tr>
+          ) : (
+            courses.map((course: Course) => (
+              <tr key={course.id}>
+                <td className="text-center py-2">
+                  <Link href={`/assignments/courses/${course.id}`}>
+                    {course.name}
+                  </Link>
+                </td>
+                <td className="text-center py-2">
+                  {usernames[course.user_id || ""] || "Loading..."}
+                </td>
+                <td className="text-center py-2">{course.term}</td>
+                <td className="text-center py-2">{course.studentsEnrolled}</td>
+                <td className="text-center py-2">
+                  <div className="flex justify-center items-center cursor-pointer">
+                    {course.isPublished ? (
+                      <ToggleRight
+                        size={32}
+                        className="text-green-500"
+                        onClick={() => setPublished(course.id, false)}
+                      />
+                    ) : (
+                      <ToggleLeft
+                        size={32}
+                        className="text-red-500"
+                        onClick={() => setPublished(course.id, true)}
+                      />
+                    )}
+                  </div>
+                </td>
+                <td className="text-center py-2 flex space-x-4 justify-center">
+                  <Link href={`/course/edit/${course.id}`}>
+                    <button className="py-2 text-blue-500">
+                      <Edit2 size={20} />
+                    </button>
+                  </Link>
+                  <button
+                    className="text-red-500"
+                    onClick={() => deleteCourse(course.id)}
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>
-  );
+  );  
 };
 
 export default AdminCoursesTable;
