@@ -5,7 +5,7 @@ interface UserSettingsPopupProps {
   setMenuIsOpen: (value: boolean) => void;
 }
 
-export default function UserSettingsPopup({
+export default function UserPopup({
   setMenuIsOpen,
 }: UserSettingsPopupProps) {
   const router = useRouter();
@@ -38,15 +38,6 @@ export default function UserSettingsPopup({
             className="block px-4 py-2 hover:bg-surface"
           >
             Profile
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="/settings"
-            onClick={() => setMenuIsOpen(false)}
-            className="block px-4 py-2 hover:bg-surface"
-          >
-            Settings
           </Link>
         </li>
         <li>
