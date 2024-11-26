@@ -76,26 +76,19 @@ const SubmissionPage = ({
   }, [params.assignmentId, fetchAssignmentsById]);
 
   useEffect(() => {
-    if (profile && profile.role_id === ROLES.STUDENT) {
-      setLatestSubmission(
-        getLatestSubmission(params.assignmentId, profile.user_id)
+    if (!assignment || !profile) return;
+
+    if (profile.role_id === ROLES.STUDENT) {
+      const submission = getLatestSubmission(
+        assignment.assignment_id,
+        profile.user_id
       );
-      setAllSubmissions(
-        getAllSubmissionsForAssignmentAndUser(
-          params.assignmentId,
-          profile.user_id
-        )
-      );
-    } else if (profile) {
-      setLatestSubmission(getLatestSubmissionForUser(params.userId));
-      setAllSubmissions(
-        getAllSubmissionsForAssignmentAndUser(
-          params.assignmentId,
-          params.userId
-        )
-      );
+      setLatestSubmission(submission);
+    } else {
+      const submission = getLatestSubmissionForUser(params.userId);
+      setLatestSubmission(submission);
     }
-  }, [params.assignmentId]);
+  }, [assignment, profile, zipFile]);
 
   useEffect(() => {
     if (latestSubmission) {

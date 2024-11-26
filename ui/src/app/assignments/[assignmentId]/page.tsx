@@ -15,13 +15,6 @@ import { Assignment, Submission } from "@/types";
 import { useSubmissions } from "@/hooks/useSubmissions";
 import { shortDate, shortTime } from "@/lib/utils";
 
-const formatDate = (date: string) =>
-  new Date(date).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
 const normalizeDockerName = (name: string) => {
   return name
     .toLowerCase()
@@ -36,7 +29,7 @@ interface AssignmentPageProps {
 const AssignmentPage = ({ params }: AssignmentPageProps) => {
   const router = useRouter();
   const { profile } = useProfile();
-  const { assignments,fetchAssignmentsById,fetchAssignmentsByCourseId } = useAssignments();
+  const { assignments, fetchAssignmentsById } = useAssignments();
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const { getLatestSubmission, submit } = useSubmissions();
@@ -80,11 +73,13 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
     return () => clearInterval(intervalId);
   }, [router]);
-  
+
   useEffect(() => {
     const loadAssignment = async () => {
       try {
-        const fetchedAssignment = await fetchAssignmentsById(params.assignmentId);
+        const fetchedAssignment = await fetchAssignmentsById(
+          params.assignmentId
+        );
         setAssignment(fetchedAssignment);
         const name = normalizeDockerName(`${fetchedAssignment.title}_con`);
         setContainerName(name);
@@ -107,8 +102,10 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
 
       if (foundAssignment) {
         setAssignment(foundAssignment);
-        if (foundAssignment?.docker_image_id){
-          const name = normalizeDockerName(`${foundAssignment.assignment_id}_${profile?.user_id}_container`);
+        if (foundAssignment?.docker_image_id) {
+          const name = normalizeDockerName(
+            `${foundAssignment.assignment_id}_${profile?.user_id}_container`
+          );
           setContainerName(name);
         }
       }
