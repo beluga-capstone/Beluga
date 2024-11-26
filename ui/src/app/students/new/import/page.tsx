@@ -92,7 +92,7 @@ const ImportStudentsPage: React.FC = () => {
 
   // Transform users to students with proper type
   const students = users.map((user, index) => ({
-    id: user.id || `${Date.now() + index}`, // Ensure id is a number
+    id: user.id || `${Date.now() + index}`,
     firstName: user.firstName,
     lastName: user.lastName,
     middleName: user.middleName || "",

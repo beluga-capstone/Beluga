@@ -115,8 +115,6 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
         setLastName={setLastName}
         email={email}
         setEmail={setEmail}
-        role={role}
-        setRole={setRole}
       />
 
       <div className="flex flex-column justify-between">
