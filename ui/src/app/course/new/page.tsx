@@ -145,7 +145,7 @@ const NewCourse: React.FC = () => {
         <Button
           className="bg-blue-500 text-white px-4 py-2 rounded"
           onClick={handleAddCourse}
-          disabled={!title || students.length === 0}
+          disabled={!title}
         >
           Add Course
         </Button>
