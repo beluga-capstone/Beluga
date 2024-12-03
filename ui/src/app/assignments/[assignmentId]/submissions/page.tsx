@@ -69,7 +69,6 @@ const AssignmentSubmissionsPage = ({
           <tr>
             <th>Last Name</th>
             <th>First Name</th>
-            <th>Middle Name</th>
             <th>Submitted?</th>
             <th>Score/100</th>
             <th>Graded?</th>
