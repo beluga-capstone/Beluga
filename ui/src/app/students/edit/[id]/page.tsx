@@ -111,8 +111,6 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
       <StudentForm
         firstName={firstName}
         setFirstName={setFirstName}
-        middleName={middleName}
-        setMiddleName={setMiddleName}
         lastName={lastName}
         setLastName={setLastName}
         email={email}

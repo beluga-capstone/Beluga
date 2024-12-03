@@ -9,14 +9,12 @@ import { Profile } from "@/types";
 const EditProfilePage = () => {
   const { profile} = useProfile();
   const [newFirstName, setNewFirstName] = useState(profile?.firstName || "");
-  const [newMiddleName, setNewMiddleName] = useState(profile?.middleName || "");
   const [newLastName, setNewLastName] = useState(profile?.lastName || "");
   const [newEmail, setNewEmail] = useState(profile?.email || "");
   const [newRole, setNewRole] = useState<number>(profile?.role_id || ROLES.STUDENT);
 
   useEffect(() => {
     setNewFirstName(profile?.firstName || "");
-    setNewMiddleName(profile?.middleName || "");
     setNewLastName(profile?.lastName || "");
     setNewEmail(profile?.email || "");
     setNewRole(profile?.role_id || ROLES.STUDENT);
@@ -36,20 +34,6 @@ const EditProfilePage = () => {
               className="border rounded p-1 bg-surface"
               placeholder="First name"
               aria-label="First name"
-            />
-          </div>
-        </div>
-
-        <div className="pr-8">
-          <h2>Middle Name</h2>
-          <div className="pt-2 pb-8">
-            <input
-              value={newMiddleName}
-              onChange={(e) => setNewMiddleName(e.target.value)}
-              type="text"
-              className="border rounded p-1 bg-surface"
-              placeholder="Middle name"
-              aria-label="Middle name"
             />
           </div>
         </div>

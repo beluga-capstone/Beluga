@@ -1,10 +1,6 @@
-import { ROLES } from "@/constants";
-
 interface StudentFormProps {
   firstName: string;
   setFirstName: (value: string) => void;
-  middleName: string;
-  setMiddleName: (value: string) => void;
   lastName: string;
   setLastName: (value: string) => void;
   email: string;
@@ -14,8 +10,6 @@ interface StudentFormProps {
 const StudentForm: React.FC<StudentFormProps> = ({
   firstName,
   setFirstName,
-  middleName,
-  setMiddleName,
   lastName,
   setLastName,
   email,
@@ -34,20 +28,6 @@ const StudentForm: React.FC<StudentFormProps> = ({
               className="border rounded p-1 bg-surface"
               placeholder="First name"
               aria-label="First name"
-            />
-          </div>
-        </div>
-
-        <div className="pr-8">
-          <h2>Middle Name</h2>
-          <div className="pt-2 pb-8">
-            <input
-              value={middleName}
-              onChange={(e) => setMiddleName(e.target.value)}
-              type="text"
-              className="border rounded p-1 bg-surface"
-              placeholder="Middle name"
-              aria-label="Middle name"
             />
           </div>
         </div>

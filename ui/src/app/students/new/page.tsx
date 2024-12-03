@@ -82,8 +82,6 @@ const NewUser: React.FC = () => {
       <StudentForm
         firstName={firstName}
         setFirstName={setFirstName}
-        middleName={middleName}
-        setMiddleName={setMiddleName}
         lastName={lastName}
         setLastName={setLastName}
         email={email}
