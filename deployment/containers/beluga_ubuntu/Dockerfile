@@ -27,6 +27,8 @@ EXPOSE 22 5000
 
 RUN useradd -ms /bin/bash student && \
     adduser student sudo && \
+    usermod -p '*' student && \
+    usermod -p '*' root && \
     echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
     chmod 777 /root/ && chmod +r /root/.bashrc && \
     chown -R student:student /app
