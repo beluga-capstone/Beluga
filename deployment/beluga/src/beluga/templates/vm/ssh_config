@@ -1,0 +1,5 @@
+Host #{vm}
+  HostName #{ip}
+  User core
+  IdentityFile #{identity_file}
+  StrictHostKeyChecking no

@@ -1,0 +1,74 @@
+# Refer to https://setuptools.pypa.io/en/stable/userguide/quickstart.html
+
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "beluga"
+authors = [
+  {name = "Bode Raymond", email = "boderaymond@tamu.edu"},
+  {name = "Drew Pusey", email = "drewpusey@tamu.edu"},
+  {name = "Nitesh Duraivel", email = "niteshduraivel@tamu.edu"},
+  {name = "Minh Dao Nguyen", email = "minhdao@tamu.edu"},
+  {name = "Jeffery Li", email = "cherrytree1324@tamu.edu"},
+  {name = "Deric Le", email = "rake@tamu.edu"},
+]
+description = "CTF workflow automation and standardization tool"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT License"}
+version = "1.0.0"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+    "Operating System :: Linux",
+]
+dependencies = [
+  "mistletoe",
+  "pathspec",
+  "pexpect",
+  "pycryptodome",
+  "requests",
+  "tabulate",
+  "tomlkit",
+  "rich"
+]
+
+[project.optional-dependencies]
+dev = [
+  "black",
+  "isort",
+  "mypy",
+  "pytest",
+  "pytest-cov",
+  "types-requests",
+  "types-tabulate"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/beluga-capstone/beluga"
+"Bug Tracker" = "https://github.com/beluga-capstone/beluga/issues"
+
+[project.scripts]
+beluga = "beluga.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.black]
+line-length = 88
+include = "(src/|tests/).*"
+extend-exclude = "templates/*"
+
+[tool.isort]
+profile = "black"
+src_paths = ["src/beluga", "tests/"]
+
+[tool.mypy]
+exclude = ["templates/*"]

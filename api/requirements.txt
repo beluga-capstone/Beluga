@@ -1,0 +1,15 @@
+flask
+Flask-SQLAlchemy
+psycopg2-binary
+python-dotenv
+sqlalchemy-utils
+requests
+pytest
+pytest-mock
+flask_login
+docker
+pytest
+flask_socketio
+flask-cors
+waitress
+paramiko
