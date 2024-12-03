@@ -25,7 +25,6 @@ const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({
         <thead>
           <tr>
             <th>Title</th>
-            <th>Released</th>
             <th>Due</th>
             <th>Submissions</th>
           </tr>
@@ -45,13 +44,6 @@ const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({
               className="cursor-pointer"
             >
               <td className="text-center py-2">{assignment.title}</td>
-              <td className="text-center py-2">
-                {assignment.publish_at
-                  ? `${shortDate(assignment.publish_at)} at ${shortTime(
-                      assignment.publish_at
-                    )}`
-                  : "-"}
-              </td>
               <td className="text-center py-2">
                 {assignment.due_at
                   ? `${shortDate(assignment.due_at)} at ${shortTime(
