@@ -11,9 +11,6 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
   const userId = params.id;
   const searchParams = useSearchParams();
   const courseId = searchParams.get("courseId");
-  const [firstName, setFirstName] = useState("");
-  const [middleName, setMiddleName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState(ROLES.STUDENT);
   const [loading, setLoading] = useState(true);
@@ -30,9 +27,6 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
           throw new Error(`Failed to fetch user with ID ${userId}`);
         }
         const data = await response.json();
-        setFirstName(data.first_name || "");
-        setMiddleName(data.middle_name || "");
-        setLastName(data.last_name || "");
         setEmail(data.email || "");
         setRole(ROLES.STUDENT);
         setLoading(false);
@@ -53,9 +47,6 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          first_name: firstName,
-          middle_name: middleName || null,
-          last_name: lastName,
           email,
           role_id:
             role === ROLES.STUDENT ? 8 : role === ROLES.TA ? 4 : ROLES.ADMIN,
@@ -109,12 +100,6 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
       <h1 className="font-bold text-4xl mb-6">Edit Student</h1>
 
       <StudentForm
-        firstName={firstName}
-        setFirstName={setFirstName}
-        middleName={middleName}
-        setMiddleName={setMiddleName}
-        lastName={lastName}
-        setLastName={setLastName}
         email={email}
         setEmail={setEmail}
       />
@@ -141,7 +126,6 @@ const EditStudent = ({ params }: { params: { id: string } }) => {
             <Button
               className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
               onClick={handleSave}
-              disabled={!firstName || !lastName || !email}
             >
               Save
             </Button>

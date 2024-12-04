@@ -16,9 +16,6 @@ const NewUser: React.FC = () => {
     console.error("courseId is missing from the query params.");
     return;
   }
-  const [firstName, setFirstName] = useState("");
-  const [middleName, setMiddleName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState(ROLES.STUDENT);
   const router = useRouter();
@@ -26,10 +23,8 @@ const NewUser: React.FC = () => {
   const handleAddUser = async () => {
     try {
       const newUser = await addUser(
-        email,
-        firstName,
-        lastName,
-        middleName,
+	email,
+	"","","",
         "student",
       );
 
@@ -79,12 +74,6 @@ const NewUser: React.FC = () => {
       <h1 className="font-bold text-4xl mb-6">New Student</h1>
 
       <StudentForm
-        firstName={firstName}
-        setFirstName={setFirstName}
-        middleName={middleName}
-        setMiddleName={setMiddleName}
-        lastName={lastName}
-        setLastName={setLastName}
         email={email}
         setEmail={setEmail}
       />
@@ -102,7 +91,6 @@ const NewUser: React.FC = () => {
           <Button
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
             onClick={handleAddUser}
-            disabled={!firstName || !lastName || !email}
           >
             Add Student
           </Button>
