@@ -28,8 +28,9 @@ const StudentListingForSubmission: React.FC<StudentListingForSubmissionProps> = 
 
   useEffect(() => {
     fetchLatestSubmission();
-    console.log('latestSubmission', latestSubmission)
-  }, [fetchLatestSubmission]);
+    console.log('why latestSubmission', latestSubmission)
+  }, []);
+
 
   return (
     <tr key={student.id}>
@@ -47,8 +48,7 @@ const StudentListingForSubmission: React.FC<StudentListingForSubmissionProps> = 
           {student.firstName}
         </Link>
       </td>
-      <td className="py-2">{student.middleName}</td>
-      <td className="py-2 text-center">{latestSubmission ? "Yes" : "No"}</td>
+      <td className="py-2 text-center">{latestSubmission?.submission_id ? "Yes" : "No"}</td>
       <td>
         <div
           className={`w-16 text-center mx-auto ${

@@ -5,6 +5,7 @@ import { Assignment } from "@/types";
 import { useEffect } from "react";
 import { useEffect, useState } from "react";
 import { Submission } from "@/types";
+import { s } from "framer-motion/client";
 
 interface ListingForSubmissionProps {
   assignment: Assignment;
@@ -15,14 +16,24 @@ const ListingForSubmission: React.FC<ListingForSubmissionProps> = ({
 }) => {
   const { profile } = useProfile();
   const { assignmentIsSubmitted, getLatestSubmission } = useSubmissions();
-  const [latestSubmission, setLatestSubmission] = useState<Submission | null>(null);
+  const [latestSubmission, setLatestSubmission] = useState<Submission | null>(
+    null
+  );
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
     if (profile) {
       getLatestSubmission(assignment.assignment_id, profile.user_id);
-      console.log("latestSubmission",latestSubmission)
+      console.log("this latestSubmission", latestSubmission);
     }
   }, [profile]);
+
+  useEffect(() => {
+    console.log("asdfasdf");
+    if (profile) {
+      setIsSubmitted(latestSubmission !== null);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchLatestSubmission = async () => {
@@ -32,6 +43,9 @@ const ListingForSubmission: React.FC<ListingForSubmissionProps> = ({
           profile.user_id
         );
         setLatestSubmission(submission);
+        console.log("sfasdfasdf", latestSubmission);
+        // const submitted = await assignmentIsSubmitted(assignment.assignment_id, profile.user_id);
+        setIsSubmitted(latestSubmission !== null);
       }
     };
 
@@ -61,10 +75,7 @@ const ListingForSubmission: React.FC<ListingForSubmissionProps> = ({
       </td>
 
       <td className="text-center py-2">
-        {profile &&
-        assignmentIsSubmitted(assignment.assignment_id, profile?.user_id)
-          ? "Yes"
-          : "No"}
+        {profile && isSubmitted ? "Yes" : "No"}
       </td>
 
       <td className="text-center py-2">
