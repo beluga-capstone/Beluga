@@ -82,12 +82,13 @@ export const useSubmissions = () => {
     const loadSubmissions = async () => {
       const response = await fetch("http://localhost:5000/submissions", {
         method: "GET",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
       });
       if (!response.ok) {
-        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+        //throw new Error(`Error: ${response.status} - ${response.statusText}`);
       }
       const submissions = await makeSubmissionList(response);
       if (submissions) {
@@ -114,6 +115,7 @@ export const useSubmissions = () => {
 
         const res = await fetch("http://localhost:5000/submissions", {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -150,6 +152,7 @@ export const useSubmissions = () => {
           `http://localhost:5000/submissions/user/${userId}/assignment/${assignmentId}/latest`,
           {
             method: "GET",
+            credentials: "include",
             headers: {
               "Content-Type": "application/json",
             },
@@ -190,6 +193,7 @@ export const useSubmissions = () => {
     const userSubmissionsFunc = (): Promise<Submission | null> => {
       return fetch(`http://localhost:5000/submissions/user/${userId}/latest`, {
         method: "GET",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -223,6 +227,7 @@ export const useSubmissions = () => {
           `http://localhost:5000/submissions/user/${userId}/assignment/${assignmentId}`,
         {
           method: "GET",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -256,6 +261,7 @@ export const useSubmissions = () => {
           `http://localhost:5000/submissions/${submissionId}/update/var`,
           {
             method: "PUT",
+            credentials: "include",
             headers: {
               "Content-Type": "application/json",
             },
@@ -284,6 +290,7 @@ export const useSubmissions = () => {
           `http://localhost:5000/submissions/${submissionId}/update/var`,
           {
             method: "PUT",
+            credentials: "include",
             headers: {
               "Content-Type": "application/json",
             },
@@ -312,6 +319,7 @@ export const useSubmissions = () => {
           `http://localhost:5000/submissions/assignment/${assignmentId}/count`,
           {
             method: "GET",
+            credentials: "include",
             headers: {
               "Content-Type": "application/json",
             },
@@ -336,6 +344,7 @@ export const useSubmissions = () => {
   try {
     const res = await fetch(`http://localhost:5000/submissions/user/${userId}/assignment/${assignmentId}/latest`, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
