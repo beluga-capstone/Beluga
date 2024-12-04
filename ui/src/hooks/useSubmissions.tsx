@@ -332,13 +332,30 @@ export const useSubmissions = () => {
     [] // Empty array means the function will be memoized and only created once
   );
 
-  const assignmentIsSubmitted = (assignmentId: string, userId: string) => {
-    return submissions.some(
-      (submission) =>
-        submission.assignment_id === assignmentId &&
-        submission.user_id === userId
-    );
-  };
+  const assignmentIsSubmitted = async (assignmentId: string, userId: string): Promise<boolean> => {
+  try {
+    const res = await fetch(`http://localhost:5000/submissions/user/${userId}/assignment/${assignmentId}/latest`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      console.error(`Error fetching latest submission: ${res.status}`);
+      return false;
+    }
+
+    const data = await res.json();
+
+    // Check if a valid submission ID exists
+    return data.submission_id !== '';
+  } catch (error) {
+    console.error("Error in assignmentIsSubmitted:", error);
+    return false;
+  }
+};
+
 
   return {
     submissions,
