@@ -12,8 +12,8 @@ const ProfessorCoursesTable: React.FC = () => {
 
   useEffect(() => {
     const loadCoursesAndCounts = async () => {
-      await fetchCourses(); // Fetch courses
-      const studentCounts = await fetchStudentCounts(); // Fetch student counts
+      await fetchCourses();
+      const studentCounts = await fetchStudentCounts(); 
       setCourseStudentCounts(studentCounts);
     };
 
@@ -89,7 +89,7 @@ const ProfessorCoursesTable: React.FC = () => {
                     {usernames[course.user_id || ""] || "Loading..."}
                   </td>
                   <td className="text-center py-2">{course.term || "Fall 2024"}</td>
-                  <td className="text-center py-2">{courseStudentCounts[course.id]}</td>
+                  <td className="text-center py-2">{courseStudentCounts[course.id] || 0}</td>
                   <td className="text-center py-2 flex space-x-4 justify-center">
                     <Link href={`/course/edit/${course.id}`}>
                       <button className="py-2 text-blue-500">

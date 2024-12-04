@@ -103,7 +103,7 @@ const AdminCoursesTable: React.FC = () => {
                   {usernames[course.user_id || ""] || "Loading..."}
                 </td>
                 <td className="text-center py-2">{course.term}</td>
-                <td className="text-center py-2">{courseStudentCounts[course.id]}</td>
+                <td className="text-center py-2">{courseStudentCounts[course.id] || 0}</td>
                 <td className="text-center py-2 flex space-x-4 justify-center">
                   <Link href={`/course/edit/${course.id}`}>
                     <button className="py-2 text-blue-500">
