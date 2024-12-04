@@ -17,7 +17,6 @@ const StudentsTable: React.FC<StudentsTableProps> = ({
         <tr>
           <th>First Name</th>
           <th>Last Name</th>
-          <th>Middle Name</th>
           <th>Email</th>
         </tr>
       </thead>
@@ -43,15 +42,6 @@ const StudentsTable: React.FC<StudentsTableProps> = ({
                 <Link href={`/students/${student.id}`}>{student.lastName}</Link>
               ) : (
                 student.lastName
-              )}
-            </td>
-            <td className="text-center py-2">
-              {hasClickableNames ? (
-                <Link href={`/students/${student.id}`}>
-                  {student.middleName}
-                </Link>
-              ) : (
-                student.middleName
               )}
             </td>
             <td className="text-center py-2">{student.email}</td>

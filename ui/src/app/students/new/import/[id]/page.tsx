@@ -29,7 +29,7 @@ const ImportStudentsPage: React.FC = () => {
             id: `${Date.now() + index}`, // Ensure IDs are strings initially
             firstName: user["First Name"] || "",
             lastName: user["Last Name"] || "",
-            middleName: user["Middle Name"] || "",
+            middleName: "",
             email: user["Email"],
             role: "student",
           }));
@@ -101,7 +101,7 @@ const ImportStudentsPage: React.FC = () => {
     id: user.id || `${Date.now() + index}`,
     firstName: user.firstName,
     lastName: user.lastName,
-    middleName: user.middleName || "",
+    middleName: "",
     email: user.email,
     role_id: 8, // Default role_id for students
   }));

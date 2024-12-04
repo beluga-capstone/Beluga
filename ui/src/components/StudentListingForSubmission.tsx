@@ -33,7 +33,6 @@ const StudentListingForSubmission: React.FC<
           {student.firstName}
         </Link>
       </td>
-      <td className="py-2">{student.middleName}</td>
       <td className="py-2 text-center">{latestSubmission ? "Yes" : "No"}</td>
       <td>
         <div

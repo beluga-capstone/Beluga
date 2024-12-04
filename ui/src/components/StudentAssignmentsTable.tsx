@@ -15,7 +15,6 @@ const StudentsAssignmentsTable: React.FC<StudentsAssignmentsTableProps> = ({
         <thead>
           <tr>
             <th>Title</th>
-            <th>Released</th>
             <th>Due</th>
           </tr>
         </thead>
@@ -39,13 +38,6 @@ const StudentsAssignmentsTable: React.FC<StudentsAssignmentsTableProps> = ({
                     <Link href={`/assignments/${assignment.assignment_id}`}>
                       {assignment.title}
                     </Link>
-                  </td>
-                  <td className="text-center py-2">
-                    {assignment.publish_at
-                      ? `${shortDate(assignment.publish_at)} at ${shortTime(
-                          assignment.publish_at
-                        )}`
-                      : "-"}
                   </td>
                   <td className="text-center py-2">
                     {assignment.due_at

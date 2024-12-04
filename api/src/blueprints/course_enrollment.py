@@ -210,7 +210,7 @@ def get_users_for_course(course_id):
 
 # Get the number of students enrolled in a specific course (GET)
 @enrollment_bp.route('/courses/<uuid:course_id>/students/count', methods=['GET'])
-@admin_required
+@professor_required
 def get_student_count_for_course(course_id):
     try:
         count = db.session.query(CourseEnrollment).filter_by(course_id=course_id).count()

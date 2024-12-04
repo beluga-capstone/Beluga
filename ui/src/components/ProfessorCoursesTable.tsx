@@ -5,35 +5,20 @@ import { useDashboard } from "@/hooks/useDashboard";
 import { useUsers } from "@/hooks/useUsers";
 
 const ProfessorCoursesTable: React.FC = () => {
-  const { setPublished, deleteCourse } = useDashboard(); 
+  const { setPublished, deleteCourse, fetchStudentCounts, fetchCourses, courses } = useDashboard(); 
   const { fetchUserById } = useUsers(); 
-  const [courses, setCourses] = useState<any[]>([]); 
   const [usernames, setUsernames] = useState<{ [key: string]: string }>({});
+  const [courseStudentCounts, setCourseStudentCounts] = useState<{[key:string]:number}>({});
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const response = await fetch(`${process.env.backend}/courses/search`, {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch courses");
-        }
-
-        const data = await response.json();
-        setCourses(data); // Populate courses
-        console.log("Fetched courses for professor:", data);
-      } catch (error) {
-        console.error("Error fetching courses:", error);
-      }
+    const loadCoursesAndCounts = async () => {
+      await fetchCourses();
+      const studentCounts = await fetchStudentCounts(); 
+      setCourseStudentCounts(studentCounts);
     };
 
-    fetchCourses();
-  }, []);
+    loadCoursesAndCounts();
+  }, [fetchCourses, fetchStudentCounts]);
 
   useEffect(() => {
     const loadUsernames = async () => {
@@ -94,26 +79,26 @@ const ProfessorCoursesTable: React.FC = () => {
                 </td>
               </tr>
               {courses.map((course) => (
-                <tr key={course.course_id}>
+                <tr key={course.id}>
                   <td className="text-center py-2">
-                    <Link href={`/assignments/courses/${course.course_id}`}>
+                    <Link href={`/assignments/courses/${course.id}`}>
                       {course.name}
                     </Link>
                   </td>
                   <td className="text-center py-2">
                     {usernames[course.user_id || ""] || "Loading..."}
                   </td>
-                  <td className="text-center py-2">{course.term_id || "Fall 2024"}</td>
-                  <td className="text-center py-2">{course.students_count || 0}</td>
+                  <td className="text-center py-2">{course.term || "Fall 2024"}</td>
+                  <td className="text-center py-2">{courseStudentCounts[course.id] || 0}</td>
                   <td className="text-center py-2 flex space-x-4 justify-center">
-                    <Link href={`/course/edit/${course.course_id}`}>
+                    <Link href={`/course/edit/${course.id}`}>
                       <button className="py-2 text-blue-500">
                         <Edit2 size={20} />
                       </button>
                     </Link>
                     <button
                       className="text-red-500"
-                      onClick={() => deleteCourse(course.course_id)}
+                      onClick={() => deleteCourse(course.id)}
                     >
                       <Trash2 size={20} />
                     </button>

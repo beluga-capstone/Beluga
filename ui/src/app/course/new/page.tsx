@@ -34,7 +34,7 @@ const NewCourse: React.FC = () => {
           .map((student: any, index: number) => ({
             firstName: student["First Name"],
             lastName: student["Last Name"] || "",
-            middleName: student["Middle Name"] || "",
+            middleName: "",
             email: student["Email"],
             role: "student",
           }));
