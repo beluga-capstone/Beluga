@@ -2,6 +2,7 @@ import { ToggleLeft, ToggleRight } from "lucide-react";
 import { Assignment } from "@/types";
 import { shortDate, shortTime } from "@/lib/utils";
 import { useSubmissions } from "@/hooks/useSubmissions";
+import { useEffect, useState } from "react";
 
 interface ProfessorAssignmentsTableProps {
   assignments: Assignment[];
@@ -18,6 +19,18 @@ const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({
   setLateSubmissions,
 }) => {
   const { getSubmissionCountForAssignment } = useSubmissions();
+  const [submissionCounts, setSubmissionCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const fetchSubmissionCounts = async () => {
+      const counts: Record<string, number> = {};
+      for (const assignment of assignments) {
+        counts[assignment.assignment_id] = await getSubmissionCountForAssignment(assignment.assignment_id);
+      }
+      setSubmissionCounts(counts);
+    };
+    fetchSubmissionCounts();
+  }, [assignments, getSubmissionCountForAssignment]);
 
   return (
     <div>
@@ -60,7 +73,7 @@ const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({
                   : "-"}
               </td>
               <td className="text-center py-2">
-                {getSubmissionCountForAssignment(assignment.assignment_id)}
+                {submissionCounts[assignment.assignment_id] ?? "-"}
               </td>
             </tr>
           ))}

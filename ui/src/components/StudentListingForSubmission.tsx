@@ -2,20 +2,34 @@ import { useSubmissions } from "@/hooks/useSubmissions";
 import { shortDate, shortTime } from "@/lib/utils";
 import { Assignment, Student, User } from "@/types";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { Submission } from "@/types";
 
 interface StudentListingForSubmissionProps {
   student: Student;
   assignment: Assignment | null;
 }
 
-const StudentListingForSubmission: React.FC<
-  StudentListingForSubmissionProps
-> = ({ student, assignment }) => {
+const StudentListingForSubmission: React.FC<StudentListingForSubmissionProps> = ({
+  student,
+  assignment,
+}) => {
   const { getLatestSubmissionForUser, setGrade, setStatus } = useSubmissions();
   const [isEditingGrade, setIsEditingGrade] = useState(false);
   const [newGrade, setNewGrade] = useState<string>("");
-  const latestSubmission = getLatestSubmissionForUser(student.id);
+  const [latestSubmission, setLatestSubmission] = useState<Submission | null>(null);
+
+  // Memoize the API call
+  const fetchLatestSubmission = useCallback(() => {
+    getLatestSubmissionForUser(student.id).then((submission) => {
+      setLatestSubmission(submission);
+    });
+  }, [student.id, getLatestSubmissionForUser]);
+
+  useEffect(() => {
+    fetchLatestSubmission();
+    console.log('latestSubmission', latestSubmission)
+  }, [fetchLatestSubmission]);
 
   return (
     <tr key={student.id}>

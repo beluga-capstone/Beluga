@@ -58,12 +58,20 @@ const AssignmentPage = ({ params }: AssignmentPageProps) => {
   };
 
   useEffect(() => {
-    if (!assignment || !profile) return;
-    const submission = getLatestSubmission(
-      assignment.assignment_id,
-      profile.user_id
-    );
-    setLatestSubmission(submission);
+    const tempFunc = async () => {
+      if (!assignment || !profile) return;
+      const submission = await getLatestSubmission(
+          assignment.assignment_id,
+          profile.user_id
+      );
+      if (submission?.submission_id === ''){
+        setLatestSubmission(null);
+      }
+      else {
+        setLatestSubmission(submission);
+      }
+    }
+    tempFunc()
   }, [assignment, profile, zipFile]);
 
   useEffect(() => {

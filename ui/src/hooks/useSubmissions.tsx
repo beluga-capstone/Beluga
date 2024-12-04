@@ -1,5 +1,5 @@
 import { Submission } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -20,6 +20,29 @@ const base64ToFile = (base64: string, filename: string): File => {
     u8arr[n] = bstr.charCodeAt(n);
   }
   return new File([u8arr], filename, { type: mime });
+};
+
+const makeSubmissionList = async (res: Response): Promise<Submission[]> => {
+  try {
+      const submissions = await res.json();
+      const itemList: Submission[] = submissions.map(
+        (submission: Submission) => ({
+          submission_id: submission.submission_id,
+          user_id: submission.user_id,
+          assignment_id: submission.assignment_id,
+          submitted_at: submission.submitted_at
+            ? new Date(submission.submitted_at)
+            : null,
+          grade: submission.grade,
+          status: submission.status,
+          data: base64ToFile(submission.data, `${submission.submission_id}.zip`),
+        })
+      );
+      return itemList;
+  } catch (error) {
+    console.log("error make submission list:", error);
+    return [];
+  }
 };
 
 const loadSubmissionsFromStorage = async (): Promise<Submission[]> => {
@@ -43,7 +66,10 @@ const saveSubmissionsToStorage = async (submissions: Submission[]) => {
   const submissionsWithBase64 = await Promise.all(
     submissions.map(async (submission) => ({
       ...submission,
-      data: await fileToBase64(submission.data),
+      data:
+        submission.data instanceof File
+          ? await fileToBase64(submission.data)
+          : submission.data,
     }))
   );
   localStorage.setItem("submissions", JSON.stringify(submissionsWithBase64));
@@ -54,8 +80,19 @@ export const useSubmissions = () => {
 
   useEffect(() => {
     const loadSubmissions = async () => {
-      const loadedSubmissions = await loadSubmissionsFromStorage();
-      setSubmissions(loadedSubmissions);
+      const response = await fetch("http://localhost:5000/submissions", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} - ${response.statusText}`);
+      }
+      const submissions = await makeSubmissionList(response);
+      if (submissions) {
+        setSubmissions(submissions);
+      }
     };
     loadSubmissions();
   }, []);
@@ -71,28 +108,72 @@ export const useSubmissions = () => {
       data,
     };
 
+    const pushSubmissionDB = async (submission: Submission) => {
+      try {
+        const fileBase64_data = await fileToBase64(submission.data);
+
+        const res = await fetch("http://localhost:5000/submissions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...submission,
+            data: fileBase64_data,
+          }),
+        });
+
+        if (!res.ok) {
+          throw new Error("reponse error");
+        }
+        const responseData = await res.json();
+        console.log("Submission successful:", responseData);
+      } catch (error) {
+        console.log("error in pushSubmissionDB:", error);
+      }
+    };
+
+    pushSubmissionDB(submission);
+
     const newSubmissions = [...submissions, submission];
     setSubmissions(newSubmissions);
     saveSubmissionsToStorage(newSubmissions);
   };
 
-  const getLatestSubmission = (
+  const getLatestSubmission = async (
     assignmentId: string,
     userId: string
-  ): Submission | null => {
-    const userSubmissions = submissions.filter(
-      (submission) =>
-        submission.assignment_id === assignmentId &&
-        submission.user_id === userId
-    );
+  ): Promise<Submission | null> => {
+    const fetchSubmissions = async (): Promise<Submission | null> => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/submissions/user/${userId}/assignment/${assignmentId}/latest`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!res.ok) {
+          throw new Error(`Failed to fetch submissions: ${res.status}`);
+        }
+        console.log("getLatestSubmission");
+        const jsonResponse = await res.json();
+        if (jsonResponse.submission_id === undefined) {
+          return null;
+        }
+        jsonResponse.data = base64ToFile(jsonResponse.data, `${jsonResponse.submission_id}.zip`)
+        jsonResponse.submitted_at= jsonResponse.submission_date ? new Date(jsonResponse.submission_date) : null
+        return jsonResponse;
+      } catch (error) {
+        console.error("Error in fetching submissions:", error);
+        return null;
+      }
+    };
 
-    if (userSubmissions.length === 0) return null;
-
-    return userSubmissions.reduce((latest, current) =>
-      new Date(latest.submitted_at) > new Date(current.submitted_at)
-        ? latest
-        : current
-    );
+    const result = await fetchSubmissions();
+    return result;
   };
 
   const getSubmission = (submissionId: string): Submission | null => {
@@ -103,64 +184,153 @@ export const useSubmissions = () => {
     );
   };
 
-  const getLatestSubmissionForUser = (userId: string): Submission | null => {
-    const userSubmissions = submissions.filter(
-      (submission) => submission.user_id === userId
-    );
+  const getLatestSubmissionForUser = async (
+    userId: string
+  ): Promise<Submission | null> => {
+    const userSubmissionsFunc = (): Promise<Submission | null> => {
+      return fetch(`http://localhost:5000/submissions/user/${userId}/latest`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            throw new Error(`Failed to fetch submissions: ${res.status}`);
+          }
+          const jsonResponse = await res.json();
+          if (jsonResponse.submission_id === undefined) {
+            return null;
+          }
+          return jsonResponse;
+        })
+        .catch((error) => {
+          console.error("Error fetching latest submission:", error);
+          return null;
+        });
+    };
 
-    if (userSubmissions.length === 0) return null;
-
-    return userSubmissions.reduce((latest, current) =>
-      new Date(latest.submitted_at) > new Date(current.submitted_at)
-        ? latest
-        : current
-    );
+    return await userSubmissionsFunc();
   };
 
   const getAllSubmissionsForAssignmentAndUser = (
     assignmentId: string,
     userId: string
-  ): Submission[] => {
-    const userSubmissions = submissions.filter(
-      (submission) =>
-        submission.assignment_id === assignmentId &&
-        submission.user_id === userId
-    );
+  ): Promise<Submission[]> => {
+    const fetchSubmissions = async (): Promise<Submission[]> => {
+      return fetch(
+        //`http://localhost:5000/submissions/search?assignment_id=${assignmentId}&user_id=${userId}`,
+          `http://localhost:5000/submissions/user/${userId}/assignment/${assignmentId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+        .then( (data) => {
+          return makeSubmissionList(data);
+        })
+        .catch((error) => {
+          console.error(
+            "Error in getAllSubmissionsForAssignmentAndUser:",
+            error
+          );
+          return [];
+        });
+    };
 
-    return userSubmissions.sort(
-      (a, b) =>
-        new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime()
-    );
+    return fetchSubmissions().then((submissions) => {
+      return submissions.sort(
+        (a, b) =>
+          new Date(b.submitted_at).getTime() -
+          new Date(a.submitted_at).getTime()
+      );
+    });
   };
 
   const setGrade = (submissionId: string, grade: number) => {
-    const updatedSubmissions = submissions.map((submission) =>
-      submission.submission_id === submissionId
-        ? { ...submission, grade, status: "graded" }
-        : submission
-    );
-    setSubmissions(updatedSubmissions);
-    saveSubmissionsToStorage(updatedSubmissions);
+    const updateGradeInAPI = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/submissions/${submissionId}/update/var`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              grade: grade,
+            }),
+          }
+        );
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error("Failed to update submission:", errorData.error);
+          return;
+        }
+      } catch (error) {
+        console.error("Error updating submission:", error);
+      }
+    };
+    updateGradeInAPI();
   };
 
   const setStatus = (submissionId: string, status: string) => {
-    const updatedSubmissions = submissions.map((submission) =>
-      submission.submission_id === submissionId
-        ? { ...submission, status }
-        : submission
-    );
-    setSubmissions(updatedSubmissions);
-    saveSubmissionsToStorage(updatedSubmissions);
+    const updateStatusInAPI = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/submissions/${submissionId}/update/var`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              status: status,
+            }),
+          }
+        );
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error("Failed to update submission:", errorData.error);
+          return;
+        }
+      } catch (error) {
+        console.error("Error updating submission:", error);
+      }
+    };
+    updateStatusInAPI();
   };
 
-  const getSubmissionCountForAssignment = (assignmentId: string): number => {
-    const uniqueUsers = new Set(
-      submissions
-        .filter((submission) => submission.assignment_id === assignmentId)
-        .map((submission) => submission.user_id)
-    );
-    return uniqueUsers.size;
-  };
+  const getSubmissionCountForAssignment = useCallback(
+    async (assignmentId: string): Promise<number> => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/submissions/assignment/${assignmentId}/count`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error(`Failed to fetch submission count: ${res.status}`);
+        }
+
+        const data = await res.json();
+        return data.submission_count;
+      } catch (error) {
+        console.error("Error in getSubmissionCountForAssignment:", error);
+        return 0;
+      }
+    },
+    [] // Empty array means the function will be memoized and only created once
+  );
 
   const assignmentIsSubmitted = (assignmentId: string, userId: string) => {
     return submissions.some(

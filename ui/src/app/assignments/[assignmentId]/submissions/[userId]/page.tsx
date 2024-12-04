@@ -76,40 +76,56 @@ const SubmissionPage = ({
   }, [params.assignmentId, fetchAssignmentsById]);
 
   useEffect(() => {
-    if (!assignment || !profile) return;
+      const fetchSubmissions = async () => {
 
-    if (profile.role_id === ROLES.STUDENT) {
-      const submission = getLatestSubmission(
-        assignment.assignment_id,
-        profile.user_id
-      );
-      setLatestSubmission(submission);
-    } else {
-      const submission = getLatestSubmissionForUser(params.userId);
-      setLatestSubmission(submission);
-    }
-  }, [assignment, profile, zipFile]);
+    if (profile && profile.role_id === ROLES.STUDENT) {
+              setLatestSubmission(
+                  await getLatestSubmission(params.assignmentId, profile.user_id)
+              );
+              setAllSubmissions(
+                  await getAllSubmissionsForAssignmentAndUser(
+                      params.assignmentId,
+                      profile.user_id
+                  )
+              );
+          } else if (profile) {
+              setLatestSubmission(await getLatestSubmissionForUser(params.userId));
+              setAllSubmissions(
+                  await getAllSubmissionsForAssignmentAndUser(
+                      params.assignmentId,
+                      params.userId
+                  )
+              );
+          }
+      }
+  fetchSubmissions()
+  }, [params.assignmentId]);
 
   useEffect(() => {
-    if (latestSubmission) {
-      const unzipFiles = async (zipData: ArrayBuffer) => {
-        const zip = await JSZip.loadAsync(zipData);
-        setZipfile(zip);
-        const files: File[] = [];
-        for (const relativePath of Object.keys(zip.files)) {
-          const file = zip.files[relativePath];
-          const fileData = await file.async("blob");
-          files.push(new File([fileData], relativePath));
-        }
-        return files;
-      };
-      latestSubmission.data
-        .arrayBuffer()
-        .then((buffer) => unzipFiles(buffer))
-        .then((unzippedFiles) => {
-          setFiles(unzippedFiles);
-        });
+    const fetchSubmissions = async () => {
+      console.log('latestSubmissionfads', latestSubmission)
+      if (latestSubmission) {
+        const unzipFiles = async (zipData: ArrayBuffer) => {
+          const zip = await JSZip.loadAsync(zipData);
+          setZipfile(zip);
+          const files: File[] = [];
+          for (const relativePath of Object.keys(zip.files)) {
+            const file = zip.files[relativePath];
+            const fileData = await file.async("blob");
+            files.push(new File([fileData], relativePath));
+          }
+          return files;
+        };
+        console.log('latestSubmission.data:', latestSubmission.data)
+        latestSubmission.data
+            .arrayBuffer()
+            .then((buffer) => unzipFiles(buffer))
+            .then((unzippedFiles) => {
+              setFiles(unzippedFiles);
+            });
+      }
     }
+    fetchSubmissions()
   }, [latestSubmission]);
 
   return (
