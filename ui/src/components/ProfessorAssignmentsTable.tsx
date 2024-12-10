@@ -1,7 +1,7 @@
-import { ToggleLeft, ToggleRight } from "lucide-react";
 import { Assignment } from "@/types";
 import { shortDate, shortTime } from "@/lib/utils";
 import { useSubmissions } from "@/hooks/useSubmissions";
+import { useEffect, useState } from "react";
 
 interface ProfessorAssignmentsTableProps {
   assignments: Assignment[];
@@ -17,7 +17,22 @@ const ProfessorAssignmentsTable: React.FC<ProfessorAssignmentsTableProps> = ({
   setPublished,
   setLateSubmissions,
 }) => {
+  console.log("Assignments passed to ProfessorAssignmentsTable:", assignments);
+
+  // const { assignments, setPublished, setLateSubmissions } = useAssignments();
   const { getSubmissionCountForAssignment } = useSubmissions();
+  const [submissionCounts, setSubmissionCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+  const fetchSubmissionCounts = async () => {
+    const counts: Record<string, number> = {}; // Explicitly define the type
+    for (const assignment of assignments) {
+      counts[assignment.assignment_id] = await getSubmissionCountForAssignment(assignment.assignment_id);
+    }
+    setSubmissionCounts(counts);
+  };
+  fetchSubmissionCounts();
+}, [assignments, getSubmissionCountForAssignment]);
 
   return (
     <div>

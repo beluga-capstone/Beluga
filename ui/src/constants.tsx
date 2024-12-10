@@ -9,8 +9,8 @@ import {
 } from "./types";
 
 export const ROLES = {
-  ADMIN: 1,
-  PROFESSOR: 2,
+  ADMIN: 2,
+  PROFESSOR: 1,
   TA: 4,
   STUDENT: 8,
 };
