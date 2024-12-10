@@ -22,7 +22,8 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "secret!"
 app.config["fd"] = None
 app.config["child_pid"] = None
-socketio = SocketIO(app,cors_allowed_origins="http://localhost:3000")
+app.config["cors"] = "*"
+socketio = SocketIO(app,cors_allowed_origins=app.config['cors'])
 
 
 def set_winsize(fd, row, col, xpix=0, ypix=0):
@@ -76,7 +77,7 @@ def connect():
         # this is the child process fork.
         # anything printed here will show up in the pty, including the output
         # of this subprocess
-        subprocess.run(app.config["cmd"])
+        subprocess.run(app.config["cmd"], user="student", group="student", extra_groups=[], cwd="/home/student")
     else:
         # this is the parent process fork.
         # store child fd and pid
@@ -139,7 +140,7 @@ def main():
         level=logging.DEBUG if args.debug else logging.INFO,
     )
     logging.info(f"serving on http://{args.host}:{args.port}")
-    socketio.run(app, debug=args.debug, port=args.port, host=args.host)
+    socketio.run(app, debug=args.debug, port=args.port, host=args.host, ssl_context=('./fullchain.pem', './privkey.pem'))
 
 
 if __name__ == "__main__":

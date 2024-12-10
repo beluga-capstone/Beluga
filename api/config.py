@@ -15,11 +15,11 @@ class Config:
     FLASK_RUN_PORT = environ.get('FLASK_PORT', 5000)
     FLASK_RUN_HOST = environ.get('FLASK_HOST', '127.0.0.1')
 
-    SQLALCHEMY_DATABASE_URI = environ.get('DATABASE_URI', 'postgresql://postgres:temppassword@localhost:5432/your_db')
+    SQLALCHEMY_DATABASE_URI = environ.get('DATABASE_URI', 'postgresql://beluga:temppassword@127.0.0.1:5432/beluga')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = environ.get("SQLALCHEMY_ECHO")
 
-    LOGIN_REDIRECT = '/'
+    LOGIN_REDIRECT = 'https://beluga.tacex.dev'
     CONTAINER_START_PORT = 8000
     CONTAINER_END_PORT = 18000
 
@@ -42,6 +42,10 @@ class Config:
             ],
         }
     }
+    REGISTRY_IP = environ.get("REGISTRY_IP", "localhost")
+    REGISTRY_PORT = environ.get("REGISTRY_PORT", "8000")
+    ORIGINS = environ.get("ORIGINS", ["https://api.beluga.tacex.dev", "https://beluga.tacex.dev", "http://localhost:8123", "http://localhost:8124"])
+
 
 class TestingConfig:
     SQLALCHEMY_DATABASE_URI = environ.get('DATABASE_URI', 'postgresql://postgres:temppassword@db:5432/your_db')

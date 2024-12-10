@@ -12,8 +12,8 @@ export default function UserPopup({
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://localhost:5000/auth/logout', {
-        method: 'POST',
+      const response = await fetch(`${process.env.backend}/auth/logout`, {
+        method: 'GET',
         credentials: 'include',
       });
 

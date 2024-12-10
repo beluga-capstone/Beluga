@@ -1,0 +1,9 @@
+[settings]
+subdomain = "api"
+
+[nginx]
+port = 10443
+
+[environ]
+host = "127.0.0.1"
+port = 8123

@@ -79,7 +79,7 @@ const NewCourse: React.FC = () => {
           course_id: courseId,
           user_id: user.user_id, // Fix: Use user_id
         });
-        const enrollmentResponse = await fetch("http://localhost:5000/enrollments", {
+        const enrollmentResponse = await fetch(`${process.env.backend}/enrollments/search`, {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },

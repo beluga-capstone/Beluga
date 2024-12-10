@@ -61,7 +61,7 @@ const ContainerPageTerminal: React.FC<ContainerPageTerminalProps> = ({
     term.loadAddon(webLinksAddon);
 
     // Define websocket
-    const ws = new WebSocket(`ws://localhost:${containerPort}`);
+    const ws = new WebSocket(`${process.env.wsbackend}:${containerPort}`);
     socketRef.current = ws;
 
     // Open terminal

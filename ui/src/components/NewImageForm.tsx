@@ -3,7 +3,9 @@ import io from "socket.io-client";
 import { useRouter } from "next/navigation";
 import { useProfile } from "@/hooks/useProfile";
 
-const socket = io("http://localhost:5000");
+const socket = io(`${process.env.backend}`, {
+  withCredentials: true,
+});
 
 const normalizeDockerImageName = (name: string) => {
   return name
@@ -71,7 +73,7 @@ function NewImageForm() {
       if (description !== "") {
         altDesc = description
       }
-      const response = await fetch("http://localhost:5000/images", {
+      const response = await fetch(`${process.env.backend}/images`, {
         credentials: 'include',
         method: "POST",
         headers: {

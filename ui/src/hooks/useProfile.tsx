@@ -11,7 +11,7 @@ export const useProfile = () => {
   // Gets the user data
   const getProfile = async () => {
     try {
-      const response = await fetch('http://localhost:5000/users/profile', {
+      const response = await fetch(`${process.env.backend}/users/profile`, {
         cache: 'no-store',
         credentials: "include",
       });

@@ -11,3 +11,5 @@ docker
 pytest
 flask_socketio
 flask-cors
+waitress
+paramiko

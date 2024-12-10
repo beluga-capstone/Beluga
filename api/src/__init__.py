@@ -1,6 +1,6 @@
 from sqlalchemy_utils import database_exists, create_database
 from flask_login import LoginManager
-from flask import Flask
+from flask import Flask, current_app
 from datetime import datetime
 
 from src.util.util import create_ssh_key_pair
@@ -10,6 +10,7 @@ from flask_socketio import SocketIO
 from flask_cors import CORS 
 from src.util.constants import default_image_ids
 import logging
+import docker
 socketio = SocketIO()
 
 login_manager = LoginManager()
@@ -31,7 +32,7 @@ def create_app(config_name="default"):
     socketio.init_app(app, cors_allowed_origins="*")
 
     # WARNING: supports credentials may be insecure
-    CORS(app, origins="http://localhost:3000", supports_credentials=True)
+    CORS(app, origins=app.config['ORIGINS'], supports_credentials=True)
     login_manager.init_app(app)
     login_manager.login_view = '/auth/login'
 
@@ -185,14 +186,6 @@ def init_default_images():
             'packages':"",
             'user_id': ADMIN_ID
         },
-        {
-            'context_path': '../deployment/containers/beluga_fedora/', 
-            'dockerfile': 'Dockerfile',
-            'image_tag': 'beluga_base_fedora',
-            'description': 'Base image for fedora machines',
-            'packages':"",
-            'user_id': ADMIN_ID
-        },
     ]
 
     for image_info in default_images:
@@ -204,6 +197,10 @@ def init_default_images():
             continue
 
         try:
+            registry_ip = current_app.config['REGISTRY_IP']
+            registry_port = current_app.config['REGISTRY_PORT']
+            image_tag_registry = f"{registry_ip}:{registry_port}/{image_info['image_tag']}"
+
             # Set build context to the specified directory
             image, logs = docker_client.images.build(
                 path=image_info['context_path'],
@@ -219,9 +216,20 @@ def init_default_images():
                 user_id=image_info['user_id'],
                 packages=image_info['packages'],
             )
-            db.session.add(new_image)
-            db.session.commit()            
-            print(f"Initialized default image: {image_info['image_tag']}")
+            
+            if db.session.query(Image).filter_by(docker_image_id=image.id).first() is None:
+                db.session.add(new_image)
+                db.session.commit()
+                print(f"Initialized default image: {image_info['image_tag']}")
+
+            client = docker.APIClient()
+            image.tag(image_tag_registry)
+            push_logs = client.push(
+                image_tag_registry, stream=True, decode=True
+            )
+
+            for msg in push_logs:
+                print(msg)
 
         except Exception as e:
             db.session.rollback()

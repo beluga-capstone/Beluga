@@ -16,7 +16,7 @@ export const useDashboard = () => {
   const searchCourses = async (filters: Record<string, string> = {}) => {
     try {
       const queryParams = new URLSearchParams(filters).toString();
-      const response = await fetch(`http://localhost:5000/courses/search`, {
+      const response = await fetch(`${process.env.backend}/courses/search?${queryParams}`, {
         method: "GET",
         credentials: "include",
         headers: {
@@ -42,7 +42,7 @@ export const useDashboard = () => {
       const counts: { [courseId: string]: number } = {};
   
       for (const course of courses) {
-        const response = await fetch(`http://localhost:5000/courses/${course.id}/students/count`, {
+        const response = await fetch(`${process.env.backend}/courses/${course.id}/students/count`, {
           method: "GET",
           credentials: "include",
         });
@@ -64,7 +64,7 @@ export const useDashboard = () => {
 
   const getCourse = async (id: string): Promise<Course | null> => {
     try {
-      const response = await fetch(`http://localhost:5000/courses/${id}`,{
+      const response = await fetch(`${process.env.backend}/courses/${id}`,{
         method:"GET",
         credentials:"include"
       });
@@ -92,7 +92,7 @@ export const useDashboard = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch("http://localhost:5000/courses/search", {
+      const response = await fetch(`${process.env.backend}/courses/search`, {
         method: "GET",
         credentials: "include",
       });
@@ -135,7 +135,7 @@ export const useDashboard = () => {
     };
   
     try {
-      const response = await fetch("http://localhost:5000/courses", {
+      const response = await fetch(`${process.env.backend}/courses`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -159,7 +159,7 @@ export const useDashboard = () => {
   
   const updateCourse = async (id: string, updatedData: { name: string }) => {
     try {
-      const response = await fetch(`http://localhost:5000/courses/${id}`, {
+      const response = await fetch(`${process.env.backend}/courses/${id}`, {
         method: "PUT",
         credentials: "include",
         headers: {
@@ -186,7 +186,7 @@ export const useDashboard = () => {
   
   const setPublished = async (id: string, status: boolean) => {
     try {
-      const response = await fetch(`http://localhost:5000/courses/${id}/publish`, {
+      const response = await fetch(`${process.env.backend}/courses/${id}/publish`, {
         method: "PATCH",
         credentials: "include",
         headers: {
@@ -211,7 +211,7 @@ export const useDashboard = () => {
 
   const deleteCourse = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/courses/${id}`, {
+      const response = await fetch(`${process.env.backend}/courses/${id}`, {
         method: "DELETE",
         credentials: "include",
       });

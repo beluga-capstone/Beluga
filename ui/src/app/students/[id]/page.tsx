@@ -23,7 +23,7 @@ const StudentPage = ({ params }: { params: { id: string } }) => {
     const fetchStudentAndCourse = async () => {
       try {
         // Fetch user details
-        const userResponse = await fetch(`http://localhost:5000/users/${params.id}`, {
+        const userResponse = await fetch(`${process.env.backend}/users/${params.id}`, {
           method: "GET",
           credentials: "include",
         });
@@ -33,7 +33,7 @@ const StudentPage = ({ params }: { params: { id: string } }) => {
         const userData = await userResponse.json();
 
         // Fetch enrollment details to get course_id
-        const enrollmentResponse = await fetch(`http://localhost:5000/enrollments`, {
+        const enrollmentResponse = await fetch(`${process.env.backend}/enrollments`, {
           method: "GET",
           credentials: "include",
         });

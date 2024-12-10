@@ -1,0 +1,10 @@
+map $ssl_preread_server_name $upstream_target {
+  #{services}}
+
+server {
+  listen 0.0.0.0:443;
+
+  proxy_protocol on;
+  proxy_pass $upstream_target;
+  ssl_preread on;
+}

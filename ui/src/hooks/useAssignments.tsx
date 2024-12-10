@@ -13,7 +13,7 @@ export const useAssignments = () => {
 
   const fetchAssignments = async () => {
     try {
-      const response = await fetch('http://localhost:5000/assignments/search', {
+      const response = await fetch(`${process.env.backend}/assignments/search`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -45,7 +45,7 @@ export const useAssignments = () => {
   const fetchAssignmentsByCourseId = async (courseId: string): Promise<Assignment[]> => {
     try {
       console.log(`Fetching assignments for courseId: ${courseId}`);
-      const response = await fetch(`http://localhost:5000/assignments/course/${courseId}`, {
+      const response = await fetch(`${process.env.backend}/assignments/course/${courseId}`, {
         method: "GET",
         credentials: "include",
       });
@@ -84,7 +84,7 @@ export const useAssignments = () => {
   
   const fetchAssignmentsById = async (assignmentId: string): Promise<Assignment> => {
     try {
-      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`, {
+      const response = await fetch(`${process.env.backend}/assignments/${assignmentId}`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -113,7 +113,7 @@ export const useAssignments = () => {
   
   const saveAssignment = async (newAssignment: Assignment) => {
     try {
-      const response = await fetch('http://localhost:5000/assignments', {
+      const response = await fetch(`${process.env.backend}/assignments`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -194,7 +194,7 @@ export const useAssignments = () => {
     };
 
     try {
-      const response = await fetch(`http://localhost:5000/assignments/${assignment_id}`, {
+      const response = await fetch(`${process.env.backend}/assignments/${assignment_id}`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
@@ -219,7 +219,7 @@ export const useAssignments = () => {
 
   const deleteAssignment = async (assignmentId: string, courseId: string): Promise<void> => {
     try {
-      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}`, {
+      const response = await fetch(`${process.env.backend}/assignments/${assignmentId}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -241,7 +241,7 @@ export const useAssignments = () => {
     try {
       const updatedAssignment = { isPublished };
 
-      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}/publish`, {
+      const response = await fetch(`${process.env.backend}/assignments/${assignmentId}/publish`, {
         method: 'PATCH',
         credentials: 'include',
         headers: {
@@ -271,7 +271,7 @@ export const useAssignments = () => {
     try {
       const updatedAssignment = { allowsLateSubmissions };
 
-      const response = await fetch(`http://localhost:5000/assignments/${assignmentId}/late-submissions`, {
+      const response = await fetch(`${process.env.backend}/assignments/${assignmentId}/late-submissions`, {
         method: 'PATCH',
         credentials: 'include',
         headers: {

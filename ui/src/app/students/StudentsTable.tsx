@@ -18,7 +18,6 @@ const StudentsTable: React.FC<StudentsTableProps> = ({
           <th>First Name</th>
           <th>Last Name</th>
           <th>Email</th>
-          <th>Role</th>
         </tr>
       </thead>
       <tbody>
@@ -46,7 +45,6 @@ const StudentsTable: React.FC<StudentsTableProps> = ({
               )}
             </td>
             <td className="text-center py-2">{student.email}</td>
-            <td className="text-center py-2">{student.role}</td>
           </tr>
         ))}
       </tbody>

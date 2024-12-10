@@ -4,7 +4,7 @@ import { Container } from '@/types';
 import { useRouter } from 'next/navigation';
 import test from 'node:test';
 
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = process.env.backend;
 
 interface ContainerHook {
   containers: Container[];

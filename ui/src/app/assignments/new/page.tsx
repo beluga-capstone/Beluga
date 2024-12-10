@@ -31,7 +31,7 @@ const NewAssignment: React.FC = () => {
     try {
       // Fetch assignments for the course
       const response = await fetch(
-        `http://localhost:5000/assignments/search?course_id=${courseId}`,
+        `${process.env.backend}/assignments/search?course_id=${courseId}`,
         {
           method: "GET",
           credentials: "include",

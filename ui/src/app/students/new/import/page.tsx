@@ -68,7 +68,7 @@ const ImportStudentsPage: React.FC = () => {
 
       for (const user of addedUsers) {
         const enrollmentResponse = await fetch(
-          "http://localhost:5000/enrollments",
+          `${process.env.backend}/enrollments`,
           {
             method: "POST",
             credentials: "include",
